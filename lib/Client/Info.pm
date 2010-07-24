@@ -10,9 +10,9 @@ use DBD::mysql;
 require Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(get_client_info get_clients_info);
+our @EXPORT_OK = qw(substitute_path get_client_info get_clients_info);
 
-use Client::configuration  qw($database $dsn);
+use Client::configuration qw($paths $database $dsn);
 
 my $dbh = DBI->connect( $dsn, $database->{username}, $database->{password} )
   or die "Can’t connect to the DB\n";
@@ -40,3 +40,14 @@ sub get_clients_info {
 	return \@computers_list;
 }
 
+# substitute_path is used to interpolate [<path>] inside commands
+
+
+sub substitute_path {
+	my $string = shift;
+	foreach my $path (keys %{$paths} ) {
+	 last if ( $string=~s/\[$path\]/$paths->{$path}/g );
+					
+	}
+	return $string;
+}

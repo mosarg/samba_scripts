@@ -3,15 +3,26 @@ use strict;
 use warnings;
 use Client::startstop qw(wakeup_client);
 use Getopt::Long;
+use Switch;
 
-my $client = 'localhost';
+my $clients = 'localhost';
+my $all	   = '';
+GetOptions( 'client=s' => \$clients,'all'=>\$all );
 
-GetOptions( 'client=s' => \$client );
-
-if ( $client ne 'localhost' ) {
-	wakeup_client($client);
-}
-else {
-	print "Localhost is already up\n";
+if ($all){
+	turnoff_clients();
+}else{
+	switch($clients){
+		case 'localhost'{print "Localhost already up!\n";}
+		case /,/{
+			foreach my $computer ( split( /,/, $clients ) ) {
+				wakeup_client($computer);
+			}
+		}
+		case /\|/{print "Use , as client separator\n";}
+		default{
+			wakeup_client($clients);
+		}
+	}
 }
 

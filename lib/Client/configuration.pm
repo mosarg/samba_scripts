@@ -6,7 +6,7 @@ use YAML::XS qw(LoadFile);
 require Exporter;
 our @ISA       = qw(Exporter);
 our @EXPORT_OK =
-  qw($remote_share $remote_executer $domain $network_user $remote_user $remote_password $database $dsn $wsus_log);
+  qw($paths $remote_share $remote_executer $domain $network_user $remote_user $remote_password $database $dsn $wsus_log);
 
 my %Config =
   %{ LoadFile('/opt/samba_scripts/configuration.yaml') };
@@ -18,6 +18,7 @@ our $remote_user     = $Config{remote_user};
 our $remote_password = $Config{remote_password};
 our $database        = $Config{database};
 our $remote_share	 = $Config{remote_share};
+our $paths			 = $Config{paths};
 
 #our $database_password = 'ocs';
 #our $database_user     = 'ocs';

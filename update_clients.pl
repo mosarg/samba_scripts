@@ -1,4 +1,4 @@
- #!/usr/bin/perl
+#!/usr/bin/perl
 
 use strict;
 use warnings;
@@ -9,6 +9,7 @@ use Client::Info qw(get_clients_info);
 
 #wake up all clients
 
+
 wakeup_clients();
 
 print "I'm waiting 120 seconds for hosts to come up\n";
@@ -18,22 +19,19 @@ sleep 120;
 #check all host are up
 checkclients_up();
 
-my @threads_array=();
-
+my @threads_array = ();
 
 #spawn an update thread per client
-foreach my $computer ( @{get_clients_info()}){
-		push(@threads_array,threads->create(\&do_client_update,$computer->[1],10) );
+foreach my $computer ( @{ get_clients_info() } ) {
+	push( @threads_array,
+		threads->create( \&do_client_update, $computer->[1], 10 ) );
 }
 
 #join all threads
-foreach (threads->list()){
-    	print $_->join()."\n";
+foreach ( threads->list() ) {
+	print $_->join() . "\n";
 }
-
 
 #turn off all computers
 turnoff_clients();
-
-
 
