@@ -1,0 +1,6 @@
+pulizia notturna lavori di stampa e processi
+
+ *Elimino tutti i lavori di stampa eventualemte in coda e riavvio cupsys:
+  lrpm - && /etc/init.d cupsys restart
+ *Uccido tutti gli utente eventualmente rimasti appesi: script perl nella
+  directory ldap

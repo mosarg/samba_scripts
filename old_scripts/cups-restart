@@ -1,0 +1,9 @@
+#! /bin/bash
+
+pipes=$(sudo lsof -p `pidof cupsd` | grep pipe | wc -l)
+maxpipes=30
+if [[ $pipes -gt $maxpipes ]] ; then
+  echo "Reiniciando servidor CUPS"
+  date >> /var/log/cups/restart4pipes.log
+  /etc/init.d/cupsys restart
+fi

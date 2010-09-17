@@ -1,0 +1,23 @@
+h1{
+}
+
+
+table.packages {
+	border-collapse:collapse;
+	font-weight:bold;
+}
+
+table.packages th{
+}
+table.packages tr{
+	line-height:1.5em;
+	border-bottom:2px solid gray;
+
+}
+
+tr.normal{
+	color:green;
+}
+tr.error{
+	color:red;
+}

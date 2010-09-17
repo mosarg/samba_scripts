@@ -1,0 +1,126 @@
+User sid S-1-5-21-3940284654-3667504151-3746250938-4030 with username has 3 elements:
+palex9
+fandrea9
+gobdavid5
+User sid S-1-5-21-3940284654-3667504151-3746250938-4026 with username has 4 elements:
+pmikka8
+masandrea9
+decdaniele1
+camassimo6
+User sid S-1-5-21-3940284654-3667504151-3746250938-4022 with username has 4 elements:
+moluca3
+gflavio2
+bermattia7
+boandrea7
+User sid S-1-5-21-3940284654-3667504151-3746250938-4042 with username has 3 elements:
+seion9
+mstefano8
+picelia4
+User sid S-1-5-21-3940284654-3667504151-3746250938-4036 with username has 3 elements:
+pmatteo6
+mfrancesco2
+momar5
+User sid S-1-5-21-3940284654-3667504151-3746250938-4048 with username has 2 elements:
+sgregorio1
+vifrancesco5
+User sid S-1-5-21-3940284654-3667504151-3746250938-4032 with username has 4 elements:
+tugianluca4
+pelandrea2
+iamichele4
+mluigi5
+User sid S-1-5-21-3940284654-3667504151-3746250938-4038 with username has 3 elements:
+qytmefail3
+maryves8
+mogabriele6
+User sid S-1-5-21-3940284654-3667504151-3746250938-4020 with username has 4 elements:
+mipaolo2
+avittorio3
+baspaolo8
+bfabio5
+User sid S-1-5-21-3940284654-3667504151-3746250938-4028 with username has 4 elements:
+rodaniel1
+marielcristian7
+dimanuel6
+cimarco3
+User sid S-1-5-21-3940284654-3667504151-3746250938-4046 with username has 3 elements:
+toncesare9
+malex9
+tonilario5
+User sid S-1-5-21-3940284654-3667504151-3746250938-4044 with username has 3 elements:
+toluca7
+mandrea4
+ricfilippo9
+User sid S-1-5-21-3940284654-3667504151-3746250938-4024 with username has 4 elements:
+pdaniele9
+grluca5
+coenrico3
+canicholas4
+User sid S-1-5-21-3940284654-3667504151-3746250938-4034 with username has 4 elements:
+zonicolas2
+pigianluca2
+ilipance3
+mdaniel2
+User sid S-1-5-21-3940284654-3667504151-3746250938-4040 with username has 3 elements:
+samassimo7
+mamarco5
+pmichele3
+Scalar606
+Min sid is 1012 Max is 4306
+Sid number 3226 is free
+Sid number 3228 is free
+Sid number 3230 is free
+Sid number 3232 is free
+Sid number 3234 is free
+Sid number 3236 is free
+Sid number 3238 is free
+Sid number 3240 is free
+Sid number 3242 is free
+Sid number 3244 is free
+Sid number 3246 is free
+Sid number 3248 is free
+Sid number 3250 is free
+Sid number 3252 is free
+Sid number 3254 is free
+Sid number 3256 is free
+Sid number 3304 is free
+Sid number 3312 is free
+Sid number 3330 is free
+Sid number 3340 is free
+Sid number 3342 is free
+Sid number 3344 is free
+Sid number 3346 is free
+Sid number 3348 is free
+Sid number 3350 is free
+Sid number 3352 is free
+Sid number 3354 is free
+Sid number 3356 is free
+Sid number 3358 is free
+Sid number 3360 is free
+Sid number 3362 is free
+Sid number 3364 is free
+Sid number 3366 is free
+Sid number 3374 is free
+Sid number 3376 is free
+Sid number 3384 is free
+Sid number 3402 is free
+Sid number 3406 is free
+Sid number 3610 is free
+Sid number 3612 is free
+Sid number 3614 is free
+Sid number 3620 is free
+Sid number 3622 is free
+Sid number 4056 is free
+Sid number 4090 is free
+Sid number 4098 is free
+Sid number 4100 is free
+Sid number 4102 is free
+Sid number 4124 is free
+Sid number 4128 is free
+Sid number 4238 is free
+Sid number 4240 is free
+Total number of duplicate sids: 51
+Number of free sids above 3000: 52
+S-1-5-21-3940284654-3667504151-3746250938-4030
+fandrea9 3226
+uid=fandrea9,ou=2005ac,ou=ceconi,ou=users,dc=linussio,dc=net
+sambaSID S-1-5-21-3940284654-3667504151-3746250938-4030gobdavid5 3228
