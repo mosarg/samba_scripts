@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Cwd;
 use threads;
-use Getopt::Long;
 use Net::Ping;
 use Client::RemoteExecution qw(execute_client_cmd execute_shell_client_cmd);
 use Client::configuration qw($wsus_log);
@@ -27,42 +26,46 @@ sub do_client_update {
 	my $wakeup_cycle=0;
 	my $running_cycle=0;
 	
+	print "$client: preparing update\n";
+	
 	while ( $current_cycle < $max_cycles ) {
-		
+	
 		$wakeup_cycle=0;
 		$running_cycle=0;
-				
+					
 		while ( (otherUpdatesRunning($client))&&($running_cycle<$max_cycles)){
+			print "$client: other update processes running. I'll be waiting for 60 seconds\n";
 			sleep 60;
 			$running_cycle++;
 		}
 		if ($running_cycle>=$max_cycles ){
-			print "An Update process is stuck on client $client\n";
+			print "$client: an Update process is stuck\n";
 			$current_cycle=100;
 			last;
 		} 	
-				
+		
+		print "$client: start Windows update\n";		
 		execute_command($client,'update_client');
 		
 		
 		if ( mustreboot($client) ) {
-			print "Rebooting client\n";
+			print "$client: Rebooting client\n";
 			restart_client($client);
 		}
 		else {
-			print "Update complete shutting down \n";
+			print "$client: update complete shutting down \n";
 			turnoff_client($client);
 			last;
 		}
 		
 		while ( (!$ping->ping( $client, '4' ))&&($wakeup_cycle<$max_cycles) ) {
-			print "Waiting for client to come up\n";
+			print "$client: waiting for client to come up\n";
 			sleep 60;
 			$wakeup_cycle++;
 		}
 		
 		if ($wakeup_cycle>=$max_cycles ){
-			print "Wakeup failed";
+			print "$client: wakeup failed";
 			$current_cycle=100;
 			last;
 		} 

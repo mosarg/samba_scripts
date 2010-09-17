@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use Getopt::Long;
 use Client::update qw(do_client_update);
 my $client = 'localhost';
 
@@ -11,7 +12,7 @@ if ($client ne "localhost"){
 
 do_client_update($client,10);
 }else{
-	print "Usage update_client.pl --client <client-name>\n";
+	print "Localhost cannot up updated!\n";
 }
 
 

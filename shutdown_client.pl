@@ -2,19 +2,28 @@
 use strict;
 use warnings;
 use Getopt::Long;
-use Client::startstop qw(turnoff_client);
+use Client::startstop qw(turnoff_clients turnoff_client);
 use Switch;
+use threads;
+
 
 my $clients = 'localhost';
+my $group = '';
 my $all     = '';
+
 
 GetOptions(
 	'clients=s' => \$clients,
-	'all'       => \$all
+	'all'       => \$all,
+	'group=s'   => \$group
 );
 
+
+
 if ($all){
-	turnoff_clients();
+	
+	turnoff_clients($group);
+	
 }else{
 	switch($clients){
 		case 'localhost'{print "Localhost cannot be shut down!\n";}
@@ -24,7 +33,8 @@ if ($all){
 			}
 		}
 		case /\|/{print "Use , as client separator\n";}
-		default{
+		
+		else{
 			turnoff_client($clients);
 		}
 	}
