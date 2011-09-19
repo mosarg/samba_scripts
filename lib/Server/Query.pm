@@ -14,7 +14,7 @@ require Exporter;
 
 our @ISA       = qw(Exporter);
 our @EXPORT_OK =
-  qw( getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap);
+  qw( getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap);
 
 my $ldapConnection = Net::LDAP->new( $ldap->{'server'} )
   || print "can't connect to !: $@";
@@ -48,6 +48,9 @@ sub getUsers {
 
 sub getUserHome {
 	my $user       = shift;
+	
+	if (!$user){ return '';}
+	
 	my $dn         = $ldap->{'user_base'} . ',' . $ldap->{'dir_base'};
 	my $userObject = $ldapConnection->search(
 		base   => "$dn",
@@ -133,6 +136,25 @@ sub getUserFromUid {
 		return '';
 	}
 }
+sub getUserFromHumanName {
+	my $name = shift;
+	my $surname= shift;
+	$ldapConnection->bind;
+	my $data = $ldapConnection->search(
+		base   => $ldap->{'user_base'} . ',' . $ldap->{'dir_base'},
+		scope  => 'sub',
+		filter => "&(objectclass=posixAccount) (cn=$name $surname)"
+	);
+	$data->code && die $data->error;
+	my @output = $data->entries();
+	if (@output) {
+		return $output[0]->get_value('uid');
+	}
+	else {
+		return '';
+	}
+}
+
 
 sub unbindLdap {
 	$ldapConnection->unbind;

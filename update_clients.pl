@@ -13,6 +13,7 @@ my $group = '';
 
 GetOptions( 'group=s' => \$group);
 
+
 #wake up all clients
 
 wakeup_clients($group);

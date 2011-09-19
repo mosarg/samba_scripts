@@ -11,6 +11,7 @@ use File::Copy;
 use Switch;
 use Data::Dumper;
 
+
 my $clients    = 'localhost';
 my $command    = 'notepad';
 my $all        = '';
@@ -18,7 +19,6 @@ my $reportonly ='';
 my $group	   ='';
 my $reportsDir = $client->{'wpkg_xml_log_dir'};
 my @givenClients=();
-
 my $log_data={};
 
 open FILE, ">", $reports->{'wpkg'} or die $!;
@@ -39,11 +39,8 @@ if ($all) {
 			$reportsDir . '/wpkg_' . lc($computer->[0]). '.xml' );
 		sleep 5;	
 		}
-		
 		push( @givenClients, lc($computer->[0]));
-		
 	}
-
 }
 else {
 	@givenClients = split( /,/, $clients );
@@ -56,9 +53,7 @@ else {
 				$reportsDir . '/wpkg_' . $computer . '.xml' );
 			 sleep 5;
 			}
-			
 		}
-
 	}
 	else {
 		

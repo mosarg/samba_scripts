@@ -71,7 +71,7 @@ sub setupClientTerminalServer{
 		} 	
 	
 	}
-		$vbs_script.="End Select";
+		$vbs_script.="End Select\n";
 		push(@$logon_file,$vbs_script);
 
 }

@@ -20,7 +20,7 @@ our @EXPORT_OK = qw(cleanupDustbins cleanupPublicFolders cleanupDir);
 sub cleanupDustbins{
 	my $homes=getUsersHome();
 	foreach my $home (@{$homes}){
-		print "Now cleaning $home / $dirs->{dustbin}\n";		
+		print "Now cleaning $home/$dirs->{dustbin}\n";		
 		cleanupDir($home."/".$dirs->{dustbin});
 	}
 	
@@ -52,6 +52,7 @@ sub removeDir{
 		return '';
 	}
 }
+
 
 sub moveDir{
 	
