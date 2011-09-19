@@ -40,7 +40,7 @@ sub doAxiosUpdate{
 	if (checkAxiosUpdateState($client)){
 	print "$client: axios update procedure failed!\n";
 			transportMail($log_info->{'email_recipient'}, $log_info->{'email_sender'},
-			'Errore Aggiornamento Axios',"Non è stato possibile aggiornare il client $client");
+			'Axios update error',"I couldn't update  client $client");
 	return '';	
 	}else{
 		print "$client: axios update procedure succesfully executed\n";
@@ -87,7 +87,7 @@ sub do_client_update {
 			restart_client($client);
 		}
 		else {
-			print "$client: update complete shutting down \n";
+			print "$client: update complete, shutting down \n";
 			turnoff_client($client);
 			last;
 		}
@@ -99,7 +99,7 @@ sub do_client_update {
 		}
 		
 		if ($wakeup_cycle>=$max_cycles ){
-			print "$client: wakeup failed";
+			print "$client: wakeup failed\n";
 			$current_cycle=100;
 			last;
 		} 

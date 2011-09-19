@@ -38,7 +38,7 @@ sub cleanupDir{
 	if (-d $dir){
 		remove_tree($dir,{keep_root => 1});
 	}else{
-		print "$dir doesn't exists\n";
+		print "$dir doesn't exist\n";
 		return '';
 	}
 	return 1;

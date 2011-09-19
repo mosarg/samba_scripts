@@ -38,7 +38,7 @@ sub wakeup_client{
 	print "$current_client[0]: waking up\n";
 	system("wakeonlan -i $tmp_broadcast $current_client[2]");
 	while ((!$ping->ping( $current_client, $ping_wait_time ) )&&($wait_cycles<20)){
-		print "$current_client: waiking up\n";
+		print "$current_client: waking up\n";
 		sleep 10;
 		$wait_cycles++;
 	}
@@ -54,10 +54,10 @@ sub wakeup_clients {
 	    $tmp_broadcast=~s/\d+$/255/;
 
 		if ( $ping->ping( $computer->[1], $ping_wait_time ) ) {
-			print "Attivo\n";
+			print "Active\n";
 		}
 		else {
-			print "Computer $computer->[0] $computer->[2] in fase di accensione\n";
+			print "Computer $computer->[0] $computer->[2] wake up phase\n";
 			system("wakeonlan -i $tmp_broadcast $computer->[2]");
 		}
 	}
