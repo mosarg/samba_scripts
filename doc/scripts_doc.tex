@@ -81,6 +81,9 @@ Questo script si occupa dell'archiviazione delle mail ricevuto dal protocollo, �
  archive_mail --folder [folder]
 \end{verbatim}
 questo script viene eseguito giornalmente via cron
+\section*{genlogon}
+Questo script viene eseguito da \emph{samba} durante il logon degli utenti su macchine Windows, tale script genera automaticamente uno script vbs che verrà eseguito dal client. I parametri per la creazione dello script sono specificati nel file di configurazione \verb#logon_prefs.yaml#
+
 
  \chapter{Script gestione client}
 \section*{list\_clients}
@@ -92,5 +95,42 @@ Il parametro \verb#--group# è opzionale, può essere utilizzato per visualizzar
 \begin{verbatim}
  list_clients --group lab1b
 \end{verbatim}
+\section*{run}
+Lo script \verb#run# permette l'esecuzione di comandi predefiniti nel file di configurazione \verb#commands.yaml#. Lo script può essere invocato come:
+\begin{verbatim}
+ run --client [client] --command [command] [--group [group]] [--all] [--list-commands]
+\end{verbatim}
+gli switch \verb#--client# e \verb#--group# sono mutamente esclusivi. Lo switch \verb#--list-commands# stampa una lista dei comandi eseguibili sui client
+\section*{shutdown\_client}
+Lo script \verb#shutdown_client# si occupa dello spegnimento dei client Windows. Lo script può essere invocato come:
+
+\begin{verbatim}
+ shutdown_client --client [client] [--group [group]] [--all]]
+\end{verbatim}
+come negli altri casi gli switch \verb#--client# e \verb#--group# sono mutamente esclusivi. Nella versione attuale dello script è necessario specificare lo switch \verb#--all# quando si fa uso dello switch \verb#--group#
+
+\section*{update\_clients}
+
+Lo script \verb#udpate_clients# nella sua versione attuale deve essere utilizzato per l'aggiornamento simultaneo di un gruppo di computer. Per l'aggiornamento di una singolo macchina si dovrà invece utilizzare lo script \verb#update_client# in un futura revisione degli script queste due funzionalità saranno integrate in un unico comando. Lo script può essere invocato come:
+\begin{verbatim}
+ update_clients --group [group]
+\end{verbatim}
+se lo switch \verb#--group# non viene specificato tutti i client registrati sul server verranno aggiornati.
+
+\section*{wakeup\_client}
+
+Lo script \verb#wakeup_client# permette l'accensione remota di tutti quei computer il cui hardware supporta il \emph{Wake on Lan}. Lo script può essere invocato come:
+\begin{verbatim}
+ wakup_client --client [client] [--group [group]] [--all]
+\end{verbatim}
+Gli switch \verb#--client# e \verb#--group# sono mutamente esclusivi inoltre nel caso in cui venga specificato un gruppo è necessario fornire anche lo switch \verb#--all#
+
+\section*{wpkg\_report}
+
+Lo script \verb#wpkg_report# estrae dalle macchine client le informazioni sull'aggiornamento dei pacchetti software, eseguito tramite lo script \emph{wpkg}. Lo script può essere invocato come:
+\begin{verbatim}
+ wpkg_report --client [client] [--group [group]] [--all] [--reportonly]
+\end{verbatim}
+Gli switch \verb#--client# e \verb#--group# sono mutamente esclusivi, in caso di selezione di un gruppo è necessario specificare lo switch \verb#--all#. Nel caso in cui non si voglia scaricare dai client le informazioni sui pacchetti (ad esempio nel caso in cui queste siano già state acquisite) è possibile utilizzare lo switch \verb#--reportonly# per effettuare unicamente il report degli esiti di installazione.
 
 \end{document}
