@@ -9,7 +9,7 @@ use Client::RemoteExecution qw(execute_client_cmd execute_shell_client_cmd execu
 
 require Exporter;
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(execute_command);
+our @EXPORT_OK = qw(execute_command list_commands);
 
 my %defined_commands = %{ LoadFile('/opt/samba_scripts/commands.yaml') };
 
@@ -37,6 +37,12 @@ sub execute_command {
 	else {
 		print "Command $command doesn't exist!\n";
 		return;
+	}
+}
+
+sub list_commands{
+	foreach my $def_command  (keys %{$commands}){
+		print $def_command."\n";
 	}
 }
 

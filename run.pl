@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Long;
-use Client::commands qw(execute_command);
+use Client::commands qw(execute_command list_commands);
 use Client::Info qw(get_clients_info);
 use Switch;
 
@@ -12,13 +12,23 @@ my $clients = 'localhost';
 my $command = 'notepad';
 my $group = '';
 my $all     = '';
+my $list_commands ='';
 
 GetOptions(
 	'clients=s' => \$clients,
 	'command=s' => \$command,
 	'all'       => \$all,
-	'group=s'   => \$group
+	'group=s'   => \$group,
+	'list-commands'=>\$list_commands
 );
+
+#todo: rewrite commands router
+
+if($list_commands){
+	list_commands();
+	exit;
+}
+
 
 if ($all) {
 	foreach my $computer ( @{ get_clients_info($group) } ) {

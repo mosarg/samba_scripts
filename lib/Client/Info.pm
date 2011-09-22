@@ -25,7 +25,7 @@ my $dbh_infodb = DBI->connect(
 	$database->{$infodb_name}->{username},
 	$database->{$infodb_name}->{password}
   )
-  or die "Can’t connect to the DB\n";
+  or die "Can’t connect to DB\n";
 
 my $dsn_wpkg =
   "dbi:mysql:$database->{wpkg}->{name}:$database->{wpkg}->{host}:3306";
@@ -49,7 +49,7 @@ sub getWpkgPkgRev {
 		$database->{wpkg}->{username},
 		$database->{wpkg}->{password}
 	  )
-	  or die "Can’t connect to the DB\n";
+	  or die "Can’t connect to  DB\n";
 
 	my $package_query =
 	  "SELECT revision FROM packages WHERE id_text=\'$package_id\'";
@@ -67,7 +67,7 @@ sub incWpkgPkgRev {
 		$database->{wpkg}->{username},
 		$database->{wpkg}->{password}
 	  )
-	  or die "Can’t connect to the DB\n";
+	  or die "Can’t connect to DB\n";
 	my $package_query =
 	  "UPDATE packages SET revision=revision+1 WHERE id_text=\'$package_id\'";
 	my $package_revision = $dbh_wpkg->prepare($package_query);
@@ -83,7 +83,7 @@ sub setWpkgPkgRev {
 		$database->{wpkg}->{username},
 		$database->{wpkg}->{password}
 	  )
-	  or die "Can’t connect to the DB\n";
+	  or die "Can’t connect to DB\n";
 	my $package_query =
 	  "UPDATE packages SET revision=$revision WHERE id_text=\'$package_id\'";
 	my $package_revision = $dbh_wpkg->prepare($package_query);
