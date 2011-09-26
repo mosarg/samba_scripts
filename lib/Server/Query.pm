@@ -9,12 +9,12 @@ use Data::Dumper;
 
 use Data::Structure::Util qw( unbless );
 
-use Server::Configuration qw($ldap $ldap_users);
+use Server::Configuration qw($server $ldap $ldap_users);
 require Exporter;
 
 our @ISA       = qw(Exporter);
 our @EXPORT_OK =
-  qw( getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap);
+  qw(getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap);
 
 my $ldapConnection = Net::LDAP->new( $ldap->{'server'} )
   || print "can't connect to !: $@";
@@ -60,6 +60,10 @@ sub getUserHome {
 	return ( $userObject->entries() )[0]->get_value('homeDirectory');
 }
 
+sub getUserLdapProfile{
+	
+}
+
 sub getUsersHome {
 	my $dn = $ldap->{'user_base'} . ',' . $ldap->{'dir_base'};
 	my @homes;
@@ -75,6 +79,16 @@ sub getUsersHome {
 	}
 	return \@homes;
 
+}
+
+sub getUsersDiskProfiles{
+	
+	
+	my @profiles= `find $server->{'profiles_dir'}`;
+	shift @profiles;
+	chomp @profiles;
+	
+	return \@profiles;
 }
 
 sub getClassHomes {
@@ -136,6 +150,26 @@ sub getUserFromUid {
 		return '';
 	}
 }
+
+sub getUserFromUname{
+	my $uname = shift;
+	$ldapConnection->bind;
+	my $data = $ldapConnection->search(
+		base   => $ldap->{'user_base'} . ',' . $ldap->{'dir_base'},
+		scope  => 'sub',
+		filter => "&(objectclass=posixAccount) (uid=$uname)"
+	);
+	$data->code && die $data->error;
+	my @output = $data->entries();
+	if (@output) {
+		return $output[0]->get_value('uid');
+	}
+	else {
+		return '';
+	}
+}
+
+
 sub getUserFromHumanName {
 	my $name = shift;
 	my $surname= shift;

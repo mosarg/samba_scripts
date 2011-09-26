@@ -1,0 +1,5 @@
+Perl Libs Deps
+
+libnet-ldap-perl -> LDAP support
+HTML/Tabulate.pm -> wpkg-support->capan
+libdata-structure-util-perl->Data::Structure::util

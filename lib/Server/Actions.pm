@@ -7,14 +7,14 @@ use File::Copy;
 use File::Path qw(make_path remove_tree);
 use Getopt::Long;
 use Server::Configuration qw($dirs);
-use Server::Query qw(getUsersHome);
+use Server::Query qw(getUserFromUname getUsersHome getUsersDiskProfiles);
 
 
 
 require Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(cleanupDustbins cleanupPublicFolders cleanupDir);
+our @EXPORT_OK = qw(cleanupOldProfiles cleanupDustbins cleanupPublicFolders cleanupDir cleanupOldProfiles);
 
 
 sub cleanupDustbins{
@@ -31,6 +31,21 @@ sub cleanupPublicFolders{
 		cleanupDir($dirs->{public_folders}->{$_});
 		print $_,"\n";
 	}
+}
+
+sub cleanupOldProfiles{
+	my $username='';
+	my $profiles=getUsersDiskProfiles();
+	
+	foreach my $userProfile (@{$profiles}){
+		$userProfile=~ m/\/(\w+)$/;
+		
+		if (!getUserFromUname($1)){
+			#cleanupDir($userProfile);
+			print "I'm going to remove stale profile ",$userProfile,"\n";
+		}
+	}
+	
 }
 
 sub cleanupDir{

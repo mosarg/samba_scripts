@@ -7,14 +7,19 @@ use Server::Configuration qw($ldap);
 use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
-use Server::Query qw(   getUsers getUserFromHumanName getUserHome);
+use Server::Query qw(   getUsers getUserFromHumanName getUserHome getUsersDiskProfiles);
 
 
-use Server::Actions qw(cleanupDir);
+use Server::Actions qw(cleanupDir cleanupOldProfiles);
 
-print getUserFromHumanName('deborah','grillo');
 
-print getUserHome(getUserFromHumanName('deborah','grillo'));
+#print Dumper @{getUsersDiskProfiles()};
+
+cleanupOldProfiles();
+
+#print getUserFromHumanName('deborah','grillo');
+
+#print getUserHome(getUserFromHumanName('deborah','grillo'));
 
 #use Server::Mail qw(countMessages getNewMessages dumpNewMessages);
 #print Dumper getUsers;
