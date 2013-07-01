@@ -6,7 +6,7 @@ use Cwd;
 use Getopt::Long;
 use Net::LDAP;
 use Data::Dumper;
-
+use Filesys::DiskSpace;
 use Data::Structure::Util qw( unbless );
 
 use Server::Configuration qw($server $ldap $ldap_users);
@@ -14,7 +14,7 @@ require Exporter;
 
 our @ISA       = qw(Exporter);
 our @EXPORT_OK =
-  qw(getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap);
+  qw(getFreeDiskSpace getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap);
 
 my $ldapConnection = Net::LDAP->new( $ldap->{'server'} )
   || print "can't connect to !: $@";
@@ -83,9 +83,8 @@ sub getUsersHome {
 
 sub getUsersDiskProfiles{
 	
-	
-	my @profiles= `find $server->{'profiles_dir'}`;
-	shift @profiles;
+	my @profiles= `ls $server->{'profiles_dir'}`;
+	shift shift @profiles;
 	chomp @profiles;
 	
 	return \@profiles;
@@ -187,6 +186,23 @@ sub getUserFromHumanName {
 	else {
 		return '';
 	}
+}
+
+sub getFreeDiskSpace{
+	my $mount_point=shift;
+	
+	my ($fs_type, $fs_desc, $used, $avail, $fused, $favail)='';
+	
+	if (-d $mount_point){
+		
+		($fs_type, $fs_desc, $used, $avail, $fused, $favail) = df $mount_point;
+	}else{
+		print"You must give an existing mount point!\n";
+	}
+	if($avail){
+	return int($avail/1000)}else{
+		return '';
+	};
 }
 
 

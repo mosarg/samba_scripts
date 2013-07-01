@@ -19,12 +19,12 @@
 \makeatletter
 \newlength\dlf@normtxtw
 \setlength\dlf@normtxtw{\textwidth}
-\def\myhelvetfont{\def\sfdefault{mdput}}
+
 \newsavebox{\feline@chapter}
 \newcommand\feline@chapter@marker[1][4cm]{%
   \sbox\feline@chapter{%
     \resizebox{!}{#1}{\fboxsep=1pt%
-      \colorbox{nicered}{\color{white}\bfseries\sffamily\thechapter}%
+      \colorbox{nicered}{\color{white}\bfseries\thechapter}%
     }}%
   \rotatebox{90}{%
     \resizebox{%
@@ -38,11 +38,11 @@
     \makebox[1cm][r]{\usebox\feline@chapter}%
   }}
 \makechapterstyle{daleif1}{
-  \renewcommand\chapnamefont{\normalfont\Large\scshape\raggedleft\so}
+  \renewcommand\chapnamefont{\Large\scshape\raggedleft\so}
   \renewcommand\chaptitlefont{\normalfont\huge\bfseries\scshape\color{nicered}}
   \renewcommand\chapternamenum{}
   \renewcommand\printchaptername{}
-  \renewcommand\printchapternum{\null\hfill\feline@chm[2.5cm]\par}
+  \renewcommand\printchapternum{\null\hfill\feline@chm[2cm]\par}
   \renewcommand\afterchapternum{\par\vskip\midchapskip}
   \renewcommand\printchaptertitle[1]{\chaptitlefont\raggedleft ##1\par}
 }
@@ -76,16 +76,195 @@
       \end{itemize}
 \section*{archive\_mail}
 
-Questo script si occupa dell'archiviazione delle mail ricevuto dal protocollo, è in grado di processare un file mbox, di estrarre i nuovi messaggi ricevuti e iniettarli nel server di gestione mail \emph{Archiveopteryx}. Lo script può essere invocato come:
+Questo script si occupa dell'archiviazione delle mail ricevute dal protocollo, è in grado di processare un file mbox, di estrarre i nuovi messaggi ricevuti e iniettarli nel server di gestione mail \emph{Archiveopteryx}. Lo script può essere invocato come:
 \begin{verbatim}
  archive_mail --folder [folder]
 \end{verbatim}
 questo script viene eseguito giornalmente via cron
 \section*{genlogon}
-Questo script viene eseguito da \emph{samba} durante il logon degli utenti su macchine Windows, tale script genera automaticamente uno script vbs che verrà eseguito dal client. I parametri per la creazione dello script sono specificati nel file di configurazione \verb#logon_prefs.yaml#
+Questo script viene eseguito da \emph{samba} durante il logon degli utenti su macchine Windows, tale script genera automaticamente uno script vbs che verrà eseguito dal client. I parametri per la creazione dello script sono specificati nel file di configurazione \verb#logon_prefs.yaml# \footnote{I file di configurazione risiedono nella directory \emph{/opt/samba\_scripts}}.
+Analizziamo la struttura del file di configurazione dello script. Sono presenti quattro macroaree:
+
+\begin{verbatim}
+ common:
+\end{verbatim}
+per l'impostazione dei parametri comuni a tutti gli utenti.
+\begin{verbatim}
+ computers:
+\end{verbatim}
+per l'impostazione dei parametri di una determinata macchina. A tutti gli utenti che effettueranno il login su quella macchina verranno assegnate le impostazioni di questa sezione.
+\begin{verbatim}
+ users:
+\end{verbatim}
+agli utenti presenti in questa sezione verranno applicate le impostazioni definite indipendentemente dalla macchina sui cui effettuano il login.
+\begin{verbatim}
+ groups:
+\end{verbatim}
+a tutti gli utenti appartenenti ai gruppi qui specificati verranno applicate le impostazioni definite in questa sezione. Le impostazioni applicabili nelle sezioni sopra citate permettono di assegnare agli utenti stampanti di rete e share di rete. La sintassi deve rispettare quella dell'esempio seguente:
+\begin{verbatim}
+  printers:
+   devices:
+     - okiprotocollo1
+     - fotocopiatrice
+   default: fotocopiatrice
+  shares:
+   - {drive: 'K:', share: 'documenti'}
+   - {drive: 'U:', share: 'scansioni'}
+   - {drive: 'M:', share: 'modelli'}
+\end{verbatim}
+  
+in questo esempio applico ad una delle entità prima descritte le stampanti \verb#okiprotocollo1# e \verb#fotocopiatrice#, assegno come stampante predefinita la \verb#fotocopiatrice# e in fine assegno tre condivisioni di rete ad altrettanti dischi.
+
+se, ad esempio, volessi applicare le impostazioni su riportate ad un ipotetico utente \emph{gianni} dovrei scrivere nella sezione \verb#users:#:
+\begin{verbatim}
+ users:
+   gianni:
+     printers:
+      devices:
+        - okiprotocollo1
+        - fotocopiatrice
+      default: fotocopiatrice
+     shares:
+       - {drive: 'K:', share: 'documenti'}
+       - {drive: 'U:', share: 'scansioni'}
+       - {drive: 'M:', share: 'modelli'}
+\end{verbatim}
+Nota: è necessario rispettare l'indentazione del file di configurazione dato che questo è scritto in \emph{yaml}.
+
+\section*{disk\_checks}
+
+Questo script viene eseguito ad intervalli regolari tramite \emph{cron}. Lo script controlla alcuni parametri vitali del disco rigido. Attualmente è implementato il controllo dello spazio libero. Quando viene superata una quota prefissata di riempimento del disco viene inviata una email al gestore del server. Lo script può essere eseguito manualmente come:
+\begin{verbatim}
+ disk_checks --action [action]
+\end{verbatim}
+Attualmente è implementata l'azione \verb#disk_space#
+
+\section*{File di configurazione}
+
+Gli script su descritti utilizzano come file di configurazione \verb#server_configuration.yaml#. Di seguito potete vedere un esempio di configurazione che andremo a descrivere nei dettagli:
+\begin{verbatim}
+ --- 
+ldap:
+ server: '192.168.0.170'
+ port: 389
+ group_base: 'ou=Groups'
+ user_base: 'ou=Users'
+ dir_base: 'dc=linussio,dc=net'  
+dirs:
+ groups: /opt/scripts/samba
+ dustbin: 'Desktop/CESTINO' 
+ public_folders:
+  public_alumns: '/home/alunni_comuni'
+  public_profs: '/home/prof_comuni'
+server:
+ windows_name: 'wilos'
+ logon_prefs_file: '/opt/samba_scripts/logon_prefs.yaml'
+ logon_script_dir: '/tmp'
+ profiles_dir: '/home/samba/profiles'
+ mount_points:
+             - '/'
+             - '/home'
+             - '/var'
+ mount_point_size_thr: 2000
+mail:
+  server_notification_rec:
+                         - 'mosarg@gmail.com'
+  mail_sender_address: 'test@linussio.it'
+  global_mail_folder: '/home/mosa/Sources/projects/samba_scripts'
+  global_mail_state: '/opt/samba_scripts/global_mail.yaml'
+  archiveopteryx:
+    aoximport: '/usr/local/archiveopteryx/bin/aoximport'
+    aox: '/usr/local/archiveopteryx/bin/aox'
+ldap_users:
+  ou:
+    - liceo
+    - ceconi
+    - ipsc
+    - linussio
+    - professori
+    - tecnici
+    - ata
+    - collscolastici
+    - enaip
+\end{verbatim}
+
+\subsection*{Ldap}
+Iniziamo dalla sezione \verb#ldap#:
+\begin{verbatim}
+ldap:
+ server: '192.168.0.170'
+ port: 389
+ group_base: 'ou=Groups'
+ user_base: 'ou=Users'
+ dir_base: 'dc=linussio,dc=net'  
+\end{verbatim}
+
+questa sezione fornisce agli script le informazioni per la connessione con il server ldap, in cui sono memorizzate le informazioni riguardanti gli account degli utenti.
+È necessario specificare l'indirizzo del server, la porta su cui il server ldap è in ascolto, le posizioni degli utenti e dei gruppi nella directory e, infine, la radice da cui iniziare la ricerca degli elementi.
+\subsection*{Dir}
+
+Descriviamo ora la sezione \verb#dir#:
+\begin{verbatim}
+ dirs:
+  groups: /opt/scripts/samba
+  dustbin: 'Desktop/CESTINO' 
+  public_folders:
+   public_alumns: '/home/alunni_comuni'
+   public_profs: '/home/prof_comuni
+\end{verbatim}
+
+qui possiamo definire alcune posizioni di particolare interesse nel file system del \emph{server} Gnu/Linux. La prima impostazione dice agli script dove trovare i file in cui sono memorizzati i nomi dei gruppi, la seconda istruzione indica invece il nome, relativo alla directory dell'utente, in cui vengono salvati da Samba i file cancellati\footnote{Il path è deducibile dal file di configurazione di Samba}. La chiave \verb#public_folders# contiene invece i path delle posizioni pubbliche per gli utenti del gruppo, tali informazioni sono usate, ad esempio, durante le fasi di manutenzione del server (es. cancellare tutti i file comuni alla fine dell'anno scolastico).
+
+\subsection*{Server}
+
+Continuiamo con la sezione \verb#server#:
+\begin{verbatim}
+ server:
+  windows_name: 'wilos'
+  logon_prefs_file: '/opt/samba_scripts/logon_prefs.yaml'
+  logon_script_dir: '/home/netlogon'
+  profiles_dir: '/home/samba/profiles'
+  mount_points:
+             - '/'
+             - '/home'
+             - '/var'
+  mount_point_size_thr: 2000
+\end{verbatim}
+La prima istruzione fornisce agli script il nome Windows del server come definito in Samba. Continuando definiamo il path del file di configurazione per la generazione degli script di avvio dei client Windows, quindi la directory sul server in cui questi script vengono creati, indi  la directory in cui sono ospitati i profili. La chiave \verb#mount_points# ci permette invece di specificare dei punti di mount delle unità disco di cui vogliamo controllare periodicamente la capienza. L'ultimo parametro di configurazione contiene la soglia in megabyte oltre la quale i precedenti punti di mount vengono considerati pieni.
+
+\subsection{Mail}
+
+La sezione \verb#mail# fornisce agli script informazioni riguardo le persone da contattare nel caso vengano rilevati dei problemi e fornisce agli script i path in cui risiedono gli account di cui vogliamo archiviare i messaggi:
+\begin{verbatim}
+mail:
+  server_notification_rec:
+                         - 'mosarg@gmail.com'
+  mail_sender_address: 'test@linussio.it'
+  global_mail_folder: '/home/mosa/Sources/projects/samba_scripts'
+  global_mail_state: '/opt/samba_scripts/global_mail.yaml'
+  archiveopteryx:
+    aoximport: '/usr/local/archiveopteryx/bin/aoximport'
+    aox: '/usr/local/archiveopteryx/bin/aox'
+\end{verbatim}
+
+\subsection{Ldap\_users}
+L'ultima sezione d'interesse in questo file di configurazione è \verb#ldap_users#. In questa sezione sono riportati i sotto alberi della directory Ldap che lo script deve utilizzare:
+\begin{verbatim}
+ ldap_users:
+  ou:
+    - segreteria
+    - docenti
+    - alunni
+\end{verbatim}
+Nel caso su riportato saranno unicamente utilizzati utenti che si trovano nelle \textsl{ou} \verb#segreteria#, \verb#docenti# e \verb#alunni#
+
 
 
  \chapter{Script gestione client}
+
+
+
+
 \section*{list\_clients}
   Lo script \verb#list_clients# mostra i client registrati sul server corrente e controlla se questi sono attivi. Lo script può essere invocato come:
 \begin{verbatim}
@@ -100,7 +279,27 @@ Lo script \verb#run# permette l'esecuzione di comandi predefiniti nel file di co
 \begin{verbatim}
  run --client [client] --command [command] [--group [group]] [--all] [--list-commands]
 \end{verbatim}
-gli switch \verb#--client# e \verb#--group# sono mutamente esclusivi. Lo switch \verb#--list-commands# stampa una lista dei comandi eseguibili sui client
+gli switch \verb#--client# e \verb#--group# sono mutamente esclusivi. Lo switch \verb#--list-commands# stampa una lista dei comandi eseguibili sui client.
+
+Il file di configurazione \verb#commands.yaml# deve rispettare la sintassi seguente:
+\begin{verbatim}
+ ---
+commands:
+ test: 'type c:\log.txt'
+ wpkg_config: '%PROGRAMFILES%\wpkg\wpkginst.exe --SETTINGSFILE=[wpkg_client]\settings.xml'
+ wpkg_restart: 'taskkill /F /IM  Wpkgsrv.exe & net start WpkgService'
+ wpkg_stop: 'taskkill /F /IM WpkgSrv.exe'
+ wpkg_start: 'net start WpkgService'
+ wpkg_check_running: 'tasklist /svc /fi "imagename eq cscript.exe"'
+ update_client: '[wpkg_software]\wsusoffline\update_client.vbs'
+ get_packages: 'xcopy /Y "%SYSTEMROOT%\system32\wpkg.xml" [reports]\wpkg'
+ update_axios: '[wpkg_software]\axios\scarica_aggiornamenti.exe'
+ upgrade_axios: '[wpkg_software]\axios\aggiorna_pacchetti.exe'
+ get_axioslog: 'type c:\axios_update.log'
+\end{verbatim}
+nella colonna di sinistra deve essere riportato il nome del comando noto allo script, nella colonna di destra dovrà invece essere scritto il comando Windows che vogliamo eseguire.
+
+
 \section*{shutdown\_client}
 Lo script \verb#shutdown_client# si occupa dello spegnimento dei client Windows. Lo script può essere invocato come:
 
@@ -132,5 +331,170 @@ Lo script \verb#wpkg_report# estrae dalle macchine client le informazioni sull'a
  wpkg_report --client [client] [--group [group]] [--all] [--reportonly]
 \end{verbatim}
 Gli switch \verb#--client# e \verb#--group# sono mutamente esclusivi, in caso di selezione di un gruppo è necessario specificare lo switch \verb#--all#. Nel caso in cui non si voglia scaricare dai client le informazioni sui pacchetti (ad esempio nel caso in cui queste siano già state acquisite) è possibile utilizzare lo switch \verb#--reportonly# per effettuare unicamente il report degli esiti di installazione.
+
+\section*{File di configurazione}
+I comandi lato clienti utilizzano come file di configurazione \verb#commands.yaml# un esempio di una possibile configurazione è il seguente:
+\begin{verbatim}
+ ---
+remote_executer: '/opt/scripts/samba/winexe'
+domain: WILOS
+remote_user: mosarg
+remote_password: pwsdddsd
+remote_share:
+ wpkg: '\\amrel\Sources\wpkg'
+ test: '\\amrael\mosa'
+ domain: '\\amrael\mosa'
+network_user:
+ domain: amrael
+ username: mosa 
+ password: testpwd
+database:
+ infodb:
+  name: 'ocsng'
+ ocsng:
+  name: 'ocsweb'
+  password: 'ocs'
+  username: 'ocs'
+  host: 'localhost'
+ unattended:
+  name: 'unattended'
+  password: 'test333'
+  username: 'mosa'
+  host: 'localhost'
+  subnet: '172' 
+ wpkg:
+  name: 'wpkg'
+  password: 'test333'
+  username: 'wpkg'
+  host: 'localhost'
+wsus_log: '%systemdrive%\wsuslog.txt'
+paths:
+ wpkg_client: '\\amrael\mosa\Sources\wpkg\client'
+ wpkg_software: '\\amrael\mosa\Sources\wpkg\data'
+ wpkg_server_dir: '/home/mosa/Sources/wpkg'
+ reports: '\\amrael\mosa\Sources\projects\samba_scripts'
+client:
+ wpkg_xml_log_prefix: 'wpkg_'
+ wpkg_xml_log_dir: '/home/mosa/Sources/projects/samba_scripts'
+ shutdown_message: 'Il computer è in fase di spegnimento.'
+ shutdown_time: 10
+remote_conf:
+ wpkg_hosts: 'http://192.168.0.149/wpkg/hosts.xml'
+ wpkg_packages: 'http://192.168.0.149/wpkg/packages.xml'
+ wpkg_profiles: 'http://192.168.0.149/wpkg/profiles.xml'
+reports:
+ wpkg: '/home/mosa/Sources/projects/samba_scripts/wpkg.html'
+log_info: 
+ email_sender: 'Logger <administrator@hell.pit>'
+ email_recipient: 'Matteo Mosangini <mosarg@gmail.com>'
+ axios:
+  email_recipient:
+   - 'mosarg@gmail.com'
+   - 'snt@dr.com'
+   - 'maduck@hotmail.com'
+\end{verbatim}
+
+Analizziamo ora le sezioni principali in cui si divide il file di configurazione sopra riportato.
+
+La sezione \verb#domain# raccoglie al suo interno tutte le informazioni necessarie al collegamento degli script ai client Windows presenti nel dominio:
+
+\subsection*{Domain}
+\begin{verbatim}
+domain: WILOS
+remote_user: mosarg
+remote_password: pwsdddsd
+remote_share:
+ wpkg: '\\amrel\Sources\wpkg'
+ test: '\\amrael\mosa'
+ domain: '\\amrael\mosa'
+network_user:
+ domain: amrael
+ username: mosa 
+ password: testpwd
+\end{verbatim}
+
+i nomi dei campi di questa sezione sono sufficientemente esplicativi.
+
+\subsection*{Database}
+La sezione \verb#database# contiene tutte le informazioni necessaria al collegamento degli script al database che contiene le configurazioni dei client:
+\begin{verbatim}
+ database:
+ infodb:
+  name: 'ocsng'
+ ocsng:
+  name: 'ocsweb'
+  password: 'ocs'
+  username: 'ocs'
+  host: 'localhost'
+ unattended:
+  name: 'unattended'
+  password: 'test333'
+  username: 'mosa'
+  host: 'localhost'
+  subnet: '172' 
+ wpkg:
+  name: 'wpkg'
+  password: 'test333'
+  username: 'wpkg'
+  host: 'localhost'
+\end{verbatim}
+
+Gli schemi di database attualmente supportati per l'immagazzinamento delle informazioni dei client sono \emph{ocsng} e \emph{unattended}. Nei campi del file di configurazione è necessario inserire il tipo di backend scelto e i parametri di autenticazione al server.
+
+
+\subsection*{Paths}
+
+La sezione \verb#paths# contiene le informazioni riguardo le posizioni sul server viste dalla shell unix o attraverso i client Windows. 
+\begin{verbatim}
+paths:
+ wpkg_client: '\\amrael\mosa\Sources\wpkg\client'
+ wpkg_software: '\\amrael\mosa\Sources\wpkg\data'
+ wpkg_server_dir: '/home/mosa/Sources/wpkg'
+ reports: '\\amrael\mosa\Sources\projects\samba_scripts' 
+\end{verbatim}
+
+
+La chiave \verb#wpkg_client# indica la posizione sul server vista dal client dello script \emph{wpkg}\footnote{\url{www.wpkg.org}}, la chiave \verb#wpkg_software# indica la posizione sempre vista dai client dei pacchetti di installazione dei programmi usati. La chiave \verb#wpkg_server_dir# esprime invece la posizione sul server come vista dal server della directory in cui risiede wpkg.  L'ultima chiave indica, invece, la posizione dei report di installazione dei pacchetti.
+
+\subsection*{Client}
+
+La sezione \verb#client# si occupa di fornire agli script alcune informazioni riguardo il sistema di gestione dei pacchetti\footnote{wpkg} e imposta il tempo di spegnimento delle macchine client.
+
+\begin{verbatim}
+client:
+ wpkg_xml_log_prefix: 'wpkg_'
+ wpkg_xml_log_dir: '/home/mosa/Sources/projects/samba_scripts'
+ shutdown_message: 'Il computer è in fase di spegnimento.'
+ shutdown_time: 10 
+\end{verbatim}
+
+
+\subsection*{Remote\_conf}
+
+La sezione \verb#remote_conf# indica agli script l'url del server web da cui accedere ai file di configurazione xml di \emph{wpkg}:
+\begin{verbatim}
+remote_conf:
+ wpkg_hosts: 'http://192.168.0.149/wpkg/hosts.xml'
+ wpkg_packages: 'http://192.168.0.149/wpkg/packages.xml'
+ wpkg_profiles: 'http://192.168.0.149/wpkg/profiles.xml' 
+\end{verbatim}
+
+
+\subsection*{Log\_info}
+
+La sezione \verb#log_info# è di grande interesse in quanto contiene le informazioni necessarie agli script per contattare gli amministratori in caso di problemi nell'esecuzione dei compiti pianificati. I campi sono sufficientemente auto esplicativi.
+
+\begin{verbatim}
+log_info: 
+ email_sender: 'Logger <administrator@hell.pit>'
+ email_recipient: 'Matteo Mosangini <mosarg@gmail.com>'
+ axios:
+  email_recipient:
+   - 'mosarg@gmail.com'
+   - 'snt@dr.com'
+   - 'maduck@hotmail.com' 
+\end{verbatim}
+
+
 
 \end{document}

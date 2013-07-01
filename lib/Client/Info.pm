@@ -109,7 +109,7 @@ sub get_client_info {
 			$computer_query = "SELECT name,ipaddress,macaddr FROM networks LEFT JOIN hardware ON networks.hardware_id=hardware.id WHERE networks.ipaddress LIKE '%".$database->{$infodb_name}->{subnet}."%'
 						       AND hardware.name=\'$currentClient\'";
 		}
-		case "unattended" {$computer_query ="SELECT computername,ip,mac FROM unattended_systems WHERE computername=\'$currentClient\'"; }
+		case "unattended" {$computer_query ="SELECT computername,ip,mac FROM systems WHERE computername=\'$currentClient\'"; }
 	}
 	my $computer = $dbh_infodb->prepare($computer_query);
 	$computer->execute();
@@ -124,7 +124,7 @@ sub get_clients_info {
 "SELECT name,ipaddress,macaddr FROM  networks LEFT JOIN hardware ON networks.hardware_id=hardware.id WHERE networks.ipaddress LIKE '%".$database->{$infodb_name}->{subnet}."%' ORDER BY hardware.name";}
 		case "unattended"{
 			my $lab=shift || die 'You must specify a  computer prefix';
-			$computers_query ="SELECT computername,ip,mac FROM unattended_systems WHERE computername LIKE \'%$lab%\' ORDER BY computername";
+			$computers_query ="SELECT computername,ip,mac FROM systems WHERE computername LIKE \'%$lab%\' ORDER BY computername";
 		}
 	}
 	

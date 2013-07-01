@@ -8,11 +8,13 @@ use Switch;
 use warnings;
 use strict;
 
-#my $user=$ARGV[0];
-#my $computer=$ARGV[2];
+my $user=$ARGV[0];
+my $group=$ARGV[1];
+my $computer=$ARGV[2];
 
-my $user     = 'protocollo';
-my $computer = 'tiresia';
+#my $user     = 'protocollo';
+#my $group ='test';
+#my $computer = 'pc-pers1';
 
 my $logonData = getLogonPrefs;
 
@@ -21,6 +23,7 @@ my @logonFile;
 push( @logonFile, fileHeader() );
 push( @logonFile, removeAllPrinters() );
 push( @logonFile, insertWait('100'));	
+push( @logonFile,"\'User $user, Group $group, computer $computer\n" );
 
 #common section
 setupClient( $logonData->{'common'}, \@logonFile );

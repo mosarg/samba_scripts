@@ -1,5 +1,19 @@
 Perl Libs Deps
 
 libnet-ldap-perl -> LDAP support
-HTML/Tabulate.pm -> wpkg-support->capan
+HTML/Tabulate.pm -> wpkg-support->cpan
 libdata-structure-util-perl->Data::Structure::util
+libfilesys-diskspace-perl -> disk space monitoring
+libemail-sender-perl -> mail handling
+
+Debian packages dependencies
+
+libdbi-perl
+libdbd-mysql-perl
+libwww-mechanize-perl
+libipc-run-perl
+libhtml-tiny-perl
+tabulate.pm >cpan
+libemail-sender-perl
+libfilesys-diskspace-perl
+libdata-structure-util-perl

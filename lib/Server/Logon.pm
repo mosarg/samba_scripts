@@ -41,6 +41,12 @@ sub setupClientStandalone{
 
 		}
 	}
+	if (defined( $data->{'scripts'} ) ){
+		foreach my $script ( @{$data->{'scripts'}}){
+			push( @$logon_file,
+				addScript($script->{'shell'},$script->{'file'}));
+		}
+	}
 }
 sub setupClientTerminalServer{
 	my $data=shift;
@@ -76,8 +82,6 @@ sub setupClientTerminalServer{
 
 }
 
-
-
 sub selectComputer {
 	my $computers      = shift;
 	my $computer       = shift;
@@ -111,6 +115,14 @@ sub fileHeader {
 	$output.="set objShell=wscript.createObject(\"wscript.shell\")\n";
 	$output.="set objNetwork = CreateObject(\"WScript.Network\")\n";
 	return $output;
+}
+
+sub addScript{
+	my $shell= shift;
+	my $file=shift;
+	my $output="objShell.run \"\\\\".$server->{'windows_name'}."\\netlogon\\$shell \\\\".$server->{'windows_name'}."\\netlogon\\".$file."\"\n ";
+	return $output;
+	
 }
 
 sub addPrinter {
