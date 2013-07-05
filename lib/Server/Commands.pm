@@ -9,10 +9,18 @@ require Exporter;
 
 our @ISA       = qw(Exporter);
 
-our @EXPORT_OK = qw(execute sanitizeString sanitizeUsername);
+our @EXPORT_OK = qw(execute sanitizeString sanitizeUsername doFsObjectExist);
 
 my %nastyString=('a\'','à','e\'','é','u\'','ù','i\'','ì','o\'','ò','\'','\\\'');
 my %nastyString2=('\\\'','','\\\\','',']','','\s','',',','');
+
+
+sub doFsObjectExist{
+	my $object=shift;
+	my $type=shift;
+	return execute("test ! -$type $object ; echo -n \$\?");
+}
+
 
 sub execute{
 	my $command=shift;

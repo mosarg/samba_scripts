@@ -7,7 +7,7 @@ use Server::Commands qw(sanitizeString);
 use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
-use Server::Samba4 qw(doS4UserExist getNewUid posixifyUser addS4User getNewGid posixifyGroup);
+use Server::Samba4 qw(doS4UserExist getNewUid posixifyUser addS4User getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard addS4Group setS4GroupMembership);
 use Server::Query qw(getCurrentStudentsAis getCurrentTeachersAis getAisUsers getUserFromUid getGroupMembers 
 getFreeDiskSpace getUsers getUserFromHumanName getUserHome getUsersDiskProfiles getUsersHome 
 doUserExistAdb doAccountExistAdb doClassExistAdb  syncUsersAdb syncClassAdb);
@@ -16,10 +16,28 @@ doUserExistAdb doAccountExistAdb doClassExistAdb  syncUsersAdb syncClassAdb);
 use Server::Actions qw(cleanupDir cleanupOldProfiles);
 
 
+my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
+my $extraGroups=['lavoro1','lavoro2'];
+
+#addS4Group('lavoro2');
+
+#setS4GroupMembership('chtulu2',$extraGroups);
+
+#deleteS4User('chtulu3');
 
 
+#print getS4UnixHomeDir('chtulu2');
 
-posixifyGroup('lavoro',getNewGid('lavoro'));
+#print getGid('scuola');
+
+#setS4PrimaryGroup($user,'scuola');
+
+#print getGroupCard('bind');
+
+addS4User($user,'scuola',$extraGroups );
+
+#posixifyGroup('lavoro',getNewGid('lavoro'));
+
 #print getNewUid('zuzu');
 
 #posixifyUser("cn=pippo,ou=liceo,ou=Users",getNewUid('pippo'),20513,'\home\pippo');
