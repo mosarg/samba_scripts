@@ -9,7 +9,7 @@ use File::Path qw(make_path remove_tree);
 use Getopt::Long;
 use Server::Configuration qw($dirs $server $mail);
 use Server::Commands qw(execute);
-use Server::Query qw(getFreeDiskSpace getUserFromUname getUsersHome getUsersDiskProfiles);
+use Server::LdapQuery qw(getFreeDiskSpace getUserFromUname getUsersHome getUsersDiskProfiles);
 
 
 

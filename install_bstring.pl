@@ -4,7 +4,7 @@ use Server::Configuration qw($ldap $programs);
 use Net::LDAP;
 use Data::Dumper;
 use File::Copy::Recursive qw(fcopy rcopy dircopy fmove rmove dirmove);
-use Server::Query qw(   getUsers getUserFromHumanName getUserHome);
+use Server::LdapQuery qw(   getUsers getUserFromHumanName getUserHome);
 
 #quick hack need through rewrite
 
