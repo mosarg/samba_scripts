@@ -2,24 +2,42 @@
 
 use strict;
 use warnings;
-use Server::Configuration qw($ldap);
-
+use Server::Configuration qw($ldap $server);
+use Server::Commands qw(sanitizeString);
 use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
-use Server::Query qw(  getFreeDiskSpace getUsers getUserFromHumanName getUserHome getUsersDiskProfiles);
+use Server::Samba4 qw(doS4UserExist getNewUid posixifyUser addS4User getNewGid posixifyGroup);
+use Server::Query qw(getCurrentStudentsAis getCurrentTeachersAis getAisUsers getUserFromUid getGroupMembers 
+getFreeDiskSpace getUsers getUserFromHumanName getUserHome getUsersDiskProfiles getUsersHome 
+doUserExistAdb doAccountExistAdb doClassExistAdb  syncUsersAdb syncClassAdb);
 
 
 use Server::Actions qw(cleanupDir cleanupOldProfiles);
 
 
-print getFreeDiskSpace('/home');
+
+
+
+posixifyGroup('lavoro',getNewGid('lavoro'));
+#print getNewUid('zuzu');
+
+#posixifyUser("cn=pippo,ou=liceo,ou=Users",getNewUid('pippo'),20513,'\home\pippo');
+
+#addS4User('test12', 'Samback@999', 'Matteo','Mosangini','ou=liceo,ou=Users',10000,'UDSP00009');
+
+#if(doS4UserExist('zuzu')){print "cane\n";}else{ print "gatto\n";}
+
+#print sanitizeString('a\' a');
+#syncUsersAdb();
+#syncClassAdb();
+#print getFreeDiskSpace('/home');
 
 #print Dumper @{getUsersDiskProfiles()};
 
 #cleanupOldProfiles();
 
-#print getUserFromHumanName('deborah','grillo');
+#print getUserFromHumanName('','grillo');
 
 #print getUserHome(getUserFromHumanName('deborah','grillo'));
 
@@ -30,7 +48,25 @@ print getFreeDiskSpace('/home');
 #print Dumper getGroupMembers('professori');
 #print getUserFromUid(1000);
 #print Dumper getClassHomes('2005bl','liceo');
-#print  Dumper getUsersHome();
+
+
+#print  getUserHome('zuzu');
+
+#print Dumper getCurrentStudentsAis();
+
+#if (doClassExistAdb('1AL')) {
+#	print "ip";
+#}else{
+#	print "op";
+#}
+
+
+
+
+#print getUserFromUid(3000020);
+
+#print Dumper getGroupMembers('scuola');
+
 #cleanupPublicFolders();
 #cleanupDustbins();
 #getNewMessages('=Inbox');
