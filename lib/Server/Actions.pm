@@ -12,9 +12,7 @@ use Server::Commands qw(execute);
 use Server::LdapQuery qw(getFreeDiskSpace getUserFromUname getUsersHome getUsersDiskProfiles);
 
 
-
 require Exporter;
-
 our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw(notifyDiskSpace cleanupOldProfiles cleanupDustbins cleanupPublicFolders cleanupDir cleanupOldProfiles);
 

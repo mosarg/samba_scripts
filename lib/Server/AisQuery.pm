@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getCurrentStudentsAis getCurrentTeachersAis getAisUsers );
+our @EXPORT_OK = qw(getCurrentStudentsAis getCurrentTeachersAis getAisUsers getCurrentClassAis);
 
 
 
@@ -30,9 +30,20 @@ my $aisDbh = DBI->connect(
 # idctid: 1 Docente, 2 Ata, 3 Ds
 #
 
+
+sub executeAisQuery{
+	my $query=shift;
+	my $result = $aisDbh->prepare($query);
+	$result->execute();
+	my $slice={};
+	my $matches = $result->fetchall_arrayref($slice);
+	return $matches;
+	
+};
+
 sub getCurrentTeachersAis {
-	my $query = "SELECT DISTINCT t.ianaid As id,t.sananome AS name,
-                t.sanacognome AS surname ,t.dananascita AS birthDate
+	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
+                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\"
                 FROM  tana_anagrafiche t 
      			INNER JOIN tanacag ta on(t.ianaid=ta.ianaid)
      			INNER JOIN tanaper_personale p on (ta.ianacagid=p.ianacagid)
@@ -41,34 +52,25 @@ sub getCurrentTeachersAis {
      			LEFT  JOIN tnop_nominaperso  tn on(p.inopid=tn.inopid)
    				WHERE p.idctid=1 AND p.istabperid=1  AND tq.iquapusercode IN (12,14,17,25)";
 
-	my $teachers = $aisDbh->prepare($query);
-	$teachers->execute();
-	my $matchTeachers = $teachers->fetchall_arrayref();
-	return $matchTeachers;
+	return executeAisQuery($query);
 }
 
 
 sub getCurrentStudentsAis {
-	my $query = "SELECT DISTINCT codalunnosidi AS id,nome AS name,
-       			cognome AS surname, datanascita AS birthDate, 
-       			annocronologico AS classNumber, sezione AS classLabel,
-       			coddebolescuola AS meccanographic,annoscol AS schoolYear 
+	my $query = "SELECT DISTINCT codalunnosidi AS \"userIdNumber\",nome AS \"name\",
+       			cognome AS \"surname\", datanascita AS \"birthDate\", 
+       			annocronologico AS \"classNumber\", sezione AS \"classLabel\",
+       			coddebolescuola AS \"meccanographic\", annoscol AS \"year\" 
 				FROM tsisalu_alunni";
-	my $students = $aisDbh->prepare($query);
-	$students->execute();
-	my $matchStudents = $students->fetchall_arrayref();
-	return $matchStudents;
-
+	return executeAisQuery($query);
 }
 
+
 sub getCurrentClassAis{
-	my $query ="SELECT DISTINCT a.annocronologico AS classNumber, a.sezione AS classLabel,
-       			a.coddebolescuola AS meccanographic,s.descrsede
+	my $query ="SELECT DISTINCT a.annocronologico AS \"classNumber\", a.sezione AS \"classLabel\",
+       			a.coddebolescuola AS \"meccanographic\",s.descrsede AS \"description\"
 				FROM tsisalu_alunni a INNER JOIN tsissed_sedi s ON(a.coddebolescuola=s.coddebolescuola);";
-	my $classes = $aisDbh->prepare($query);
-	$classes->execute();
-	my $matchClasses = $classes->fetchall_arrayref();
-	return $matchClasses;
+	return executeAisQuery($query);
 }
 
 
