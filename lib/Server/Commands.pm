@@ -11,7 +11,8 @@ our @ISA       = qw(Exporter);
 
 our @EXPORT_OK = qw(execute sanitizeString sanitizeUsername doFsObjectExist);
 
-my %nastyString=('a\'','à','e\'','é','u\'','ù','i\'','ì','o\'','ò','\'','\\\'');
+my %accentedString=('a\'','à','e\'','é','u\'','ù','i\'','ì','o\'','ò',);
+my %punctuationString=('\'','\\\'','\s','');
 my %nastyString2=('\\\'','','\\\\','',']','','\s','',',','');
 
 
@@ -45,8 +46,11 @@ sub sanitizeUsername{
 
 sub sanitizeString{
 	my $data=shift;
-	foreach my $char (keys(%nastyString)){
-		$data=~s/$char/$nastyString{$char}/g;
+	foreach my $char (keys(%accentedString)){
+		$data=~s/$char/$accentedString{$char}/g;
+	} 
+	foreach my $char (keys(%punctuationString)){
+		$data=~s/$char/$punctuationString{$char}/g;
 	} 
 	return $data;
 }

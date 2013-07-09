@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getCurrentStudentsAis getCurrentTeachersAis getAisUsers getCurrentClassAis);
+our @EXPORT_OK = qw(getAisUsers getCurrentClassAis);
 
 
 
@@ -43,7 +43,7 @@ sub executeAisQuery{
 
 sub getCurrentTeachersAis {
 	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
-                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\"
+                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'UDSSC817F0\' As meccanographic
                 FROM  tana_anagrafiche t 
      			INNER JOIN tanacag ta on(t.ianaid=ta.ianaid)
      			INNER JOIN tanaper_personale p on (ta.ianacagid=p.ianacagid)
@@ -74,11 +74,40 @@ sub getCurrentClassAis{
 }
 
 
+sub getCurrentAtaAis{
+	my $query="SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
+                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'UDSSC817F0\' As \"meccanographic\"
+                FROM  tana_anagrafiche t 
+     			INNER JOIN tanacag ta on(t.ianaid=ta.ianaid)
+     			INNER JOIN tanaper_personale p on (ta.ianacagid=p.ianacagid)
+     			LEFT  JOIN ttno_tiponomina tt on(p.itnoid=tt.itnoid)
+     			LEFT  JOIN tquap_qualpers tq on (p.iquapid=tq.iquapid)
+     			LEFT  JOIN tnop_nominaperso  tn on(p.inopid=tn.inopid)
+   				WHERE p.idctid=2 AND p.istabperid=1  AND tq.iquapusercode IN (7,24,31,1)";
+   			return executeAisQuery($query);
+	
+}
+
+
+
+
 
 sub getAisUsers {
 
-#Axios Tables
-#TSISALU_ALUNNI alunni table nome,cognome,isisaluid,codalunnosidi,annocronologico,sezione,annoscol ->Tutti gli alunni
-	return \$aisDbh->tables;
+my $role=shift;
+
+if ($role eq 'student'){
+	return getCurrentStudentsAis();
+}
+if ($role eq 'ata'){
+	return getCurrentAtaAis();
+}
+
+if ($role eq 'teacher'){
+	return getCurrentTeachersAis();
+}
+
 
 }
+
+1;
