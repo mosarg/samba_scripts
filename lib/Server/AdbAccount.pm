@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(addAccountAdb doAccountExistAdb);
+our @EXPORT_OK = qw(addAccountAdb doAccountExistAdb getAccountAdb);
 
 
 sub doAccountExistAdb{

@@ -9,7 +9,7 @@ require Exporter;
 
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(doS4UserExist getNewUid posixifyUser addS4User addS4Group getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard setS4GroupMembership);
+our @EXPORT_OK = qw(doS4UserExist getNewUid posixifyUser addS4User addS4Group getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard setS4GroupMembership deleteS4Group doS4GroupExist);
 
 
 
@@ -25,8 +25,7 @@ objectClass: posixGroup
 -
 add: gidNumber
 gidNumber: $gid";
-ldbLoadLdif($ldif,$gid);
-	
+return ldbLoadLdif($ldif,$gid);
 }
 
 
@@ -69,7 +68,7 @@ sub ldbLoadLdif{
       my $command="scp $fileName ".$server->{'root'}."@".$server->{'fqdn'}.":/tmp";
       my $output=`$command`;
       
-      print execute("ldbmodify --url=ldap://$ldap->{'server_fqdn'} --user=$ldap->{'domain'}/$ldap->{'domain_admin'}%$ldap->{'bind_root_password'} $fileName")
+      return execute("ldbmodify --url=ldap://$ldap->{'server_fqdn'} --user=$ldap->{'domain'}/$ldap->{'domain_admin'}%$ldap->{'bind_root_password'} $fileName");
 	
 }
 
@@ -168,10 +167,15 @@ sub deleteS4User{
 sub addS4Group{
 	my $groupName=shift;
 	my $command="samba-tool group add --groupou ".$ldap->{'group_base'}." $groupName";
+	if(doS4GroupExist($groupName)){ 
+		print "Group already exists!\n";
+		return 0;
+	}
 	print execute($command);
 	my $gid=getNewGid($groupName);
-	posixifyGroup($groupName,$gid);
+	print posixifyGroup($groupName,$gid);
 	cleanNscdCache();
+	return 1;
 }
 
 

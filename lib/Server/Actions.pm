@@ -17,7 +17,6 @@ our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw(notifyDiskSpace cleanupOldProfiles cleanupDustbins cleanupPublicFolders cleanupDir cleanupOldProfiles);
 
 
-
 sub cleanupDustbins{
 	my $homes=getUsersHome();
 	foreach my $home (@{$homes}){
@@ -92,11 +91,9 @@ sub removeDir{
 	}
 }
 
-
 sub moveDir{
 	
 }
-
 
 sub archiveDir{
 	

@@ -8,7 +8,7 @@ use Getopt::Long;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
 use Server::AdbCommon qw($adbDbh executeAdbQuery getCurrentYearAdb);
-use Server::AdbAccount qw(addAccountAdb);
+use Server::AdbAccount qw(addAccountAdb doAccountExistAdb getAccountAdb);
 use Server::AdbPolicy qw(setDefaultPolicyAdb);
 use Server::AdbAllocation qw(addAllocationAdb);
 use Server::Configuration qw($server $adb $ldap);
@@ -86,27 +86,31 @@ sub addUserAdb {
 	my $user = shift;
 	my $role = shift;
 	$user->{role} = $role;
-
-	if ( doUserExistAdb( $user->{userIdNumber} ) ) {
-		print
-" $user->{userIdNumber} $user->{name} $user->{surname} user already inserted \n";
-		addAllocationAdb( $user, $role );
-
-		#Update Samba 4 account ou
-	}
-	else {
-		my $query =
+	my $userStatus={};
+	my $accountType='samba4';
+	my $account='';
+	#Check status;
+	$userStatus->{user}=doUserExistAdb( $user->{userIdNumber});
+	$userStatus->{account}=doAccountExistAdb($user->{userIdNumber},$accountType);
+	
+	
+	if(!$userStatus->{user}){
+				my $query =
 "INSERT INTO user (userIdNumber,name,surname,role) VALUES ($user->{userIdNumber},\'$user->{name}\',\'$user->{surname}\',\'$user->{role}\')";
 		my $queryH = $adbDbh->prepare($query);
 		$queryH->execute();
-		my $account = addAccountAdb( $user, 'samba4' );
-		if ( !addAllocationAdb( $user, $role ) ) {
-			print "Cannot allocate user!\n";
-		}
-		setDefaultPolicyAdb( $account, $user->{role} );
-
-		#Create samba4 account into correct ou
+		
 	}
+	if(!$userStatus->{account}){
+		$account = addAccountAdb( $user, $accountType);
+	}else{
+		$account=getAccountAdb($user->{userIdNumber},$accountType);
+	}
+	
+	if ( !addAllocationAdb( $user, $role ) ) {
+			print "Cannot allocate user!\n";
+	}
+	setDefaultPolicyAdb( $account, $user->{role} );
 	return 1;
 }
 
