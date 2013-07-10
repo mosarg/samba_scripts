@@ -16,7 +16,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(setDefaultPolicyAdb addPolicyAdb);
+our @EXPORT_OK = qw(setDefaultPolicyAdb addPolicyAdb getAllPoliciesAdb setPolicyGroupAdb);
 
 
  sub doAccountHasPolicyAdb{
@@ -25,6 +25,14 @@ our @EXPORT_OK = qw(setDefaultPolicyAdb addPolicyAdb);
   	my $query="SELECT COUNT(userIdNumber) FROM assignedPolicy WHERE userIdNumber=$account->{userIdNumber} AND type=\'$account->{type}\' AND policyId=\'$policyId\' ";
     return executeAdbQuery($query);
  }
+ 
+ sub doPolicyHasGroupAdb{
+ 	my $groupId=shift;
+ 	my $policyId=shift;
+ 	my $query="SELECT COUNT(policyId) FROM groupPolicy WHERE policyId=\'$policyId\' AND groupId=\'$groupId\'";
+ 	return executeAdbQuery($query);
+ }
+ 
 
 sub addPolicyAdb{
 	my $account=shift;
@@ -40,6 +48,25 @@ sub addPolicyAdb{
  	
  	return 1; 		
 	
+}
+
+
+
+sub getAllPoliciesAdb{
+	my $backend=shift;
+	my $query="SELECT policyId,description FROM policy WHERE type=\'$backend\'";
+	my $result = $adbDbh->prepare($query);
+	$result->execute();
+	my $matches = $result->fetchall_arrayref({});
+	return $matches;
+}
+
+sub setPolicyGroupAdb{
+	my $groupId=shift;
+	my $policyId=shift;
+	my $query="INSERT INTO groupPolicy (policyId,groupId,start) VALUES ($policyId,$groupId,localtime)";
+	my $queryH=$adbDbh->prepare($query);
+ 	$queryH->execute();
 }
 
  sub setDefaultPolicyAdb{

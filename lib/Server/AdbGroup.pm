@@ -1,4 +1,4 @@
-package Server::AdbGroup;
+package Server::AdbGroup;	
 
 use DBI;
 use strict;
@@ -15,7 +15,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getAllGroupsAdb);
+our @EXPORT_OK = qw(getAllGroupsAdb addGroupAdb);
 
 sub getAllGroupsAdb{
 	my $type=shift;
@@ -26,9 +26,16 @@ sub getAllGroupsAdb{
 	return $matches;
 }
 
+sub getGroupIdAdb{
+	my $groupName=shift;
+	my $query="SELECT DISTINCT groupId FROM `group` WHERE groupName=\'$groupName\'";
+	
+	return executeAdbQuery($query);
+}
+
 sub doGroupExistAdb{
 	my $groupName=shift;
-	my $query="SELECT COUNT(groupId) FROM group WHERE groupName=\'$groupName\'";
+	my $query="SELECT COUNT(groupId) FROM `group` WHERE groupName=\'$groupName\'";
 	return executeAdbQuery($query);
 }
 
@@ -36,10 +43,12 @@ sub addGroupAdb{
 	my $groupName=shift;
 	my $groupDescription=shift;
 	my $query="INSERT INTO `group` (groupName,groupDescription) VALUES (\'$groupName\',\'$groupDescription\')";
-	if (doGroupExistAdb($groupName) ){print "Group already exists!"; return 0;}else{
+	if (doGroupExistAdb($groupName) ){print "Group already exists!"; return 0;
+		}else{
 		my $queryH=$adbDbh->prepare($query);
  		$queryH->execute();
 	}
+	return getGroupIdAdb($groupName);
 }
 
 
