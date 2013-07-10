@@ -52,9 +52,6 @@ sub cleanupOldProfiles{
 	
 }
 
-
-
-
 sub notifyDiskSpace{
 	my $currentDiskSpace=0;
 	
@@ -73,7 +70,6 @@ sub notifyDiskSpace{
 }
 return $currentDiskSpace,"\n";
 }
-
 
 sub cleanupDir{
 	my $dir=shift;

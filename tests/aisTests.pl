@@ -8,7 +8,7 @@ use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
 
-use Server::AisQuery qw(getCurrentStudentsAis getCurrentTeachersAis getAisUsers getCurrentClassAis);
+use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentTeacherClassAis);
 
 
 
@@ -18,6 +18,8 @@ my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',
 my $extraGroups=['lavoro1','lavoro2'];
 
 
-print Dumper getCurrentClassAis();
+print Dumper getCurrentTeacherClassAis(2012);
+
+#print Dumper getCurrentClassAis();
 #print Dumper getCurrentStudentsAis(); 
 #print Dumper getCurrentTeachersAis();

@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getAisUsers getCurrentClassAis);
+our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis);
 
 
 
@@ -38,8 +38,9 @@ sub executeAisQuery{
 	my $slice={};
 	my $matches = $result->fetchall_arrayref($slice);
 	return $matches;
-	
 };
+
+
 
 sub getCurrentTeachersAis {
 	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
@@ -87,6 +88,48 @@ sub getCurrentAtaAis{
    			return executeAisQuery($query);
 	
 }
+
+sub getCurrentSubjectAis{
+	my $query="SELECT r.imatid AS \"subjectId\", r.smatldesc AS \"description\", r.smatsdesc AS \"shortDesc\"
+	FROM TMAT_MATERIE r";
+	return executeAisQuery($query);
+}
+
+sub getCurrentTeacherClassAis{
+	
+my $year=shift;	
+my $result={};
+my $query="SELECT  t.ianaid AS \"userIdNumber\",m.imatid AS \"subjectId\",ta.iacsannocorso AS \"classNumber\",ts.ssezsdesc AS \"classLabel\" FROM
+tana_anagrafiche t
+INNER JOIN tanacag tan ON(t.ianaid=tan.ianaid)
+INNER JOIN tanaper_personale p ON (tan.ianacagid=p.ianacagid)
+INNER JOIN tdct_docenteata td ON (td.idctid=p.idctid) 
+INNER JOIN tclsmatana ma ON (t.ianaid=ma.ianaid)
+INNER JOIN tmat_materie m ON (ma.imatid=m.imatid) 
+INNER JOIN tcls_classi tc ON (ma.iclsid=tc.iclsid)
+INNER JOIN tacs_annicorso ta ON (tc.iacsid=ta.iacsid)
+INNER JOIN tind_indirizzo ti ON (tc.iindid=ti.iindid)
+INNER JOIN tsez_sezioni ts ON (tc.isezid=ts.isezid)
+WHERE td.sdctldesc='Docente' AND p.istabperid=1  AND tc.dstart>='01.09.$year' AND tc.dend <= '01.09.".++$year."\'";
+
+my $teacherMap= executeAisQuery($query);
+
+foreach my $mapElement (@{$teacherMap}){
+	if (!$result->{$mapElement->{userIdNumber}}){
+		$result->{$mapElement->{userIdNumber}}=[];
+	}		
+	$mapElement->{classNumber}=lc($mapElement->{classNumber});
+	$mapElement->{classLabel}=lc($mapElement->{classLabel});
+	$mapElement->{classId}=$mapElement->{classNumber}.$mapElement->{classLabel};
+	push(@{$result->{$mapElement->{userIdNumber}}},$mapElement);
+}
+
+return $result;
+
+}
+
+
+
 
 
 
