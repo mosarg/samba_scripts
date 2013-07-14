@@ -7,11 +7,15 @@ use Server::Commands qw(sanitizeString);
 use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
-use Server::AdbUser qw(syncUsersAdb);
+use Server::AdbUser qw(syncUsersAdb syncUsersAdb);
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis);
+use Server::AdbClass qw(syncClassAdb);
 
 my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
 my $extraGroups=['lavoro1','lavoro2'];
+
+
+#syncClassAdb(getCurrentClassAis());
 
 #syncSubjectAdb(getCurrentSubjectAis());
 

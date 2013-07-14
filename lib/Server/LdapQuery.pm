@@ -16,7 +16,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(getFreeDiskSpace getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap);
+  qw(getFreeDiskSpace getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap doOuExist getAllOu);
 
 my $ldapConnection = Net::LDAP->new( $ldap->{'server'} )
   || print "can't connect to !: $@";
@@ -74,6 +74,7 @@ sub getUserLdapProfile {
 
 }
 
+
 sub getUsersHome {
 	my $dn = $ldap->{'user_base'} . ',' . $ldap->{'dir_base'};
 	my @homes;
@@ -89,6 +90,7 @@ sub getUsersHome {
 	}
 	return \@homes;
 }
+
 
 sub getUsersDiskProfiles {
 	my @profiles = execute( "ls " . $server->{'profiles_dir'} );
@@ -198,6 +200,49 @@ sub getUserFromHumanName {
 		return '';
 	}
 }
+
+
+sub doOuExist{
+	my $ouString=shift;
+	my @ouName=split(',',$ouString);
+	my $ouName=scalar(@ouName)>1?shift(@ouName):$ouString;
+		
+	#my $ouBase=shift;
+
+	my $data = $ldapConnection->search(
+		base   => $ldap->{'dir_base'},
+		scope  => 'sub',
+		attrs => ['distinguishedName'],
+		filter => "&(objectclass=organizationalUnit) ($ouName)"
+	);
+	$data->code && die $data->error;
+		
+	if(( $data->entries() )[0]){
+		return ( $data->entries() )[0]->get_value('distinguishedName')=~m/$ouString/i?1:0;
+	} else{
+		return 0;
+	}
+}
+
+
+sub getAllOu{
+	my $ouBase=shift;
+	my $result=[];
+	my $data = $ldapConnection->search(
+		base   => $ouBase . ',' . $ldap->{'dir_base'},
+		scope  => 'sub',
+		attrs => ['distinguishedName'],
+		filter => "&(objectclass=organizationalUnit)"
+	);
+	$data->code && die $data->error;
+	
+	foreach my $entry ($data->entries()){
+		push(@{$result}, $entry->get_value('distinguishedName') );
+	}
+	
+	return $result;
+}
+
 
 sub getFreeDiskSpace {
 	my $mount_point = shift;

@@ -9,7 +9,7 @@ require Exporter;
 
 our @ISA       = qw(Exporter);
 
-our @EXPORT_OK = qw(execute sanitizeString sanitizeUsername doFsObjectExist);
+our @EXPORT_OK = qw(execute sanitizeString sanitizeUsername doFsObjectExist hashNav);
 
 my %accentedString=('a\'','à','e\'','é','u\'','ù','i\'','ì','o\'','ò',);
 my %punctuationString=('\'','\\\'','\s','');
@@ -20,6 +20,25 @@ sub doFsObjectExist{
 	my $object=shift;
 	my $type=shift;
 	return execute("test ! -$type $object ; echo -n \$\?");
+}
+
+
+
+sub hashNav{
+	my $list=shift;
+	my $parent=shift;
+	my $action=shift;
+	my $legacy;
+	foreach my $key (keys %{$list}){
+	
+	$legacy=$parent?$key.",".$parent:$key;
+	
+	$action->($legacy);	
+		
+		if(ref($list->{$key})eq 'HASH'){
+			hashNav($list->{$key},$legacy,$action);
+		}
+	}
 }
 
 

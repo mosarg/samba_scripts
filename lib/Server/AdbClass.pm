@@ -27,7 +27,7 @@ sub normalizeClassAdb{
 	my $class=shift;
 	$class->{classLabel}=lc($class->{classLabel});
 	$class->{classId}=$class->{classNumber}.$class->{classLabel};
-	$class->{ou}="ou=$class->{classId}";
+	$class->{ou}="$class->{classId}";
 	$class->{description}=ucfirst(lc($class->{description}));
 	return $class;
 }

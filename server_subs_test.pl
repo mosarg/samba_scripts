@@ -8,9 +8,8 @@ use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
 use Server::Samba4 qw(doS4UserExist getNewUid posixifyUser addS4User getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard addS4Group setS4GroupMembership);
-use Server::LdapQuery qw(getCurrentStudentsAis getCurrentTeachersAis getAisUsers getUserFromUid getGroupMembers 
-getFreeDiskSpace getUsers getUserFromHumanName getUserHome getUsersDiskProfiles getUsersHome 
-doUserExistAdb doAccountExistAdb doClassExistAdb  syncUsersAdb syncClassAdb);
+use Server::LdapQuery qw(doOuExist);
+use Server::AdbOu qw(getAllOuAdb);
 
 
 use Server::Actions qw(cleanupDir cleanupOldProfiles);
@@ -19,6 +18,14 @@ use Server::Actions qw(cleanupDir cleanupOldProfiles);
 
 my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
 my $extraGroups=['lavoro1','lavoro2'];
+
+#if(doOuExist('idtc','ou=Users') ){
+#	print "Ok\n";
+#}
+
+print Dumper getAllOuAdb('samba4');
+
+
 
 #addS4Group('lavoro2');
 
@@ -35,7 +42,7 @@ my $extraGroups=['lavoro1','lavoro2'];
 
 #print getGroupCard('bind');
 
-addS4User($user,'scuola',$extraGroups );
+#addS4User($user,'scuola',$extraGroups );
 
 #posixifyGroup('lavoro',getNewGid('lavoro'));
 

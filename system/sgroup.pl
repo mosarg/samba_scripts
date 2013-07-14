@@ -9,6 +9,7 @@ use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
 use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
 
+
 my $commands = "init add,remove,sync,list";
 
 my $backend = '';
@@ -63,7 +64,6 @@ sub addGroup{
 				addS4Group( $ARGV[1]);
 			}
 		}
-	
 }
 
 #Remove a single group or all groups defined in database

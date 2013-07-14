@@ -32,7 +32,6 @@ our @EXPORT_OK = qw(setDefaultPolicyAdb addPolicyAdb getAllPoliciesAdb setPolicy
  	my $query="SELECT COUNT(policyId) FROM groupPolicy WHERE policyId=\'$policyId\' AND groupId=\'$groupId\'";
  	return executeAdbQuery($query);
  }
- 
 
 sub addPolicyAdb{
 	my $account=shift;
@@ -49,8 +48,6 @@ sub addPolicyAdb{
  	return 1; 		
 	
 }
-
-
 
 sub getAllPoliciesAdb{
 	my $backend=shift;
@@ -79,7 +76,6 @@ sub setPolicyGroupAdb{
  		return 0;
  	}
   }
-  
    
 sub getPolicyAdb{
  	

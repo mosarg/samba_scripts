@@ -9,7 +9,7 @@ require Exporter;
 
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(doS4UserExist getNewUid posixifyUser addS4User addS4Group getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard setS4GroupMembership deleteS4Group doS4GroupExist);
+our @EXPORT_OK = qw( addS4Ou doS4UserExist getNewUid posixifyUser addS4User addS4Group getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard setS4GroupMembership deleteS4Group doS4GroupExist);
 
 
 
@@ -231,6 +231,15 @@ sub setS4GroupMembership{
 		}
 	}	
 	
+}
+
+
+sub addS4Ou{
+	my $ou=shift;
+	my $type=shift;
+	my $command="samba-tool ou create $ou,".$ldap->{$type."_base"}.",".$ldap->{dir_base};
+	my $result=execute($command);
+	return $result=~m/created/?1:0;
 }
 
 

@@ -64,7 +64,6 @@ sub normalizeTeacherAdb {
 	$user->{year} = getCurrentYearAdb();
 	my $allocation = $allocations->{ $user->{userIdNumber} };
 	$user->{allocations} = $allocation;
-
 	return $user;
 }
 
