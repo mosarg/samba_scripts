@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Cwd;
 use Server::Configuration qw($server $ldap);
-use Server::Commands qw(execute doFsObjectExist);
+use Server::Commands qw(execute doFsObjectExist sanitizeString);
 require Exporter;
 
 
@@ -28,12 +28,12 @@ gidNumber: $gid";
 return ldbLoadLdif($ldif,$gid);
 }
 
-
 sub posixifyUser{
 	my $userDn=shift;
 	my $uid=shift;
 	my $gid=shift;
 	my $unixHome=shift;
+	
 	my $ldif=
 "dn: $userDn,$ldap->{'dir_base'}
 changetype: modify
@@ -55,7 +55,6 @@ loginShell: /bin/bash";
 ldbLoadLdif($ldif,$uid);
 }
 
-
 sub ldbLoadLdif{
 	 my $ldif=shift;
 	 my $filePrefix=shift;
@@ -69,29 +68,25 @@ sub ldbLoadLdif{
       my $output=`$command`;
       
       return execute("ldbmodify --url=ldap://$ldap->{'server_fqdn'} --user=$ldap->{'domain'}/$ldap->{'domain_admin'}%$ldap->{'bind_root_password'} $fileName");
-	
 }
-
-
 
 sub cleanNscdCache{
 	execute('nscd --invalidate passwd');
 	execute('nscd --invalidate group');
 }
 
-
 sub getNewUid{
 	my $userName=shift;
 	my $uid=execute("wbinfo -i $userName | cut -d \":\" -f3");
 	chomp($uid);
-	return $uid;
+	return $uid=~/^\d+$/?$uid:0;
 }
 
 sub getNewGid{
 	my $groupName=shift;
 	my $gid=execute("wbinfo --group-info=$groupName | cut -d \":\" -f 3");
 	chomp($gid);
-	return $gid;
+	return $gid=~/^\d+$/?$gid:0;
 }
 
 sub getGid{
@@ -104,10 +99,10 @@ sub getRid{
 	return execute("\'echo -n \$\(wbinfo --gid-to-sid=\$\(echo -n \$\(wbinfo --group-info=$groupName|cut -d \":\" -f3 -n\)\)|cut -d \"-\" -f 8\)\'");
 }
 
-
 sub doS4UserExist{
 	my $userName=shift;
 	my $idReport=execute("id $userName");
+	print $idReport;
 	$idReport=~m/uid/ ? return 1:return 0;	
 }
 
@@ -124,13 +119,11 @@ sub getS4UnixHomeDir{
 	return execute("\' echo -n \$($ldbBaseCommand cn=$user | grep unix | cut -d \":\" -f2) \'" );
 }
 
-
 sub getGroupCard{
 	my $group=shift;
 	my @members=split(',',execute(" \' echo -n \$(getent group $group | cut -d \":\" -f4)\'" ));
 	return scalar(@members);
 }
-
 
 sub deleteS4Group{
 	my $group=shift;
@@ -140,7 +133,6 @@ sub deleteS4Group{
 	}
 	execute("samba-tool group delete $group");
 }
-
 
 sub deleteS4User{
 	
@@ -161,34 +153,29 @@ sub deleteS4User{
 	cleanNscdCache();
 }
 
-
-
-
 sub addS4Group{
 	my $groupName=shift;
 	my $command="samba-tool group add --groupou ".$ldap->{'group_base'}." $groupName";
 	if(doS4GroupExist($groupName)){ 
-		print "Group already exists!\n";
 		return 0;
 	}
-	print execute($command);
+	my $result=execute($command);
 	my $gid=getNewGid($groupName);
 	print posixifyGroup($groupName,$gid);
 	cleanNscdCache();
 	return 1;
 }
 
-
 sub setS4PrimaryGroup{
 	my $user=shift;
 	my $group=shift;
-	if (!(doS4UserExist($user->{uName}))){ print "Cannot set primary group: user doesn't exist!\n"; return 0;}
+	if (!(doS4UserExist($user->{account}->{username}))){ print "Cannot set primary group: user doesn't exist!\n"; return 0;}
 	if (!(doS4GroupExist($group))){print "Canno set primary group: group doesn't exist!\n"; return 0;}
 	my $gid=getGid($group);
 	my $rid=getRid($group);
-	print execute("samba-tool group addmembers $group ".$user->{uName});	
+	print execute("samba-tool group addmembers $group ".$user->{account}->{username});	
 	my $ldif=
-"dn: cn=$user->{uName},$user->{ou},$ldap->{'dir_base'}
+"dn: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{'dir_base'}
 changetype: modify
 replace: primaryGroupID
 primaryGroupID: $rid
@@ -199,25 +186,22 @@ gidNumber: $gid";
 ldbLoadLdif($ldif,$gid);
 }
 
-
-
 sub setS4UnixHomeDir{
 	my $user=shift;
-	$user->{'ou'}=~m/^ou=(\w+),/;
+	$user->{account}->{ou}=~m/^ou=(\w+),/;
 	my $homeDir=$1;
-	my $unixHomeDir=$server->{home_base}."/$homeDir/".$user->{uName};
-	my $sambaHomeDir="\\\\".$server->{windows_name}."\\".$server->{samba_home_base}."\\".$homeDir."\\".$user->{uName};
+	my $unixHomeDir=$server->{home_base}."/$homeDir/".$user->{account}->{username};
+	my $sambaHomeDir="\\\\".$server->{windows_name}."\\".$server->{samba_home_base}."\\".$homeDir."\\".$user->{account}->{username};
 	my $ldif=
-"dn: cn=$user->{uName},$user->{ou},$ldap->{dir_base}
+"dn: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{dir_base}
 changetype: modify
 replace: unixHomeDirectory
 unixHomeDirectory: $unixHomeDir
 -
 replace: homeDirectory
 homeDirectory: $sambaHomeDir";
-ldbLoadLdif($ldif,$user-> {uName});
+ldbLoadLdif($ldif,$user-> {account}->{username});
 }
-
 
 sub setS4GroupMembership{
 	my $user=shift;
@@ -230,9 +214,7 @@ sub setS4GroupMembership{
 			print "Group $group doesn't exist!\n";
 		}
 	}	
-	
 }
-
 
 sub addS4Ou{
 	my $ou=shift;
@@ -242,41 +224,63 @@ sub addS4Ou{
 	return $result=~m/created/?1:0;
 }
 
-
 sub addS4User{
 	my $user=shift;
 	my $group=shift;
 	my $extraGroups=shift;
-	$user->{'ou'}=~m/^ou=(\w+),/;
-	my $homeDir=$1;
+
+	#define home dir	
+	my $homeDir=$user->{account}->{ou};
+	$homeDir=~s/ou=//g;
+	$homeDir=(reverse(split(',',$homeDir)))[0];
+	
+	#check if primary group exists
 	if(!(doS4GroupExist($group))) {
 		return 0;
 	}
-	my $command="samba-tool user add $user->{uName} $user->{password} --userou $user->{ou} --surname=".$user->{surname}." --use-username-as-cn";
-	$command.=" --given-name=".$user->{name}." --profile-path=\"\\\\\\\\\\\\\\\\".$server->{windows_name}."\\\\\\\\".$server->{samba_profiles_path}."\\\\\\\\".$user->{uName}."\" " ;
-	$command.=" --home-drive=H: --home-directory=\"\\\\\\\\\\\\\\\\".$server->{'windows_name'}."\\\\\\\\".$server->{samba_home_prefix}."\\\\\\\\$homeDir\\\\\\\\".$user->{uName}."\" ";
-	$command.=" --department=$user->{'meccanographic'} --description=$user->{'idNumber'}";
+	
+	$user->{password}='Samback@000';
+		
+	my $command="samba-tool user add $user->{account}->{username} $user->{password} --userou $user->{account}->{ou},".$ldap->{user_base}." --surname=\"".sanitizeString($user->{surname})."\" --use-username-as-cn";
+	$command.=" --given-name=\"".sanitizeString($user->{name})."\" --profile-path=\"\\\\\\\\\\\\\\\\".$server->{windows_name}."\\\\\\\\".$server->{samba_profiles_path}."\\\\\\\\".$user->{account}->{username}."\" " ;
+	$command.=" --home-drive=H: --home-directory=\"\\\\\\\\\\\\\\\\".$server->{'windows_name'}."\\\\\\\\".$server->{samba_home_prefix}."\\\\\\\\$homeDir\\\\\\\\".$user->{account}->{username}."\" ";
+	$command.=" --department=$user->{'meccanographic'} --description=$user->{'userIdNumber'}";
+		
 	
 	#create user
-	execute($command);
+	$user->{creationStatus}=execute($command);
+
+	print $command." $user->{creationStatus} \n";
+
 	#set user to no expire
-
-	execute("samba-tool user setexpiry ".$user->{uName}." --noexpiry");
+	execute("samba-tool user setexpiry ".$user->{account}->{username}." --noexpiry");
+	#set unix home dir
+	$user->{account}->{unixHomeDir}=$server->{home_base}."/$homeDir/".$user->{account}->{username};
+    #set unix account uid number
+    
+    $user->{account}->{backendUidNumber}=getNewUid($user->{account}->{username});
+    #add posix attributes   
+    
+    posixifyUser("cn=".$user->{account}->{username}.",".$user->{account}->{ou}.",".$ldap->{user_base},$user->{account}->{backendUidNumber},getGid($group),$user->{account}->{unixHomeDir});
 	
-	my $unixHomeDir=$server->{home_base}."/$homeDir/".$user->{uName};
-    posixifyUser("cn=".$user->{uName}.",".$user->{ou},getNewUid($user->{uName}),20513,$unixHomeDir);
-
+	#set user primary group
+				
 	setS4PrimaryGroup($user,$group);	
-	setS4GroupMembership($user->{uName},$extraGroups);
-		
+	#insert user into default groups
+	setS4GroupMembership($user->{account}->{username},$extraGroups);
 	
-	if (!doFsObjectExist($unixHomeDir,'d')){
-		execute("mkdir -p $unixHomeDir");		
+	#create user home directory
+	if (!doFsObjectExist($user->{account}->{unixHomeDir},'d')){
+		execute("mkdir -p $user->{account}->{unixHomeDir}");		
 	}
-		
+	#clean nscdCache	
 	cleanNscdCache();
-	execute("chown ".$user->{uName}.":".$group." $unixHomeDir");
-		
+	#chown user home dir
+	execute("chown ".$user->{account}->{username}.":".$group." $user->{account}->{unixHomeDir}");
+	#set account active
+	$user->{account}->{active}=1;
+	
+	return $user;	
 }
 
 

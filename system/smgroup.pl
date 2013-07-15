@@ -8,6 +8,7 @@ use Switch;
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
 use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
+use Server::System qw(initGroups init);
 
 
 my $commands = "init add,remove,sync,list";
@@ -15,6 +16,7 @@ my $commands = "init add,remove,sync,list";
 my $backend = '';
 my $all     = 0;
 my $description='generic description';
+my $data={};
 
 ( scalar(@ARGV) > 0 ) || die("Possibile commands are: $commands\n");
 
@@ -24,6 +26,10 @@ GetOptions(
 	'description=s'=>\$description
 );
 $backend or die("You must specify a backend\n");
+
+$data->{backend}=$backend;
+
+init($data);
 
 switch ( $ARGV[0] ) {
 	case 'add' {
@@ -109,25 +115,5 @@ sub listGroup{
 
 
 
-#Init groups according to database definition
-sub initGroups {
-	my $color='green';
-	my $message='[OK]';
-	#Get all backend groups from adb database;
-	my $groups = getAllGroupsAdb($backend);
-	switch ($backend) {
-		case 'samba4' {
-			foreach my $group ( @{$groups} ) {
-				if (!addS4Group( $group->[0] )){
-					$color='red';
-					$message='[Error]';
-				};
-			print "Inserting group $group->[0] ",colored($message,$color),"\n";
-				
-			}
-		}
-		else { print "Backend not implemented\n"; exit 1; }
-	}
 
-}
 

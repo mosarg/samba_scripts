@@ -118,10 +118,14 @@ foreach my $mapElement (@{$teacherMap}){
 	if (!$result->{$mapElement->{userIdNumber}}){
 		$result->{$mapElement->{userIdNumber}}=[];
 	}		
+	
+	
 	$mapElement->{classNumber}=lc($mapElement->{classNumber});
 	$mapElement->{classLabel}=lc($mapElement->{classLabel});
 	$mapElement->{classId}=$mapElement->{classNumber}.$mapElement->{classLabel};
+	
 	push(@{$result->{$mapElement->{userIdNumber}}},$mapElement);
+	if($mapElement->{userIdNumber}==1000107){print "cane";return $result;}
 }
 
 return $result;

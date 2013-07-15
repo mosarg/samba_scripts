@@ -19,20 +19,45 @@ our @EXPORT_OK = qw(getAllOuAdb getOuByUsernameAdb getOuByUserIdAdb);
 
 sub getOuByUsernameAdb{
 	my $userName=shift;
+	my $role=shift;
 	my $format=shift;
+	
 	switch($format){
 		case 'samba4' {
-			my $query="SELECT DISTINCT username,CONCAT('ou=',classOu),CONCAT('ou=',schoolOu) FROM account 
+			
+			switch($role){
+			case 'student' { 
+						my $query="SELECT DISTINCT CONCAT('ou=',classOu,',ou=',schoolOu) FROM account 
 					   INNER JOIN studentAllocation USING(userIdNumber) 
 					   INNER JOIN class USING(classId) 
 					   INNER JOIN school USING (meccanographic)
 					   WHERE  type=\'$format\' AND year=(SELECT year FROM schoolYear WHERE current=true) AND username=\'$userName\'";
-			return executeAdbQuery($query);		   
+
+					return executeAdbQuery($query);
+			}
+			case 'teacher' {
+				my $query="SELECT CONCAT('ou=',IF(ou='default',(SELECT defaultOu FROM role WHERE role.role=user.role),ou)) AS ou 
+							FROM user INNER JOIN account USING (userIdNumber) 
+							INNER JOIN teacherAllocation USING(userIdNumber) 
+							INNER JOIN class USING (classId) 
+							INNER JOIN school using(meccanographic) 
+							WHERE meccanographic IN (SELECT meccanographic FROM school WHERE active=true AND username=\'$userName\') ";
+							return executeAdbQuery($query);
+				
+			}
+			case 'ata' {
+					my $query="SELECT CONCAT('ou=',IF(ou='default',(SELECT defaultOu FROM role WHERE role.role=user.role),ou)) AS ou 
+							FROM user INNER JOIN account USING(userIdNumber) 
+							INNER JOIN ataAllocation USING(userIdNumber) 
+							INNER JOIN school using(meccanographic) 
+							WHERE meccanographic IN (SELECT meccanographic FROM school WHERE active=true AND username=\'$userName\') ";
+							return executeAdbQuery($query);
+			}
+			
+			}		   
 		}
 		default {return 0;}
 	}
-	
-	
 }
 
 sub getOuByUserIdAdb{

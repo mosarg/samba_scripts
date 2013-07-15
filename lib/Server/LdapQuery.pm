@@ -16,7 +16,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(getFreeDiskSpace getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap doOuExist getAllOu);
+  qw(getFreeDiskSpace getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap doOuExist getAllOu getUserBaseDn);
 
 my $ldapConnection = Net::LDAP->new( $ldap->{'server'} )
   || print "can't connect to !: $@";
@@ -164,7 +164,7 @@ sub getUserFromUid {
 
 sub getUserFromUname {
 	my $uname = shift;
-	$ldapConnection->bind;
+
 	my $data = $ldapConnection->search(
 		base   => $ldap->{'user_base'} . ',' . $ldap->{'dir_base'},
 		scope  => 'sub',
@@ -178,7 +178,7 @@ sub getUserFromUname {
 		return $output[0]->get_value( $ldap->{'uid_map'} );
 	}
 	else {
-		return '';
+		return 0;
 	}
 }
 
@@ -224,6 +224,25 @@ sub doOuExist{
 	}
 }
 
+
+
+sub getUserBaseDn{
+	my $userName=shift;
+	my $result=0;
+	my $data = $ldapConnection->search(
+		base   => $ldap->{user_base}. ',' . $ldap->{dir_base},
+		scope  => 'sub',
+		attrs => ['distinguishedName'],
+		filter => "&(objectclass=posixAccount) (cn=$userName)"
+	);
+	$data->code && die $data->error;
+	my @answer=$data->entries();
+	if(@answer){
+		$result=lc( ($data->entries())[0]->get_value('distinguishedName'));
+		$result=~s/cn=$userName,//;
+	}
+	return $result;
+}
 
 sub getAllOu{
 	my $ouBase=shift;

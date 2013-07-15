@@ -16,7 +16,9 @@ use Server::Commands qw(execute sanitizeString sanitizeUsername);
 require Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(syncUsersAdb addUserAdb);
+our @EXPORT_OK = qw(syncUsersAdb addUserAdb getAllUsersAdb);
+
+
 
 sub doUserExistAdb {
 	my $userId = shift;
@@ -24,6 +26,32 @@ sub doUserExistAdb {
 	  "SELECT COUNT(userIdNumber) FROM user WHERE userIdNumber=$userId";
 	return executeAdbQuery($query);
 }
+
+
+
+sub getAllUsersAdb{
+
+	my $query="SELECT DISTINCT user.userIdNumber,user.name,user.surname,user.role,meccanographic  
+				FROM user INNER JOIN studentAllocation USING(userIdNumber) 
+				INNER JOIN class USING(classId) INNER JOIN school USING(meccanographic) 
+				WHERE YEAR=(SELECT year FROM schoolYear WHERE current=true) 
+				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true)";
+	$query.=" UNION SELECT DISTINCT  user.userIdNumber,user.name,user.surname,user.role,meccanographic  
+				FROM user INNER JOIN ataAllocation USING(userIdNumber) 
+				INNER JOIN school USING(meccanographic) 
+				WHERE YEAR=(SELECT year FROM schoolYear WHERE current=true) 
+				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true)";
+	$query.=" UNION SELECT DISTINCT  user.userIdNumber,user.name,user.surname,user.role,meccanographic  
+				FROM user INNER JOIN teacherAllocation USING(userIdNumber) 
+				INNER JOIN class USING(classId)
+				INNER JOIN school USING(meccanographic) 
+				WHERE YEAR=(SELECT year FROM schoolYear WHERE current=true) 
+				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true) GROUP BY userIdNumber";						
+	my $result = $adbDbh->prepare($query);
+	$result->execute();
+	return $result->fetchall_arrayref({});
+}
+
 
 sub normalizeUserAdb {
 	my $user          = shift;
@@ -63,6 +91,9 @@ sub normalizeTeacherAdb {
 	my $allocations = shift;
 	$user->{year} = getCurrentYearAdb();
 	my $allocation = $allocations->{ $user->{userIdNumber} };
+	if (!$allocation){
+		$allocation=[{classId=>'0Ext',subjectId=>1000666}];
+	}
 	$user->{allocations} = $allocation;
 	return $user;
 }
@@ -110,7 +141,7 @@ sub addUserAdb {
 			print "Cannot allocate user!\n";
 	}
 	setDefaultPolicyAdb( $account, $user->{role} );
-	return 1;
+	return $account;
 }
 
 sub syncUsersAdb {

@@ -25,7 +25,8 @@ our $adbDbh = DBI->connect( "dbi:mysql:$adb->{'database'}:$adb->{'fqdn'}:3306",
  	my $query=shift;
  	my $queryH=$adbDbh->prepare($query);
  	$queryH->execute();
- 	return ($queryH->fetchrow_array())[0];
+ 	my @result=$queryH->fetchrow_array();
+ 	return @result?$result[0]:0;
  } 
 
 sub getCurrentYearAdb{

@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(addAccountAdb doAccountExistAdb getAccountAdb);
+our @EXPORT_OK = qw(addAccountAdb doAccountExistAdb getAccountAdb getAccountGroupsAdb getAccountMainGroupAdb updateAccountAdb);
 
 
 sub doAccountExistAdb{
@@ -56,7 +56,25 @@ sub addAccountAdb{
  	return $account;
   }
 
-  sub getAccountAdb{
+sub getAccountGroupsAdb{
+	my $userName=shift;
+	my $type=shift;
+	my $data=[];
+	my $query="SELECT DISTINCT groupId,groupName 
+				FROM account INNER JOIN assignedPolicy USING(userIdNumber) 
+				INNER JOIN policy USING(policyId) 
+				INNER JOIN groupPolicy USING (policyId) 
+				INNER JOIN `group` using(groupId) WHERE account.type=\'$type\' AND account.username=\'$userName\'";
+	my $result = $adbDbh->prepare($query);
+	$result->execute();
+	my $matches = $result->fetchall_arrayref({});
+	foreach my $match (@{$matches}){
+		push(@{$data},$match->{groupName});
+	}
+	return $data;
+}
+
+sub getAccountAdb{
 	my $userIdNumber=shift;
 	my $type=shift;
 	my $query="SELECT * FROM account WHERE userIdNumber=$userIdNumber AND type=\'$type\'";
@@ -65,6 +83,22 @@ sub addAccountAdb{
 	my $matches = $result->fetchrow_hashref();
 	return $matches;
 } 
+ 
+sub updateAccountAdb{
+	my $account=shift;
+	my $query="UPDATE account active=$account->{active}, backendUidNumber=$account->{backendUidNumber}";
+	my $queryH=$adbDbh->prepare($query);
+ 	$queryH->execute();
+} 
   
+sub getAccountMainGroupAdb{
+	my $userName=shift;
+	my $query="SELECT DISTINCT groupName FROM user 
+			   INNER JOIN account USING(userIdNumber) 
+			   INNER JOIN role USING(role) 
+			   INNER JOIN `group` ON(role.mainGroup=`group`.groupId) 
+			   WHERE username=\'$userName\'";
+	return executeAdbQuery($query);		   
+}
   
   

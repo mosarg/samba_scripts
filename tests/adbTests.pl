@@ -10,10 +10,15 @@ use HTML::Tabulate qw(render);
 use Server::AdbUser qw(syncUsersAdb syncUsersAdb);
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis);
 use Server::AdbClass qw(syncClassAdb);
+use Server::AdbAccount qw(getAccountGroupsAdb);
 
 my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
 my $extraGroups=['lavoro1','lavoro2'];
 
+
+
+
+print Dumper getAccountGroupsAdb('troianipie','samba4');
 
 #syncClassAdb(getCurrentClassAis());
 
@@ -30,11 +35,11 @@ my $extraGroups=['lavoro1','lavoro2'];
  
 #print Dumper getAisUsers('teacher');
 
-syncUsersAdb(getAisUsers('teacher'),'teacher',getCurrentTeacherClassAis(2012));
+#syncUsersAdb(getAisUsers('teacher'),'teacher',getCurrentTeacherClassAis(2012));
 
-syncUsersAdb(getAisUsers('student'),'student');
+#syncUsersAdb(getAisUsers('student'),'student');
 
-syncUsersAdb(getAisUsers('ata'),'ata');
+#syncUsersAdb(getAisUsers('ata'),'ata');
 
 #print Dumper normalizeClassesAdb(getCurrentClassAis());
 

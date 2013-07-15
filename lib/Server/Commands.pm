@@ -45,7 +45,11 @@ sub hashNav{
 sub execute{
 	my $command=shift;
 	my $toExecute= "ssh ".$server->{'root'}."@".$server->{'fqdn'}." $command";
-	return `$toExecute  2>&1`;
+	if($server->{dry_run}){
+		return $toExecute;
+	}else{
+		return `$toExecute  2>&1`;
+	}
 }
 
 
@@ -58,7 +62,7 @@ sub sanitizeUsername{
 	foreach my $char (keys(%nastyString2)){
 		$username=~s/$char/$nastyString2{$char}/g;
 	} 
-	$username=~ s/.{10}\K.*//s;
+	$username=~ s/.{12}\K.*//s;
 	return $username;
 }
 
