@@ -3,8 +3,10 @@
 use strict;
 use warnings;
 use Server::Configuration qw($ldap $server);
-use Server::Commands qw(sanitizeString);
+use Server::Commands qw(sanitizeString today);
 use Net::LDAP;
+
+
 use Data::Dumper;
 use HTML::Tabulate qw(render);
 #use Server::Samba4 qw(doS4UserExist getNewUid posixifyUser addS4User getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard addS4Group setS4GroupMembership);
@@ -29,6 +31,8 @@ my $homeDir="ou=liceo";
 $homeDir=~s/ou=//g;
 $homeDir=(reverse(split(',',$homeDir)))[0];
 print $homeDir;
+
+print today();
 
 #addS4Group('lavoro2');
 

@@ -224,8 +224,6 @@ sub doOuExist{
 	}
 }
 
-
-
 sub getUserBaseDn{
 	my $userName=shift;
 	my $result=0;

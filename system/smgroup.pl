@@ -99,6 +99,7 @@ sub listGroup{
 			my $color='green';
 			my $message='[OK]';
 			foreach my $group (@{$groups}){
+			
 				if (!doS4GroupExist($group->[0])){
 					$color='red';
 					$message='[Not synced]';

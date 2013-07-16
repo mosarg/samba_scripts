@@ -1,14 +1,14 @@
-<!-- Tufts VUE 3.2.2 concept-map (user_sync.vue) 2013-07-14 -->
+<!-- Tufts VUE 3.2.2 concept-map (user_sync.vue) 2013-07-16 -->
 <!-- Tufts VUE: http://vue.tufts.edu/ -->
 <!-- Do Not Remove: VUE mapping @version(1.1) jar:file:/opt/vue/VUE.jar!/tufts/vue/resources/lw_mapping_1_1.xml -->
-<!-- Do Not Remove: Saved date Sun Jul 14 16:11:13 CEST 2013 by mosa on platform Linux 3.8.0-25-lowlatency in JVM 1.7.0_25-b15 -->
+<!-- Do Not Remove: Saved date Tue Jul 16 10:19:42 CEST 2013 by mosa on platform Linux 3.8.0-25-lowlatency in JVM 1.7.0_25-b15 -->
 <!-- Do Not Remove: Saving version @(#)VUE: built May 23 2013 at 2146 by tomadm on Linux 2.6.18-348.2.1.el5 i386 JVM 1.7.0_21-b11(bits=32) -->
 <?xml version="1.0" encoding="US-ASCII"?>
 <LW-MAP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="none" ID="0" label="user_sync.vue"
     created="1373810157250" x="0.0" y="0.0" width="1.4E-45"
     height="1.4E-45" strokeWidth="0.0" autoSized="false">
-    <resource referenceCreated="1373811073920" size="20927"
+    <resource referenceCreated="1373962782929" size="20933"
         spec="/home/mosa/Sources/projects/samba_scripts/doc/user_sync.vue"
         type="1" xsi:type="URLResource">
         <title>user_sync.vue</title>
@@ -52,7 +52,7 @@
         <ID2 xsi:type="node">7</ID2>
     </child>
     <child ID="9" label="get current users" layerID="1"
-        created="1373810443514" x="701.0" y="242.75" width="218.0"
+        created="1373810443514" x="702.0" y="245.75" width="218.0"
         height="50.5" strokeWidth="1.0" autoSized="false" xsi:type="node">
         <fillColor>#C6E8FF</fillColor>
         <strokeColor>#000000</strokeColor>
@@ -158,27 +158,27 @@
         <ID1 xsi:type="node">14</ID1>
         <ID2 xsi:type="node">17</ID2>
     </child>
-    <child ID="20" layerID="1" created="1373810722397" x="809.74695"
-        y="190.5" width="1.5061035" height="52.75" strokeWidth="1.0"
+    <child ID="20" layerID="1" created="1373810722397" x="810.5"
+        y="190.5" width="1.0" height="55.75" strokeWidth="1.0"
         autoSized="false" controlCount="0" arrowState="2" xsi:type="link">
         <strokeColor>#404040</strokeColor>
         <textColor>#404040</textColor>
         <font>Arial-plain-11</font>
         <URIString>http://vue.tufts.edu/rdf/resource/dd84ac467f000101454b3312821c6c76</URIString>
-        <point1 x="810.75305" y="191.0"/>
-        <point2 x="810.24695" y="242.75"/>
+        <point1 x="811.0" y="191.0"/>
+        <point2 x="811.0" y="245.75"/>
         <ID1 xsi:type="node">7</ID1>
         <ID2 xsi:type="node">9</ID2>
     </child>
-    <child ID="21" layerID="1" created="1373810723548" x="809.7275"
-        y="292.75" width="1.545044" height="61.5" strokeWidth="1.0"
+    <child ID="21" layerID="1" created="1373810723548" x="810.5"
+        y="295.75" width="1.0" height="58.5" strokeWidth="1.0"
         autoSized="false" controlCount="0" arrowState="2" xsi:type="link">
         <strokeColor>#404040</strokeColor>
         <textColor>#404040</textColor>
         <font>Arial-plain-11</font>
         <URIString>http://vue.tufts.edu/rdf/resource/dd84ac477f000101454b33123df85fdf</URIString>
-        <point1 x="810.2275" y="293.25"/>
-        <point2 x="810.7725" y="353.75"/>
+        <point1 x="811.0" y="296.25"/>
+        <point2 x="811.0" y="353.75"/>
         <ID1 xsi:type="node">9</ID1>
         <ID2 xsi:type="node">10</ID2>
     </child>
@@ -217,7 +217,7 @@
         <ID2 xsi:type="node">23</ID2>
     </child>
     <child ID="25" label="yes" layerID="1" created="1373810879715"
-        x="997.8133" y="550.7656" width="19.0" height="77.484375"
+        x="998.3133" y="550.7656" width="18.0" height="77.484375"
         strokeWidth="1.0" autoSized="false" controlCount="0"
         arrowState="2" xsi:type="link">
         <strokeColor>#404040</strokeColor>
@@ -345,13 +345,13 @@
         y="0.0" width="1.4E-45" height="1.4E-45" strokeWidth="0.0" autoSized="false">
         <URIString>http://vue.tufts.edu/rdf/resource/dd7869bd7f000101454b33122c443976</URIString>
     </layer>
-    <userZoom>1.0</userZoom>
+    <userZoom>0.047872340425531915</userZoom>
     <userOrigin x="-14.0" y="-14.0"/>
     <presentationBackground>#202020</presentationBackground>
     <PathwayList currentPathway="0" revealerIndex="-1">
         <pathway ID="0" label="Untitled Pathway" created="1373810157249"
             x="0.0" y="0.0" width="1.4E-45" height="1.4E-45"
-            strokeWidth="0.0" autoSized="false" currentIndex="-1" open="true">
+            strokeWidth="0.0" autoSized="false" currentIndex="0" open="true">
             <strokeColor>#B3CC33CC</strokeColor>
             <textColor>#000000</textColor>
             <font>SansSerif-plain-14</font>

@@ -49,6 +49,7 @@ sub doStudentAllocationExistAdb{
  		my $query="INSERT INTO studentAllocation (userIdNumber,classId,year) VALUES ($user->{userIdNumber},\'$user->{classId}\',$user->{year})";
  		my $queryH=$adbDbh->prepare($query);
  		$queryH->execute();
+ 		print $query."\n";
  	} 
  	return 1;	
  }

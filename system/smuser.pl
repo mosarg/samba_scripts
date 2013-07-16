@@ -10,10 +10,12 @@ use Server::Commands qw(hashNav);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn getUserFromUname);
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist addS4Ou);
 use Server::AdbOu qw(getAllOuAdb getOuByUsernameAdb getOuByUserIdAdb);
-use Server::AdbUser qw(getAllUsersAdb syncUsersAdb);
+use Server::AdbUser qw(getAllUsersAdb syncUsersAdb doUsersExistAdb);
 use Server::AdbAccount qw(getAccountAdb updateAccountAdb);
-use Server::AisQuery qw(getCurrentTeacherClassAis getAisUsers);
+use Server::AisQuery qw(getCurrentTeacherClassAis getAisUsers getCurrentClassAis);
 use Server::System qw(listOu createOu checkOu init initGroups createUser);
+use Server::AdbClass qw(syncClassAdb);
+use Server::AdbCommon qw(getCurrentYearAdb);
 
 
 my $commands = "init,sync,list";
@@ -39,6 +41,7 @@ init($data);
 switch ( $ARGV[0] ) {
 
 	case 'sync' {
+		syncUsers();
 	}
 	case 'list' {
 		listUsers();
@@ -50,13 +53,42 @@ switch ( $ARGV[0] ) {
 }
 
 
+
+sub syncUsers{
+	my $year=getCurrentYearAdb();
+	
+	if (!doUsersExistAdb){
+		print "System not yet initialized!\n";
+		return 0;
+	}
+	
+	#sync classes
+	syncClassAdb(getCurrentClassAis());
+	
+	
+	#create adb users
+	syncUsersAdb(getAisUsers('teacher'),'teacher',getCurrentTeacherClassAis($year));
+	syncUsersAdb(getAisUsers('student'),'student');
+	syncUsersAdb(getAisUsers('ata'),'ata');
+	
+	my $users=getAllUsersAdb();
+	
+	#create backend ou
+	listOu( \&createOu );
+		
+}
+
+
 sub initUsers{
 	my $year=shift;
-	my $users=getAllUsersAdb();
-	if (scalar(@{$users})>0){
+	
+	if (doUsersExistAdb()>0){
 		print "System already initialized!\n";
-		#return 0;
+		return 0;
 	}
+	
+	#create classes
+	syncClassAdb(getCurrentClassAis());
 	
 	#create adb users
 	syncUsersAdb(getAisUsers('teacher'),'teacher',getCurrentTeacherClassAis($year));
@@ -70,7 +102,7 @@ sub initUsers{
 	initGroups();
 	
 	#get just created users
-	$users=getAllUsersAdb();
+	my $users=getAllUsersAdb();
 	
 	foreach my $user (@{$users}){
 		
@@ -81,19 +113,12 @@ sub initUsers{
 		
 		
 		if (! $user->{baseDn}){
-			
 			$user=createUser($user,$backend);
-			
-			#updateAccountAdb($user->{account});			
+			updateAccountAdb($user->{account});			
 		}else{
 			print "Backend account already present error!\n";
 		}
 	}
-	
-	
-	
-	
-	
 }
 
 

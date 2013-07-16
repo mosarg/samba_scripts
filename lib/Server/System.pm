@@ -43,6 +43,7 @@ sub checkOu {
 	}
 }
 
+
 sub createOu {
 	my $ou     = shift;
 	my $format = { ok => 'green', unsynced => 'red','already synced'=>'yellow' };

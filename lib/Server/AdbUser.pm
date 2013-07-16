@@ -12,13 +12,20 @@ use Server::AdbAccount qw(addAccountAdb doAccountExistAdb getAccountAdb);
 use Server::AdbPolicy qw(setDefaultPolicyAdb);
 use Server::AdbAllocation qw(addAllocationAdb);
 use Server::Configuration qw($server $adb $ldap);
-use Server::Commands qw(execute sanitizeString sanitizeUsername);
+use Server::Commands qw(execute sanitizeString sanitizeUsername today);
 require Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(syncUsersAdb addUserAdb getAllUsersAdb);
+our @EXPORT_OK = qw(syncUsersAdb addUserAdb getAllUsersAdb doUsersExistAdb);
 
 
+
+
+sub doUsersExistAdb{
+	my $query =
+	  "SELECT COUNT(userIdNumber) FROM user";
+	return executeAdbQuery($query);
+}
 
 sub doUserExistAdb {
 	my $userId = shift;
@@ -115,6 +122,7 @@ sub normalizeUsersAdb {
 sub addUserAdb {
 	my $user = shift;
 	my $role = shift;
+	my $origin=shift;
 	$user->{role} = $role;
 	my $userStatus={};
 	my $accountType='samba4';
@@ -126,7 +134,7 @@ sub addUserAdb {
 	
 	if(!$userStatus->{user}){
 				my $query =
-"INSERT INTO user (userIdNumber,name,surname,role) VALUES ($user->{userIdNumber},\'$user->{name}\',\'$user->{surname}\',\'$user->{role}\')";
+"INSERT INTO user (userIdNumber,name,surname,role,origin,creation) VALUES ($user->{userIdNumber},\'$user->{name}\',\'$user->{surname}\',\'$user->{role}\',\'$origin\',\'".today()."\')";
 		my $queryH = $adbDbh->prepare($query);
 		$queryH->execute();
 		
@@ -138,6 +146,7 @@ sub addUserAdb {
 	}
 	
 	if ( !addAllocationAdb( $user, $role ) ) {
+			$user->{allocation}=0;
 			print "Cannot allocate user!\n";
 	}
 	setDefaultPolicyAdb( $account, $user->{role} );
@@ -154,7 +163,7 @@ sub syncUsersAdb {
 	}
 	$users = normalizeUsersAdb( $users, $role, $allocationList );
 	foreach my $user ( @{$users} ) {
-		addUserAdb( $user, $role );
+		addUserAdb( $user, $role ,'automatic');
 	}
 }
 

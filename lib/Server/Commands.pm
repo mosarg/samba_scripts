@@ -4,12 +4,13 @@ use strict;
 use warnings;
 use Cwd;
 use Server::Configuration qw($server);
+use DateTime;
 
 require Exporter;
 
 our @ISA       = qw(Exporter);
 
-our @EXPORT_OK = qw(execute sanitizeString sanitizeUsername doFsObjectExist hashNav);
+our @EXPORT_OK = qw(execute sanitizeString sanitizeUsername doFsObjectExist hashNav today);
 
 my %accentedString=('a\'','à','e\'','é','u\'','ù','i\'','ì','o\'','ò',);
 my %punctuationString=('\'','\\\'','\s','');
@@ -76,6 +77,11 @@ sub sanitizeString{
 		$data=~s/$char/$punctuationString{$char}/g;
 	} 
 	return $data;
+}
+
+sub today{
+	my $dt = DateTime->today;
+	return $dt->date;
 }
 
 1;

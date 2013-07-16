@@ -86,7 +86,7 @@ sub getAccountAdb{
  
 sub updateAccountAdb{
 	my $account=shift;
-	my $query="UPDATE account active=$account->{active}, backendUidNumber=$account->{backendUidNumber}";
+	my $query="UPDATE account SET active=$account->{active}, backendUidNumber=$account->{backendUidNumber} WHERE userIdNumber=$account->{userIdNumber} AND type=\'$account->{type}\'";
 	my $queryH=$adbDbh->prepare($query);
  	$queryH->execute();
 } 
