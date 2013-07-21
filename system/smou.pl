@@ -12,7 +12,7 @@ use Server::System qw(listOu createOu checkOu init);
 
 my $commands = "init,sync,list";
 
-my $backend     = '';
+my $backend     = 'samba4';
 my $all         = 0;
 my $description = 'generic description';
 

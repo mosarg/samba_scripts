@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(addAccountAdb doAccountExistAdb getAccountAdb getAccountGroupsAdb getAccountMainGroupAdb updateAccountAdb);
+our @EXPORT_OK = qw(addAccountAdb doAccountExistAdb getAccountAdb getAccountGroupsAdb getAccountMainGroupAdb updateAccountAdb getUserAccountTypesAdb getAccountsAdb);
 
 
 sub doAccountExistAdb{
@@ -34,9 +34,10 @@ sub addAccountAdb{
  	my $user=shift;
  	my $type=shift;
  	my $account={};
- 	
+ 	$account->{pristine}=1;
  	if (doAccountExistAdb($user->{userIdNumber},$type)){
- 		print "$user->{name} $user->{userIdNumber} has already an account of type $type\n ";
+ 		$account->{pristine}=0;
+ 		return $account;
  	}else{
  		$user->{username}=sanitizeUsername($user->{surname}.$user->{name});
  		my $userNameCount=doUsernameExistAdb($user->{username});
@@ -46,8 +47,8 @@ sub addAccountAdb{
  		$account->{active}='false';
  		$account->{type}=$type;
  		$account->{userIdNumber}=$user->{userIdNumber};
- 		
- 		print "Adding account $account->{username}\n";
+
+
  		my $query="INSERT INTO account (username,active,type,userIdNumber) VALUES (\'$account->{username}\',$account->{active},\'$account->{type}\',\'$account->{userIdNumber}\')";
  		my $queryH=$adbDbh->prepare($query);
  		$queryH->execute();
@@ -74,6 +75,16 @@ sub getAccountGroupsAdb{
 	return $data;
 }
 
+sub getAccountsAdb{
+	my $userIdNumber=shift;
+	my $query="SELECT * FROM account WHERE userIdNumber=$userIdNumber";
+	my $result = $adbDbh->prepare($query);
+	$result->execute();
+	my $matches = $result->fetchall_arrayref({});
+	return $matches;
+}
+
+
 sub getAccountAdb{
 	my $userIdNumber=shift;
 	my $type=shift;
@@ -83,6 +94,16 @@ sub getAccountAdb{
 	my $matches = $result->fetchrow_hashref();
 	return $matches;
 } 
+
+sub getUserAccountTypesAdb{
+	my $user=shift;
+	my $query="SELECT DISTINCT type FROM account WHERE userIdNumber=$user->{userIdNumber}";
+	my $result = $adbDbh->prepare($query);
+	$result->execute();
+	my $matches = $result->fetchall_arrayref({});
+	return $matches;
+}
+
  
 sub updateAccountAdb{
 	my $account=shift;

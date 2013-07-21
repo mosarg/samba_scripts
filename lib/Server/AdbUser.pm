@@ -4,13 +4,14 @@ use DBI;
 use strict;
 use warnings;
 use Cwd;
+use List::UtilsBy qw(extract_by);
 use Getopt::Long;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
 use Server::AdbCommon qw($adbDbh executeAdbQuery getCurrentYearAdb);
-use Server::AdbAccount qw(addAccountAdb doAccountExistAdb getAccountAdb);
+use Server::AdbAccount qw(addAccountAdb doAccountExistAdb getAccountAdb updateAccountAdb getUserAccountTypesAdb getAccountsAdb);
 use Server::AdbPolicy qw(setDefaultPolicyAdb);
-use Server::AdbAllocation qw(addAllocationAdb);
+use Server::AdbAllocation qw(addAllocationAdb removeAllocationAdb);
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername today);
 require Exporter;
@@ -36,28 +37,53 @@ sub doUserExistAdb {
 
 
 
-sub getAllUsersAdb{
+sub getUserOrderAdb{
+	my $query="SELECT MAX(insertOrder)+1 AS newOrder FROM user";
+	my $result=executeAdbQuery($query);
+	return $result?$result:0;
+}
 
-	my $query="SELECT DISTINCT user.userIdNumber,user.name,user.surname,user.role,meccanographic  
+
+
+
+
+
+
+
+sub getAllUsersByRoleAdb{
+	my $role=shift;
+	my $year=shift;
+	my $query={};
+	$query->{student}="SELECT DISTINCT user.userIdNumber,user.name,user.surname,user.role,meccanographic  
 				FROM user INNER JOIN studentAllocation USING(userIdNumber) 
 				INNER JOIN class USING(classId) INNER JOIN school USING(meccanographic) 
-				WHERE YEAR=(SELECT year FROM schoolYear WHERE current=true) 
+				WHERE YEAR=$year 
 				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true)";
-	$query.=" UNION SELECT DISTINCT  user.userIdNumber,user.name,user.surname,user.role,meccanographic  
-				FROM user INNER JOIN ataAllocation USING(userIdNumber) 
-				INNER JOIN school USING(meccanographic) 
-				WHERE YEAR=(SELECT year FROM schoolYear WHERE current=true) 
-				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true)";
-	$query.=" UNION SELECT DISTINCT  user.userIdNumber,user.name,user.surname,user.role,meccanographic  
+	$query->{teacher}="SELECT DISTINCT  user.userIdNumber,user.name,user.surname,user.role,meccanographic  
 				FROM user INNER JOIN teacherAllocation USING(userIdNumber) 
 				INNER JOIN class USING(classId)
 				INNER JOIN school USING(meccanographic) 
-				WHERE YEAR=(SELECT year FROM schoolYear WHERE current=true) 
-				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true) GROUP BY userIdNumber";						
-	my $result = $adbDbh->prepare($query);
+				WHERE YEAR=$year 
+				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true) GROUP BY userIdNumber";
+	$query->{ata}="SELECT DISTINCT  user.userIdNumber,user.name,user.surname,user.role,meccanographic  
+				FROM user INNER JOIN ataAllocation USING(userIdNumber) 
+				INNER JOIN school USING(meccanographic) 
+				WHERE YEAR=$year
+				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true)";
+	my $result = $adbDbh->prepare($query->{$role});
 	$result->execute();
-	return $result->fetchall_arrayref({});
+	return $result->fetchall_arrayref({});			
 }
+
+
+
+
+sub getAllUsersAdb{
+	my $year=shift;
+	return [@{getAllUsersByRoleAdb('student',$year)},@{getAllUsersByRoleAdb('ata',$year)},@{getAllUsersByRoleAdb('teacher',$year)}];
+}
+
+
 
 
 sub normalizeUserAdb {
@@ -126,45 +152,91 @@ sub addUserAdb {
 	$user->{role} = $role;
 	my $userStatus={};
 	my $accountType='samba4';
-	my $account='';
+	
 	#Check status;
 	$userStatus->{user}=doUserExistAdb( $user->{userIdNumber});
 	$userStatus->{account}=doAccountExistAdb($user->{userIdNumber},$accountType);
+	$user->{pristine}=0;
+	$user->{modified}=0;
 	
 	
 	if(!$userStatus->{user}){
 				my $query =
-"INSERT INTO user (userIdNumber,name,surname,role,origin,creation) VALUES ($user->{userIdNumber},\'$user->{name}\',\'$user->{surname}\',\'$user->{role}\',\'$origin\',\'".today()."\')";
+"INSERT INTO user (userIdNumber,name,surname,role,origin,creation,insertOrder) VALUES ($user->{userIdNumber},\'$user->{name}\',\'$user->{surname}\',\'$user->{role}\',\'$origin\',localtime,$user->{insertOrder})";
 		my $queryH = $adbDbh->prepare($query);
 		$queryH->execute();
-		
+		$user->{pristine}=1;
 	}
 	if(!$userStatus->{account}){
-		$account = addAccountAdb( $user, $accountType);
+		$user->{account} = addAccountAdb( $user, $accountType);
+		$user->{modified}=1;
 	}else{
-		$account=getAccountAdb($user->{userIdNumber},$accountType);
+		$user->{account} = getAccountAdb($user->{userIdNumber},$accountType);
 	}
 	
-	if ( !addAllocationAdb( $user, $role ) ) {
+	if (!addAllocationAdb( $user, $role ) ) {
 			$user->{allocation}=0;
-			print "Cannot allocate user!\n";
+	}else{
+		$user->{modified}=1;
 	}
-	setDefaultPolicyAdb( $account, $user->{role} );
-	return $account;
+	if(setDefaultPolicyAdb( $user->{account}, $user->{role} )){$user->{modified}=1};
+	
+	return $user;
 }
 
-sub syncUsersAdb {
+sub deactivateUserAdb{
+	my $user=shift;
+	my $role=shift;
+	removeAllocationAdb($user,$role);
+	my $accounts=getAccountsAdb($user->{userIdNumber});
+	$user->{account}=$accounts->[0];
+	foreach my $account (@{$accounts}){
+		$account->{active}=0;	
+		updateAccountAdb($account);	
+	}
+	return $user;
+}
+
+
+sub syncUsersAdb{
 	my $users          = shift;
 	my $role           = shift;
+	my $year		   = shift;
+	
 	my $allocationList = '';
+	
+	my @modifiedUsers;
+	my @newUsers;
 
 	if ( $role eq 'teacher' ) {
 		$allocationList = shift;
 	}
+	
 	$users = normalizeUsersAdb( $users, $role, $allocationList );
+	
+	my $removedUsers=getAllUsersByRoleAdb($role,$year);
+			
+	my $insertOrder=getUserOrderAdb();
+	
+	
 	foreach my $user ( @{$users} ) {
+		#set sync status
+		$user->{sync}=1;
+		#set insertion order
+		$user->{insertOrder}=$insertOrder;
 		addUserAdb( $user, $role ,'automatic');
+		extract_by {$_->{userIdNumber}==$user->{userIdNumber}} @{$removedUsers};
+		if ($user->{modified}){push(@modifiedUsers,$user);}
+		if ($user->{pristine}){push(@newUsers,$user);}
 	}
+	#deactivate  user accounts
+	my $currentYear=getCurrentYearAdb();
+	foreach my $oldUser (@{$removedUsers}){
+		$oldUser->{year}=$currentYear;
+		$oldUser=deactivateUserAdb($oldUser,$role);
+	}
+	
+return {'newusers'=>\@newUsers,"removedusers"=>$removedUsers,"modifiedusers"=>\@modifiedUsers,"status"=>1};
 }
 
 1;

@@ -8,13 +8,13 @@ use File::Copy;
 use File::Path qw(make_path remove_tree);
 use Getopt::Long;
 use Server::Configuration qw($dirs $server $mail);
-use Server::Commands qw(execute);
+use Server::Commands qw(execute doFsObjectExist);
 use Server::LdapQuery qw(getFreeDiskSpace getUserFromUname getUsersHome getUsersDiskProfiles);
 
 
 require Exporter;
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(notifyDiskSpace cleanupOldProfiles cleanupDustbins cleanupPublicFolders cleanupDir cleanupOldProfiles);
+our @EXPORT_OK = qw(notifyDiskSpace cleanupOldProfiles cleanupDustbins cleanupPublicFolders cleanupDir cleanupOldProfiles moveDir);
 
 
 sub cleanupDustbins{
@@ -92,7 +92,15 @@ sub removeDir{
 }
 
 sub moveDir{
+	my $oldPos=shift;
+	my $newPos=shift;
 	
+	
+if (doFsObjectExist($oldPos,'d')){
+		execute("mv $oldPos $newPos");
+		return 1;
+	}
+	return 0;
 }
 
 sub archiveDir{

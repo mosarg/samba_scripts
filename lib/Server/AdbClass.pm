@@ -46,19 +46,24 @@ sub addClassAdb{
   	my $class=shift;
   	
  	if (doClassExistAdb($class->{classId},$class->{meccanographic}) ){
- 		print "Class $class->{classId},$class->{meccanographic} already inserted\n";
+ 		return 0;
  	}else{
  		my $query="INSERT INTO class (classId,classDescription,classOu,classCapacity,meccanographic) 
  				VALUES (\'$class->{classId}'\,'Class Description',\'$class->{ou}\',30,\'$class->{meccanographic}\')";
  			my $queryH=$adbDbh->prepare($query);
  			$queryH->execute();
+ 		return 1;
  	}
  }
  
 sub syncClassAdb{
  	my $classes=shift;
+ 	my $status=1;
+ 	#insert empty class
+ 	addClassAdb({classId=>'0Ext',classDescription=>'Empty class',ou=>'0Ext',classCapacity=>30,meccanographic=>'UDSSC817F0'});	
  	$classes=normalizeClassesAdb($classes);
  	foreach my $class (@{$classes}){
- 		addClassAdb($class);
+ 		$status=addClassAdb($class)*$status;
  	}
+ 	return $status;
  } 

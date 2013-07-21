@@ -5,12 +5,12 @@ use warnings;
 use Server::Configuration qw($ldap $server);
 use Server::Commands qw(sanitizeString today);
 use Net::LDAP;
-
+use String::MkPasswd qw(mkpasswd);
 
 use Data::Dumper;
 use HTML::Tabulate qw(render);
 #use Server::Samba4 qw(doS4UserExist getNewUid posixifyUser addS4User getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard addS4Group setS4GroupMembership);
-use Server::LdapQuery qw(doOuExist);
+use Server::LdapQuery qw(doOuExist getUserBaseDn);
 use Server::AdbOu qw(getAllOuAdb);
 
 
@@ -26,13 +26,18 @@ my $extraGroups=['lavoro1','lavoro2'];
 #}
 
 #print Dumper getAllOuAdb('samba4');
+#
+#my $homeDir="ou=liceo";
+#$homeDir=~s/ou=//g;
+#$homeDir=(reverse(split(',',$homeDir)))[0];
+#print $homeDir;
 
-my $homeDir="ou=liceo";
-$homeDir=~s/ou=//g;
-$homeDir=(reverse(split(',',$homeDir)))[0];
-print $homeDir;
 
-print today();
+print mkpasswd(-length=>10,-minlower=>5,-minnum=>1,-minupper=>1);
+
+#print today();
+
+#print getUserBaseDn('zuzu');
 
 #addS4Group('lavoro2');
 

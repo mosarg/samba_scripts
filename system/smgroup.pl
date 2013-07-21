@@ -5,6 +5,7 @@ use Data::Dumper;
 use Getopt::Long;
 use Term::ANSIColor;
 use Switch;
+use Term::Emit ":all", {-color => 1};
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
 use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
@@ -13,7 +14,7 @@ use Server::System qw(initGroups init);
 
 my $commands = "init add,remove,sync,list";
 
-my $backend = '';
+my $backend = 'samba4';
 my $all     = 0;
 my $description='generic description';
 my $data={};
@@ -25,6 +26,8 @@ GetOptions(
 	'all'       => \$all,
 	'description=s'=>\$description
 );
+
+
 $backend or die("You must specify a backend\n");
 
 $data->{backend}=$backend;
@@ -79,7 +82,9 @@ sub removeGroup {
 			if ($all) {
 				my $groups = getAllGroupsAdb($backend);
 				foreach my $group (@{$groups}){
-					deleteS4Group($group->[0]);
+					emit "Remove group $group->[0]";
+						if(deleteS4Group($group->[0])){emit_ok}else{emit_fatal;}
+					
 				}
 			}else{
 				(scalar(@ARGV)>1)||die("You must specify a group");
@@ -100,14 +105,11 @@ sub listGroup{
 			my $message='[OK]';
 			foreach my $group (@{$groups}){
 			
+				emit "Samba4 group $group->[0]";
 				if (!doS4GroupExist($group->[0])){
-					$color='red';
-					$message='[Not synced]';
-				}else{
-					$color='green';
-					$message='[OK]';
-				}
-				print $group->[0]," db ",colored("[OK] ",'green'),$backend,colored(" $message",$color),"\n";
+					emit_error;}else{
+						emit_ok;
+					}
 				
 			}
 		}

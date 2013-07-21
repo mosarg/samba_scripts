@@ -14,7 +14,17 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(addAllocationAdb);
+our @EXPORT_OK = qw(addAllocationAdb removeAllocationAdb);
+
+
+sub getStudentAllocationAdb{
+	my $user=shift;
+	my $query="SELECT userIdNumber,classId,year FROM studentAllocation WHERE userIdNumber=$user->{userIdNumber} AND year=$user->{year}";
+	my $result = $adbDbh->prepare($query);
+	$result->execute();
+	return $result->fetchrow_hashref;	
+}
+
 
 sub doStudentAllocationExistAdb{
  	my $userId=shift;
@@ -39,25 +49,74 @@ sub doStudentAllocationExistAdb{
     return executeAdbQuery($query);
  } 
 
+
+
+ sub removeAllocationAdb{
+	my $user=shift;
+	my $role=shift;
+	if ($role eq 'student'){
+ 				return removeStudentAllocationAdb($user);
+		}
+		if($role eq 'ata'){
+			return removeAtaAllocationAdb($user);
+		}
+		if($role eq 'teacher'){
+				return removeTeacherAllocationAdb($user);
+		}
+}
+
+
+sub removeTeacherAllocationAdb{
+	my $user=shift;
+	my $query="DELETE FROM teacherAllocation WHERE userIdnumber=$user->{userIdNumber} AND year=$user->{year}";
+	my $queryH=$adbDbh->prepare($query);
+ 	$queryH->execute();
+}
+
+
+sub removeAtaAllocationAdb{
+	my $user=shift;
+	my $query="DELETE FROM ataAllocation WHERE userIdnumber=$user->{userIdNumber} AND year=$user->{year}";
+	my $queryH=$adbDbh->prepare($query);
+ 	$queryH->execute();
+}
+
+
+sub removeStudentAllocationAdb{
+	my $user=shift;
+	my $query="DELETE FROM studentAllocation WHERE userIdnumber=$user->{userIdNumber} AND year=$user->{year}";
+	my $queryH=$adbDbh->prepare($query);
+ 	$queryH->execute();
+}
+
  sub addStudentAllocationAdb{
  	my $user=shift;
- 	
+  	
  	if (doStudentAllocationExistAdb($user->{userIdNumber},$user->{year} )){
- 		print "Student map already exists\n";
- 		return 0;
- 	}else{
- 		my $query="INSERT INTO studentAllocation (userIdNumber,classId,year) VALUES ($user->{userIdNumber},\'$user->{classId}\',$user->{year})";
- 		my $queryH=$adbDbh->prepare($query);
- 		$queryH->execute();
- 		print $query."\n";
- 	} 
+ 		if($user->{sync}){
+ 			
+ 			my $allocation=getStudentAllocationAdb($user);
+ 			
+ 			if($allocation->{classId} eq $user->{classId}) {return 0;}
+ 			
+ 			removeStudentAllocationAdb($user);
+  		}else{
+ 			$user->{error}="student allocation exists";
+ 			return 0;
+ 		}
+ 	}
+ 	
+ 	my $query="INSERT INTO studentAllocation (userIdNumber,classId,year) VALUES ($user->{userIdNumber},\'$user->{classId}\',$user->{year})";
+ 	my $queryH=$adbDbh->prepare($query);
+ 	$queryH->execute();
+ 	 
  	return 1;	
  }
 
  sub addAtaAllocationAdb{
 	my $user=shift;
 	if (doAtaAllocationExistAdb($user->{userIdNumber},$user->{year} )){
- 		print "Ata map already exists\n";
+ 		$user->{error}="ata allocation exists";
  		return 0;
  	}else{
  		my $query="INSERT INTO ataAllocation (userIdNumber,meccanographic,year) VALUES ($user->{userIdNumber},\'$user->{meccanographic}\',$user->{year})";
@@ -76,7 +135,8 @@ sub doStudentAllocationExistAdb{
 	foreach my $allocation (@{$user->{allocations}}){
 	
 	if (doTeacherAllocationExistAdb($user->{userIdNumber},$user->{year},$allocation->{classId},$allocation->{subjectId})){
- 		print "Teacher map already exists\n";
+ 		$user->{error}="teacher allocation exists";
+ 		return 0;
  	}else{
  				
  			my $query="INSERT INTO teacherAllocation (userIdNumber,classId, year,subjectId) VALUES ($user->{userIdNumber},\'$allocation->{classId}\',$user->{year},$allocation->{subjectId})";

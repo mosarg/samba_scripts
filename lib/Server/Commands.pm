@@ -13,16 +13,16 @@ our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw(execute sanitizeString sanitizeUsername doFsObjectExist hashNav today);
 
 my %accentedString=('a\'','à','e\'','é','u\'','ù','i\'','ì','o\'','ò',);
-my %punctuationString=('\'','\\\'','\s','');
+my %punctuationString=('\'','\\\'');
 my %nastyString2=('\\\'','','\\\\','',']','','\s','',',','');
 
+#d directory
 
 sub doFsObjectExist{
 	my $object=shift;
 	my $type=shift;
 	return execute("test ! -$type $object ; echo -n \$\?");
 }
-
 
 
 sub hashNav{
@@ -58,7 +58,7 @@ sub execute{
 sub sanitizeUsername{
 	my $username=shift;
 	$username=lc($username);
-	$username=~ tr/[à,è,ì,ò,ù,\-]/[a,e,i,o,u,,]/;
+	$username=~ tr/[é,à,è,ì,ò,ù,\-]/[e,a,e,i,o,u,,]/;
 	
 	foreach my $char (keys(%nastyString2)){
 		$username=~s/$char/$nastyString2{$char}/g;

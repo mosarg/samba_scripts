@@ -42,7 +42,7 @@ sub addPolicyAdb{
  		my $queryH=$adbDbh->prepare($query);
  		$queryH->execute();
 	}else{
-		print "policy alread assigned!\n";
+		return 0;
 	}
  	
  	return 1; 		
@@ -70,8 +70,8 @@ sub setPolicyGroupAdb{
  	my $account=shift;
  	my $role=shift;
  	if (doAccountExistAdb($account->{userIdNumber},$account->{type} )){
- 	 		addPolicyAdb($account,$ldap->{default_policy}->{$role});
- 	 		return 1; 		
+ 	 		return addPolicyAdb($account,$ldap->{default_policy}->{$role});
+ 	 			
  	}else{
  		return 0;
  	}

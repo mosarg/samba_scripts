@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis);
+our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis);
 
 
 
@@ -52,7 +52,6 @@ sub getCurrentTeachersAis {
      			LEFT  JOIN tquap_qualpers tq on (p.iquapid=tq.iquapid)
      			LEFT  JOIN tnop_nominaperso  tn on(p.inopid=tn.inopid)
    				WHERE p.idctid=1 AND p.istabperid=1  AND tq.iquapusercode IN (12,14,17,25)";
-
 	return executeAisQuery($query);
 }
 
@@ -89,14 +88,16 @@ sub getCurrentAtaAis{
 	
 }
 
+
+
 sub getCurrentSubjectAis{
 	my $query="SELECT r.imatid AS \"subjectId\", r.smatldesc AS \"description\", r.smatsdesc AS \"shortDesc\"
 	FROM TMAT_MATERIE r";
 	return executeAisQuery($query);
 }
 
+
 sub getCurrentTeacherClassAis{
-	
 my $year=shift;	
 my $result={};
 my $query="SELECT  t.ianaid AS \"userIdNumber\",m.imatid AS \"subjectId\",ta.iacsannocorso AS \"classNumber\",ts.ssezsdesc AS \"classLabel\" FROM
@@ -123,20 +124,21 @@ foreach my $mapElement (@{$teacherMap}){
 	$mapElement->{classNumber}=lc($mapElement->{classNumber});
 	$mapElement->{classLabel}=lc($mapElement->{classLabel});
 	$mapElement->{classId}=$mapElement->{classNumber}.$mapElement->{classLabel};
-	
 	push(@{$result->{$mapElement->{userIdNumber}}},$mapElement);
-	if($mapElement->{userIdNumber}==1000107){print "cane";return $result;}
+
 }
 
 return $result;
 
 }
 
-
-
-
-
-
+sub getCurrentYearAis{
+	my $query="SELECT DISTINCT annoscol AS \"year\" FROM tsisalu_alunni";
+	my $queryH=$aisDbh->prepare($query);
+ 	$queryH->execute();
+ 	my @result=$queryH->fetchrow_array();
+ 	return @result?$result[0]:0;
+}
 
 
 sub getAisUsers {
