@@ -110,6 +110,7 @@ sub updateAccountAdb{
 	my $query="UPDATE account SET active=$account->{active}, backendUidNumber=$account->{backendUidNumber} WHERE userIdNumber=$account->{userIdNumber} AND type=\'$account->{type}\'";
 	my $queryH=$adbDbh->prepare($query);
  	$queryH->execute();
+ 	return 1;
 } 
   
 sub getAccountMainGroupAdb{
