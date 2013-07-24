@@ -91,7 +91,7 @@ sub getCurrentAtaAis{
 
 
 sub getCurrentSubjectAis{
-	my $query="SELECT r.imatid AS \"subjectId\", r.smatldesc AS \"description\", r.smatsdesc AS \"shortDesc\"
+	my $query="SELECT r.imatid AS \"code\", r.smatldesc AS \"description\", r.smatsdesc AS \"shortDescription\"
 	FROM TMAT_MATERIE r";
 	return executeAisQuery($query);
 }

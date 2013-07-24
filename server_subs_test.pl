@@ -11,16 +11,26 @@ use Data::Dumper;
 use HTML::Tabulate qw(render);
 #use Server::Samba4 qw(doS4UserExist getNewUid posixifyUser addS4User getNewGid posixifyGroup setS4PrimaryGroup getGid getRid getS4UnixHomeDir deleteS4User getGroupCard addS4Group setS4GroupMembership);
 use Server::LdapQuery qw(doOuExist getUserBaseDn);
-use Server::AdbOu qw(getAllOuAdb);
-
-
-use Server::Actions qw(cleanupDir cleanupOldProfiles);
 
 
 
-my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
-my $extraGroups=['lavoro1','lavoro2'];
+use Db::Django;
 
+
+my $schema=Db::Django->connect('dbi:mysql:gestione_scuola','mosa','sambackett');
+
+print Dumper $schema->resultset('SysuserSysuser')->all();
+
+#new user
+
+my $newuser=$schema->resultset('SysuserSysuser')->new({sidiId=>'54646',name=>'cane',surname=>'gatto',origin=>'auto',insertOrder=>0});
+$newuser->insert;
+
+
+#use Server::AdbOu qw(getAllOuAdb);
+#use Server::Actions qw(cleanupDir cleanupOldProfiles);
+#my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
+#my $extraGroups=['lavoro1','lavoro2'];
 #if(doOuExist('idtc','ou=Users') ){
 #	print "Ok\n";
 #}
@@ -33,7 +43,7 @@ my $extraGroups=['lavoro1','lavoro2'];
 #print $homeDir;
 
 
-print mkpasswd(-length=>10,-minlower=>5,-minnum=>1,-minupper=>1);
+#print mkpasswd(-length=>10,-minlower=>5,-minnum=>1,-minupper=>1);
 
 #print today();
 
