@@ -48,6 +48,7 @@ sub addSubjectAdb{
 	return 0;
 }
 
+
 sub syncSubjectAdb {
 	my $subjects = shift;
 	my $status   = 1;
@@ -59,11 +60,10 @@ sub syncSubjectAdb {
 		niceName    => "No subject",
 		created =>"localtime",
 		modified=>"localtime"
-	};
+};
 	
 	
 	addSubjectAdb($emptySubject);
-	
 	foreach my $subject ( @{$subjects} ) {
 		$status=addSubjectAdb($subject)*$status;
 	}
