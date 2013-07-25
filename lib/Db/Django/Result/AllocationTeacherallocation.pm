@@ -65,12 +65,14 @@ __PACKAGE__->table("allocation_teacherallocation");
 
   accessor: 'class_id_id'
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =head2 subjectId_id
 
   accessor: 'subject_id_id'
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =cut
@@ -103,9 +105,19 @@ __PACKAGE__->add_columns(
     is_nullable    => 0,
   },
   "classId_id",
-  { accessor => "class_id_id", data_type => "integer", is_nullable => 0 },
+  {
+    accessor       => "class_id_id",
+    data_type      => "integer",
+    is_foreign_key => 1,
+    is_nullable    => 0,
+  },
   "subjectId_id",
-  { accessor => "subject_id_id", data_type => "integer", is_nullable => 0 },
+  {
+    accessor       => "subject_id_id",
+    data_type      => "integer",
+    is_foreign_key => 1,
+    is_nullable    => 0,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -158,9 +170,39 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 class_id
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0NakAN1n2BmE24KF6mo5Rw
+Type: belongs_to
+
+Related object: L<Db::Django::Result::SchoolClass>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "class_id",
+  "Db::Django::Result::SchoolClass",
+  { classId => "classId_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+=head2 subject_id
+
+Type: belongs_to
+
+Related object: L<Db::Django::Result::SchoolSubject>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "subject_id",
+  "Db::Django::Result::SchoolSubject",
+  { subjectId => "subjectId_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:M0kZiRg0iqNXlb2IXpO1JA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

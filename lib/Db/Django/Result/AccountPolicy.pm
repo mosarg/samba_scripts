@@ -142,9 +142,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 group_grouppolicies
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aoYb36LiCgFwdOrBD3FLrw
+Type: has_many
+
+Related object: L<Db::Django::Result::GroupGrouppolicy>
+
+=cut
+
+__PACKAGE__->has_many(
+  "group_grouppolicies",
+  "Db::Django::Result::GroupGrouppolicy",
+  { "foreign.policyId_id" => "self.policyId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:REQMhVfpt7p+PtOqPN+oqA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

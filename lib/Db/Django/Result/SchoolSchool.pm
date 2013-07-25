@@ -145,6 +145,21 @@ __PACKAGE__->add_unique_constraint("meccanographic", ["meccanographic"]);
 
 =head1 RELATIONS
 
+=head2 allocation_ataallocations
+
+Type: has_many
+
+Related object: L<Db::Django::Result::AllocationAtaallocation>
+
+=cut
+
+__PACKAGE__->has_many(
+  "allocation_ataallocations",
+  "Db::Django::Result::AllocationAtaallocation",
+  { "foreign.schoolId_id" => "self.schoolId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 school_classes
 
 Type: has_many
@@ -161,8 +176,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ye1Nm8qGmp6CjU1z6ZA0Sg
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:mLqsfRRjghxZpxJRktobqA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -58,6 +58,7 @@ __PACKAGE__->table("allocation_ataallocation");
 
   accessor: 'school_id_id'
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =cut
@@ -83,7 +84,12 @@ __PACKAGE__->add_columns(
     is_nullable    => 0,
   },
   "schoolId_id",
-  { accessor => "school_id_id", data_type => "integer", is_nullable => 0 },
+  {
+    accessor       => "school_id_id",
+    data_type      => "integer",
+    is_foreign_key => 1,
+    is_nullable    => 0,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -115,9 +121,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 school_id
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:YGCDQj6KESzMAPJ3DLz+TA
+Type: belongs_to
+
+Related object: L<Db::Django::Result::SchoolSchool>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "school_id",
+  "Db::Django::Result::SchoolSchool",
+  { schoolId => "schoolId_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3J+81I0HKk686Jam+4IZ7A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

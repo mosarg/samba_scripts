@@ -12,16 +12,42 @@ use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getC
 #use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
 
-use Server::AdbGroup qw(getAllGroupsAdb);
+use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
 use Server::AdbSubject qw(syncSubjectAdb);
 
 
 my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
 my $extraGroups=['lavoro1','lavoro2'];
 
-my $data=getAllGroupsAdb()->next;
 
-print Dumper $data;
+
+
+sub _dumper_hook {
+    $_[0] = bless {
+      %{ $_[0] },
+      result_source => undef,
+    }, ref($_[0]);
+  }
+  local $Data::Dumper::Freezer = '_dumper_hook';
+  
+ 
+
+
+
+print addGroupAdb('pensionati2','gruppo dei pensionati');
+
+
+my $data=getAllGroupsAdb('samba4');
+
+
+
+while (my $group=$data->next){
+	print $group->name,"\n";	
+}
+
+
+
+
 
 
 #print Dumper getUserAccountTypesAdb({userIdNumber=>6632872});

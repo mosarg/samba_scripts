@@ -6,10 +6,10 @@ use Getopt::Long;
 use Term::ANSIColor;
 use Switch;
 use Term::Emit ":all", {-color => 1};
-use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
+use Server::AdbGroup qw(getAllGroupsAdb );
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
-use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
-use Server::System qw(initGroups init);
+#use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
+#use Server::System qw(initGroups init);
 
 
 my $commands = "init add,remove,sync,list";
@@ -32,68 +32,68 @@ $backend or die("You must specify a backend\n");
 
 $data->{backend}=$backend;
 
-init($data);
+#init($data);
 
 switch ( $ARGV[0] ) {
 	case 'add' {
-		  addGroup();
+		  # addGroup();
 	}
 	case 'remove' {
 		
-		removeGroup();
+		#removeGroup();
 	}
 	case 'sync' {
-		initGroups();
+		#initGroups();
 	}
 	case 'list' {
 		listGroup();
 	}
 	case 'init' {
-		initGroups();
+		#initGroups();
 	}
 	else { die("$ARGV[0] is not a command!\n"); }
 
 }
 
 
-sub addGroup{
-		switch($backend){
-			case 'samba4' {
-			
-			(	scalar(@ARGV)>1)||die("You must specify a group name\n");
-			if((scalar(@ARGV)>1) && (scalar(@ARGV)<=2)){  
-				print "possibile policies:\n";
-				foreach my $policy (@{getAllPoliciesAdb($backend)}){
-					print $policy->{policyId}," ",$policy->{description},"\n";
-				}
-				die("You must select a policy\n");
-			}
-				my $groupId=addGroupAdb($ARGV[1],$description);		
-				setPolicyGroupAdb($groupId,$ARGV[2]);
-				addS4Group( $ARGV[1]);
-			}
-		}
-}
+#sub addGroup{
+#		switch($backend){
+#			case 'samba4' {
+#			
+#			(	scalar(@ARGV)>1)||die("You must specify a group name\n");
+#			if((scalar(@ARGV)>1) && (scalar(@ARGV)<=2)){  
+#				print "possibile policies:\n";
+#				foreach my $policy (@{getAllPoliciesAdb($backend)}){
+#					print $policy->{policyId}," ",$policy->{description},"\n";
+#				}
+#				die("You must select a policy\n");
+#			}
+#				my $groupId=addGroupAdb($ARGV[1],$description);		
+#				setPolicyGroupAdb($groupId,$ARGV[2]);
+#				addS4Group( $ARGV[1]);
+#			}
+#		}
+#}
 
 #Remove a single group or all groups defined in database
-sub removeGroup {
-	switch ($backend) {
-		case 'samba4' {
-			if ($all) {
-				my $groups = getAllGroupsAdb($backend);
-				foreach my $group (@{$groups}){
-					emit "Remove group $group->[0]";
-						if(deleteS4Group($group->[0])){emit_ok}else{emit_fatal;}
-					
-				}
-			}else{
-				(scalar(@ARGV)>1)||die("You must specify a group");
-				deleteS4Group($ARGV[1]);
-			}
-		}
-	}
-
-}
+#sub removeGroup {
+#	switch ($backend) {
+#		case 'samba4' {
+#			if ($all) {
+#				my $groups = getAllGroupsAdb($backend);
+#				foreach my $group (@{$groups}){
+#					emit "Remove group $group->[0]";
+#						if(deleteS4Group($group->[0])){emit_ok}else{emit_fatal;}
+#					
+#				}
+#			}else{
+#				(scalar(@ARGV)>1)||die("You must specify a group");
+#				deleteS4Group($ARGV[1]);
+#			}
+#		}
+#	}
+#
+#}
 
 
 #list backend groups
@@ -101,17 +101,22 @@ sub listGroup{
 	switch($backend){
 		case 'samba4' {
 			my $groups=getAllGroupsAdb($backend);
-			my $color='green';
-			my $message='[OK]';
-			foreach my $group (@{$groups}){
+	
 			
-				emit "Samba4 group $group->[0]";
-				if (!doS4GroupExist($group->[0])){
-					emit_error;}else{
-						emit_ok;
-					}
-				
+			while(my $group=$groups->next){
+				emit "Samba4 group ".$group->name;
+				if(!!doS4GroupExist($group->name)){emit_error;}else{emit_ok;}
 			}
+			
+#			foreach my $group (@{$groups}){
+#			
+#				emit "Samba4 group $group->[0]";
+#				if (!doS4GroupExist($group->[0])){
+#					emit_error;}else{
+#						emit_ok;
+#					}
+#				
+#			}
 		}
 	}
 }

@@ -75,6 +75,7 @@ __PACKAGE__->table("account_account");
 
   accessor: 'user_id_id'
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =head2 backendId_id
@@ -117,7 +118,12 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
   },
   "userId_id",
-  { accessor => "user_id_id", data_type => "integer", is_nullable => 0 },
+  {
+    accessor       => "user_id_id",
+    data_type      => "integer",
+    is_foreign_key => 1,
+    is_nullable    => 0,
+  },
   "backendId_id",
   {
     accessor       => "backend_id_id",
@@ -187,9 +193,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 user_id
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FtOAx5UpLmnBINoZRsjM3A
+Type: belongs_to
+
+Related object: L<Db::Django::Result::SysuserSysuser>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "user_id",
+  "Db::Django::Result::SysuserSysuser",
+  { userId => "userId_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FxH+YOvEKiEq3DVwgJtfQg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

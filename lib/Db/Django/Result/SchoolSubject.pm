@@ -148,9 +148,26 @@ __PACKAGE__->set_primary_key("subjectId");
 
 __PACKAGE__->add_unique_constraint("code", ["code"]);
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UpVg7QqQ/jrJ6NPbiCRAzQ
+=head2 allocation_teacherallocations
+
+Type: has_many
+
+Related object: L<Db::Django::Result::AllocationTeacherallocation>
+
+=cut
+
+__PACKAGE__->has_many(
+  "allocation_teacherallocations",
+  "Db::Django::Result::AllocationTeacherallocation",
+  { "foreign.subjectId_id" => "self.subjectId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:mtFE5E7zG/pamUyNoxCG1A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

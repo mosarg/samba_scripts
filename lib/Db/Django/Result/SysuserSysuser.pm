@@ -145,9 +145,41 @@ __PACKAGE__->set_primary_key("userId");
 
 __PACKAGE__->add_unique_constraint("sidiId", ["sidiId"]);
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5uX5at/wagSTKzRSfXME+w
+=head2 account_accounts
+
+Type: has_many
+
+Related object: L<Db::Django::Result::AccountAccount>
+
+=cut
+
+__PACKAGE__->has_many(
+  "account_accounts",
+  "Db::Django::Result::AccountAccount",
+  { "foreign.userId_id" => "self.userId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 allocation_allocations
+
+Type: has_many
+
+Related object: L<Db::Django::Result::AllocationAllocation>
+
+=cut
+
+__PACKAGE__->has_many(
+  "allocation_allocations",
+  "Db::Django::Result::AllocationAllocation",
+  { "foreign.userId_id" => "self.userId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:EFyv4wJ0c6XIxzCxgk5R+A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

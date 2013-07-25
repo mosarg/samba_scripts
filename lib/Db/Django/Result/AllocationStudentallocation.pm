@@ -58,6 +58,7 @@ __PACKAGE__->table("allocation_studentallocation");
 
   accessor: 'class_id_id'
   data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =cut
@@ -83,7 +84,12 @@ __PACKAGE__->add_columns(
     is_nullable    => 0,
   },
   "classId_id",
-  { accessor => "class_id_id", data_type => "integer", is_nullable => 0 },
+  {
+    accessor       => "class_id_id",
+    data_type      => "integer",
+    is_foreign_key => 1,
+    is_nullable    => 0,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -99,6 +105,21 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("studentAllocationId_id");
 
 =head1 RELATIONS
+
+=head2 class_id
+
+Type: belongs_to
+
+Related object: L<Db::Django::Result::SchoolClass>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "class_id",
+  "Db::Django::Result::SchoolClass",
+  { classId => "classId_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
 
 =head2 student_allocation_id
 
@@ -116,8 +137,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FIAWJqA4Z5eaiwMxA6a/eQ
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JlNbe+OrTZTvmOPEJP9tbw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

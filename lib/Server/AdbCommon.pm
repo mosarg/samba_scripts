@@ -7,6 +7,7 @@ use Cwd;
 use Getopt::Long;
 use Db::Django;
 use Data::Dumper;
+use DateTime;
 use Data::Structure::Util qw( unbless );
 use Server::Configuration qw($server $adb);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
@@ -15,11 +16,13 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw($schema executeAdbQuery getCurrentYearAdb setCurrentYearAdb addYearAdb);
+our @EXPORT_OK = qw($schema executeAdbQuery getCurrentYearAdb setCurrentYearAdb addYearAdb creationTimeStampsAdb);
 
 #open user account database connections
 
 our $schema=Db::Django->connect('dbi:mysql:gestione_scuola','mosa','sambackett');
+
+$schema->storage->debug(1);
 
 #our $adbDbh = DBI->connect( "dbi:mysql:$adb->{'database'}:$adb->{'fqdn'}:3306",
 #	$adb->{'user'}, $adb->{'password'} )
@@ -58,6 +61,14 @@ our $schema=Db::Django->connect('dbi:mysql:gestione_scuola','mosa','sambackett')
 #	}
 #	return 0;
 #}
+
+sub creationTimeStampsAdb{
+	my $data=shift;
+	$data->{created}=DateTime->now;
+	$data->{modified}=DateTime->now;
+	return $data;
+	
+}
 
 sub getCurrentYearAdb{
 	my $query="SELECT YEAR FROM schoolYear WHERE current=true";

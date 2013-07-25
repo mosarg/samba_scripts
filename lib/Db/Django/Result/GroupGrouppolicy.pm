@@ -65,6 +65,13 @@ __PACKAGE__->table("group_grouppolicy");
 
   accessor: 'policy_id_id'
   data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 principalGroup
+
+  accessor: 'principal_group'
+  data_type: 'tinyint'
   is_nullable: 0
 
 =cut
@@ -97,7 +104,14 @@ __PACKAGE__->add_columns(
     is_nullable    => 0,
   },
   "policyId_id",
-  { accessor => "policy_id_id", data_type => "integer", is_nullable => 0 },
+  {
+    accessor       => "policy_id_id",
+    data_type      => "integer",
+    is_foreign_key => 1,
+    is_nullable    => 0,
+  },
+  "principalGroup",
+  { accessor => "principal_group", data_type => "tinyint", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -145,9 +159,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 policy_id
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:f65HKsIzNsdNqPNBjLkw8A
+Type: belongs_to
+
+Related object: L<Db::Django::Result::AccountPolicy>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "policy_id",
+  "Db::Django::Result::AccountPolicy",
+  { policyId => "policyId_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gJ9+1AJatWtqTdAfugmmMQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
