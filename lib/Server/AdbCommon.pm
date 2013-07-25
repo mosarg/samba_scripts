@@ -71,8 +71,8 @@ sub creationTimeStampsAdb{
 }
 
 sub getCurrentYearAdb{
-	my $query="SELECT YEAR FROM schoolYear WHERE current=true";
-    return executeAdbQuery($query);
+	my $currentYear=$schema->resultset('AllocationSchoolyear')->search({active=>1})->next;
+    return $currentYear;
 } 
 
 return 1;

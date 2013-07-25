@@ -1,12 +1,12 @@
 use utf8;
-package Db::Django::Result::SchoolClass;
+package Db::Django::Result::AllocationNondidacticalallocation;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Db::Django::Result::SchoolClass
+Db::Django::Result::AllocationNondidacticalallocation
 
 =cut
 
@@ -27,11 +27,11 @@ use base 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<school_class>
+=head1 TABLE: C<allocation_nondidacticalallocation>
 
 =cut
 
-__PACKAGE__->table("school_class");
+__PACKAGE__->table("allocation_nondidacticalallocation");
 
 =head1 ACCESSORS
 
@@ -47,35 +47,18 @@ __PACKAGE__->table("school_class");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
-=head2 classId
+=head2 ataAllocationId
 
-  accessor: 'class_id'
+  accessor: 'ata_allocation_id'
   data_type: 'integer'
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 name
+=head2 allocationId_id
 
-  data_type: 'varchar'
-  is_nullable: 0
-  size: 20
-
-=head2 description
-
-  data_type: 'varchar'
-  is_nullable: 0
-  size: 100
-
-=head2 ou
-
-  data_type: 'varchar'
-  is_nullable: 0
-  size: 30
-
-=head2 capacity
-
+  accessor: 'allocation_id_id'
   data_type: 'integer'
-  extra: {unsigned => 1}
+  is_foreign_key: 1
   is_nullable: 0
 
 =head2 schoolId_id
@@ -100,21 +83,20 @@ __PACKAGE__->add_columns(
     datetime_undef_if_invalid => 1,
     is_nullable => 0,
   },
-  "classId",
+  "ataAllocationId",
   {
-    accessor          => "class_id",
+    accessor          => "ata_allocation_id",
     data_type         => "integer",
     is_auto_increment => 1,
     is_nullable       => 0,
   },
-  "name",
-  { data_type => "varchar", is_nullable => 0, size => 20 },
-  "description",
-  { data_type => "varchar", is_nullable => 0, size => 100 },
-  "ou",
-  { data_type => "varchar", is_nullable => 0, size => 30 },
-  "capacity",
-  { data_type => "integer", extra => { unsigned => 1 }, is_nullable => 0 },
+  "allocationId_id",
+  {
+    accessor       => "allocation_id_id",
+    data_type      => "integer",
+    is_foreign_key => 1,
+    is_nullable    => 0,
+  },
   "schoolId_id",
   {
     accessor       => "school_id_id",
@@ -128,43 +110,29 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</classId>
+=item * L</ataAllocationId>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("classId");
-
-=head1 UNIQUE CONSTRAINTS
-
-=head2 C<name>
-
-=over 4
-
-=item * L</name>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("name", ["name"]);
+__PACKAGE__->set_primary_key("ataAllocationId");
 
 =head1 RELATIONS
 
-=head2 allocation_didacticalallocations
+=head2 allocation_id
 
-Type: has_many
+Type: belongs_to
 
-Related object: L<Db::Django::Result::AllocationDidacticalallocation>
+Related object: L<Db::Django::Result::AllocationAllocation>
 
 =cut
 
-__PACKAGE__->has_many(
-  "allocation_didacticalallocations",
-  "Db::Django::Result::AllocationDidacticalallocation",
-  { "foreign.classId_id" => "self.classId" },
-  { cascade_copy => 0, cascade_delete => 0 },
+__PACKAGE__->belongs_to(
+  "allocation_id",
+  "Db::Django::Result::AllocationAllocation",
+  { allocationId => "allocationId_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 =head2 school_id
@@ -184,7 +152,7 @@ __PACKAGE__->belongs_to(
 
 
 # Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7M3JLkKDtaInHFYLxcZR6w
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sp017bkQp9ef9LDWtzFj+g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

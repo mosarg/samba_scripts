@@ -66,9 +66,8 @@ sub setPolicyGroupAdb{
 		}
 		default {die $_}
 	}
-	
-	
 }
+
 
 #Ok orm ready
  sub setDefaultPolicyAdb{
@@ -85,3 +84,4 @@ sub setPolicyGroupAdb{
  	}
   }
 
+return 1;

@@ -122,6 +122,21 @@ __PACKAGE__->add_unique_constraint("name", ["name"]);
 
 =head1 RELATIONS
 
+=head2 configuration_profiles
+
+Type: has_many
+
+Related object: L<Db::Django::Result::ConfigurationProfile>
+
+=cut
+
+__PACKAGE__->has_many(
+  "configuration_profiles",
+  "Db::Django::Result::ConfigurationProfile",
+  { "foreign.mainGroup_id" => "self.groupId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 group_grouppolicies
 
 Type: has_many
@@ -138,8 +153,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WaYdxXvpe5SPm5t4HSxKkg
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZjalBN0Bd1vPIvCaTtuyAQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -98,17 +98,22 @@ __PACKAGE__->set_primary_key("policyId");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<name>
+=head2 C<account_policy_name_42b6fb59870e0912_uniq>
 
 =over 4
 
 =item * L</name>
 
+=item * L</backendId_id>
+
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("name", ["name"]);
+__PACKAGE__->add_unique_constraint(
+  "account_policy_name_42b6fb59870e0912_uniq",
+  ["name", "backendId_id"],
+);
 
 =head1 RELATIONS
 
@@ -142,6 +147,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 configuration_profiles
+
+Type: has_many
+
+Related object: L<Db::Django::Result::ConfigurationProfile>
+
+=cut
+
+__PACKAGE__->has_many(
+  "configuration_profiles",
+  "Db::Django::Result::ConfigurationProfile",
+  { "foreign.defaultPolicy_id" => "self.policyId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 group_grouppolicies
 
 Type: has_many
@@ -158,8 +178,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:REQMhVfpt7p+PtOqPN+oqA
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nqY6kAbn84zxc6iEy0SjfQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

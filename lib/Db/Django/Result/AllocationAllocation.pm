@@ -158,47 +158,32 @@ __PACKAGE__->add_unique_constraint("yearId_id", ["yearId_id", "userId_id"]);
 
 =head1 RELATIONS
 
-=head2 allocation_ataallocation
-
-Type: might_have
-
-Related object: L<Db::Django::Result::AllocationAtaallocation>
-
-=cut
-
-__PACKAGE__->might_have(
-  "allocation_ataallocation",
-  "Db::Django::Result::AllocationAtaallocation",
-  { "foreign.ataAllocationId_id" => "self.allocationId" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 allocation_studentallocation
-
-Type: might_have
-
-Related object: L<Db::Django::Result::AllocationStudentallocation>
-
-=cut
-
-__PACKAGE__->might_have(
-  "allocation_studentallocation",
-  "Db::Django::Result::AllocationStudentallocation",
-  { "foreign.studentAllocationId_id" => "self.allocationId" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 allocation_teacherallocations
+=head2 allocation_didacticalallocations
 
 Type: has_many
 
-Related object: L<Db::Django::Result::AllocationTeacherallocation>
+Related object: L<Db::Django::Result::AllocationDidacticalallocation>
 
 =cut
 
 __PACKAGE__->has_many(
-  "allocation_teacherallocations",
-  "Db::Django::Result::AllocationTeacherallocation",
+  "allocation_didacticalallocations",
+  "Db::Django::Result::AllocationDidacticalallocation",
+  { "foreign.allocationId_id" => "self.allocationId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 allocation_nondidacticalallocations
+
+Type: has_many
+
+Related object: L<Db::Django::Result::AllocationNondidacticalallocation>
+
+=cut
+
+__PACKAGE__->has_many(
+  "allocation_nondidacticalallocations",
+  "Db::Django::Result::AllocationNondidacticalallocation",
   { "foreign.allocationId_id" => "self.allocationId" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -249,8 +234,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BdcyclW1gUmkH7LmC5i0Cw
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4mSmExWJrhQm4py2frkhXg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

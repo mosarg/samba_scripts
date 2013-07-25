@@ -17,9 +17,10 @@ use Server::AdbCommon qw($schema);
 use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb setDefaultPolicyAdb);
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
+use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb);
 
 
-my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
+#my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
 my $extraGroups=['lavoro1','lavoro2'];
 
 
@@ -31,24 +32,58 @@ sub _dumper_hook {
       result_source => undef,
     }, ref($_[0]);
   }
-  local $Data::Dumper::Freezer = '_dumper_hook';
+$Data::Dumper::Freezer = '_dumper_hook';
 
 
 
   
 my $account=$schema->resultset('AccountAccount')->search({username=>'carlgonz'})->next; 
+my $backend=$schema->resultset('BackendBackend')->search({kind=>'samba4'})->next;
  
-print $account->username,"\n";
+my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>1001})->next;
+
+my $main_group=getAccountMainGroupAdb($account,$backend);
+
+ print $main_group->name;
+ 
+#my $s4_account= $user->account_accounts({kind=>'samba4'},{prefetch=>'backend_id'})->next;
+
+#print $s4_account->backend_id->kind,"\n";
+
+
+
+#my $query="SELECT DISTINCT groupId,groupName 
+#				FROM account INNER JOIN assignedPolicy USING(userIdNumber) 
+#				INNER JOIN policy USING(policyId) 
+#				INNER JOIN groupPolicy USING (policyId) 
+#				INNER JOIN `group` using(groupId) WHERE account.type=\'$type\' AND account.username=\'$userName\'";
+
+
+#my $groups=$schema->resultset('GroupGroup')->search({username=>$account->username,kind=>'samba4'},
+#						{prefetch=>{'group_grouppolicies'=>[
+#															{'policy_id'=>'backend_id'},
+#															{'policy_id'=>{'account_assignedpolicies'=>'account_id'}  }]  } } );
+
+
+#my $groups=getAccountGroupsAdb($account,'samba4');
+
+#my $accounts=getAccountsAdb($user);
+#
+#foreach my $group (@{$accounts}){
+#	print $group->username," ",$group->backend_id->kind,"\n";
+#}
+
+
 
 
 #print addPolicyAccountAdb($account,'baseLiceo');
-my $group=$schema->resultset('GroupGroup')->search({name=>'test2'})->next;
+#my $group=$schema->resultset('GroupGroup')->search({name=>'test2'})->next;
 
-print $group->name,"\n";
+#print $group->name,"\n";
 
 #print setPolicyGroupAdb($group,'prova');
 
-print setDefaultPolicyAdb($account,'student');
+#print setDefaultPolicyAdb($account,'student');
 
 #my $policy=$schema->resultset('AccountPolicy')->search({name=>'baseLiceo',username=>'carlgonz'},{prefetch=>{'account_assignedpolicies'=>'account_id'}})->next;
 

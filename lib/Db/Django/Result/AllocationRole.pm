@@ -159,9 +159,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 configuration_profiles
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oVHuPiXzj9D0xYJTS0f2pg
+Type: has_many
+
+Related object: L<Db::Django::Result::ConfigurationProfile>
+
+=cut
+
+__PACKAGE__->has_many(
+  "configuration_profiles",
+  "Db::Django::Result::ConfigurationProfile",
+  { "foreign.role_id" => "self.roleId" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:C9Ts4MkTpRanGBUMLJMK/w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
