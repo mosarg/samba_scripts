@@ -26,14 +26,12 @@ sub getAllGroupsAdb{
 sub addGroupAdb{
 	my $groupName=shift;
 	my $groupDescription=shift;
-
 	my $resultSet=$schema->resultset('GroupGroup')->search({name=>$groupName});
 	my $newGroup=$resultSet->next;
 	if (!$newGroup){
 		$newGroup=$schema->resultset('GroupGroup')->create(creationTimeStampsAdb({name=>$groupName,description=>$groupDescription}));
 	}
-
-	return $newGroup->name;
+	return $newGroup;
 }
 
 

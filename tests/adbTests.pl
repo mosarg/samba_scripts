@@ -12,7 +12,10 @@ use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getC
 #use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
 
-use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
+
+use Server::AdbCommon qw($schema);
+use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb setDefaultPolicyAdb);
+use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 
 
@@ -29,21 +32,58 @@ sub _dumper_hook {
     }, ref($_[0]);
   }
   local $Data::Dumper::Freezer = '_dumper_hook';
+
+
+
   
+my $account=$schema->resultset('AccountAccount')->search({username=>'carlgonz'})->next; 
+ 
+print $account->username,"\n";
+
+
+#print addPolicyAccountAdb($account,'baseLiceo');
+my $group=$schema->resultset('GroupGroup')->search({name=>'test2'})->next;
+
+print $group->name,"\n";
+
+#print setPolicyGroupAdb($group,'prova');
+
+print setDefaultPolicyAdb($account,'student');
+
+#my $policy=$schema->resultset('AccountPolicy')->search({name=>'baseLiceo',username=>'carlgonz'},{prefetch=>{'account_assignedpolicies'=>'account_id'}})->next;
+
+
+#print "cane ",$policy->name,"\n";
+
+#my $assigned=$account->account_assignedpolicies;
+#
+#while (my $ss=$assigned->next){
+#	print $ss->policy_id->name,"\n";
+#}
+
+ 
+ 
+ 
+
+#my $data=getAllPoliciesAdb('samba4');
+#
+#foreach my $policy (@{getAllPoliciesAdb('samba4')} ){
+#	print $policy->name,"\n";
+#}
+
+
+
+
+#print addGroupAdb('pensionati2','gruppo dei pensionati');
+
+
+#my $data=getAllGroupsAdb('samba4');
  
 
 
-
-print addGroupAdb('pensionati2','gruppo dei pensionati');
-
-
-my $data=getAllGroupsAdb('samba4');
-
-
-
-while (my $group=$data->next){
-	print $group->name,"\n";	
-}
+#while (my $group=$data->next){
+	#print $group->name,"\n";	
+#}
 
 
 

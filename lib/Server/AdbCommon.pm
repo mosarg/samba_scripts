@@ -75,4 +75,4 @@ sub getCurrentYearAdb{
     return executeAdbQuery($query);
 } 
 
-
+return 1;

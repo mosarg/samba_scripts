@@ -7,76 +7,81 @@ use Cwd;
 use Getopt::Long;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
-use Server::AdbCommon qw($adbDbh executeAdbQuery);
-use Server::AdbAccount qw(doAccountExistAdb);
+use Server::AdbCommon qw($schema creationTimeStampsAdb);
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
+
+use Try::Tiny;
 require Exporter;
-
-
+use feature "switch";
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(setDefaultPolicyAdb addPolicyAdb getAllPoliciesAdb setPolicyGroupAdb);
+our @EXPORT_OK = qw(setDefaultPolicyAdb addPolicyAccountAdb getAllPoliciesAdb setPolicyGroupAdb);
 
 
- sub doAccountHasPolicyAdb{
- 	my $account=shift;
- 	my $policyId=shift;
-  	my $query="SELECT COUNT(userIdNumber) FROM assignedPolicy WHERE userIdNumber=$account->{userIdNumber} AND type=\'$account->{type}\' AND policyId=\'$policyId\' ";
-    return executeAdbQuery($query);
- }
- 
- sub doPolicyHasGroupAdb{
- 	my $groupId=shift;
- 	my $policyId=shift;
- 	my $query="SELECT COUNT(policyId) FROM groupPolicy WHERE policyId=\'$policyId\' AND groupId=\'$groupId\'";
- 	return executeAdbQuery($query);
- }
 
-sub addPolicyAdb{
+#ok orm ready
+
+sub addPolicyAccountAdb{
 	my $account=shift;
-	my $policyId=shift;
-	
-	if(!(doAccountHasPolicyAdb($account,$policyId))){
-		my $query="INSERT INTO assignedPolicy (userIdNumber,type,policyId,start) VALUES ($account->{userIdNumber},\'$account->{type}\',$policyId,localtime)";
- 		my $queryH=$adbDbh->prepare($query);
- 		$queryH->execute();
-	}else{
-		return 0;
+	my $policy=shift;
+		
+	my $success=try{
+		$policy=$account->create_related('account_assignedpolicies',creationTimeStampsAdb( {policyId_id=>$policy->policy_id} ));
+		return 1;
+	}catch {
+		when (/Can't call method/){
+			return 0;
+		}
+		when ( /Duplicate entry/ ){
+			return 2;		
+		}
+		default {die $_}
 	}
- 	
- 	return 1; 		
-	
+		
 }
 
+
+#Ok orm ready
 sub getAllPoliciesAdb{
 	my $backend=shift;
-	my $query="SELECT policyId,description FROM policy WHERE type=\'$backend\'";
-	my $result = $adbDbh->prepare($query);
-	$result->execute();
-	my $matches = $result->fetchall_arrayref({});
-	return $matches;
+	my @result=$schema->resultset('AccountPolicy')->search({kind=>$backend},{prefetch=>'backend_id'})->all;
+	return \@result;
 }
 
+#Ok orm ready
 sub setPolicyGroupAdb{
-	my $groupId=shift;
-	my $policyId=shift;
-	my $query="INSERT INTO groupPolicy (policyId,groupId,start) VALUES ($policyId,$groupId,localtime)";
-	my $queryH=$adbDbh->prepare($query);
- 	$queryH->execute();
+	my $group=shift;
+	my $policy=shift;
+	
+	my $success=try {
+		$group->create_related('group_grouppolicies',creationTimeStampsAdb({policyId_id=>$policy->policy_id} ));
+		return 1;
+	}catch{
+		when (/Can't call method/){
+			return 0;
+		}
+		when ( /Duplicate entry/ ){
+			return 2;		
+		}
+		default {die $_}
+	}
+	
+	
 }
 
+#Ok orm ready
  sub setDefaultPolicyAdb{
  	my $account=shift;
  	my $role=shift;
- 	if (doAccountExistAdb($account->{userIdNumber},$account->{type} )){
- 	 		return addPolicyAdb($account,$ldap->{default_policy}->{$role});
+ 	
+ 	my $policy=$schema->resultset('AccountPolicy')->search({ name=>$ldap->{default_policy}->{$role} })->next;
+ 		
+ 	if ($account && $policy){
+ 		return addPolicyAccountAdb($account,$policy);
  	 			
  	}else{
  		return 0;
  	}
   }
-   
-sub getPolicyAdb{
- 	
- }
+

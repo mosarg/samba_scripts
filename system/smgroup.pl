@@ -6,9 +6,10 @@ use Getopt::Long;
 use Term::ANSIColor;
 use Switch;
 use Term::Emit ":all", {-color => 1};
-use Server::AdbGroup qw(getAllGroupsAdb );
+use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
-#use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
+use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
+
 #use Server::System qw(initGroups init);
 
 
@@ -36,7 +37,7 @@ $data->{backend}=$backend;
 
 switch ( $ARGV[0] ) {
 	case 'add' {
-		  # addGroup();
+		   addGroup();
 	}
 	case 'remove' {
 		
@@ -56,24 +57,30 @@ switch ( $ARGV[0] ) {
 }
 
 
-#sub addGroup{
-#		switch($backend){
-#			case 'samba4' {
-#			
-#			(	scalar(@ARGV)>1)||die("You must specify a group name\n");
-#			if((scalar(@ARGV)>1) && (scalar(@ARGV)<=2)){  
-#				print "possibile policies:\n";
-#				foreach my $policy (@{getAllPoliciesAdb($backend)}){
-#					print $policy->{policyId}," ",$policy->{description},"\n";
-#				}
-#				die("You must select a policy\n");
-#			}
-#				my $groupId=addGroupAdb($ARGV[1],$description);		
-#				setPolicyGroupAdb($groupId,$ARGV[2]);
+sub addGroup{
+	
+		my $groupName=$ARGV[1];
+		my $policyName=$ARGV[2];
+		
+		switch($backend){
+			case 'samba4' {
+		
+			(	scalar(@ARGV)>1)||die("You must specify a group name\n");
+			if((scalar(@ARGV)>1) && (scalar(@ARGV)<=2)){  
+				print "possibile policies:\n";
+				
+				foreach my $policy (@{getAllPoliciesAdb($backend)}){
+					print $policy->name," ",$policy->description,"\n";
+				}
+			
+				die("You must select a policy\n");
+			}
+			my $group=addGroupAdb($groupName,$description);		
+				setPolicyGroupAdb($group,$policyName);
 #				addS4Group( $ARGV[1]);
-#			}
-#		}
-#}
+			}
+		}
+}
 
 #Remove a single group or all groups defined in database
 #sub removeGroup {
@@ -108,15 +115,6 @@ sub listGroup{
 				if(!!doS4GroupExist($group->name)){emit_error;}else{emit_ok;}
 			}
 			
-#			foreach my $group (@{$groups}){
-#			
-#				emit "Samba4 group $group->[0]";
-#				if (!doS4GroupExist($group->[0])){
-#					emit_error;}else{
-#						emit_ok;
-#					}
-#				
-#			}
 		}
 	}
 }
