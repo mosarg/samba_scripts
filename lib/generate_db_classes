@@ -1,0 +1,1 @@
+dbicdump -o components='["InflateColumn::DateTime"]' -o preserve_case=1 Db::Django dbi:mysql:gestione_scuola mosa sambackett
