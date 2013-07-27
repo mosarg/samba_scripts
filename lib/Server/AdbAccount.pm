@@ -7,9 +7,12 @@ use Cwd;
 use Getopt::Long;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
-use Server::AdbCommon qw($schema getCurrentYearAdb);
+use Server::AdbCommon qw($schema getCurrentYearAdb creationTimeStampsAdb);
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
+use feature "switch";
+use Try::Tiny;
+
 require Exporter;
 
 
@@ -19,33 +22,31 @@ our @EXPORT_OK = qw(addAccountAdb getAccountAdb getAccountGroupsAdb getAccountMa
 
 
  
- 
-#sub addAccountAdb{
-# 	my $user=shift;
-# 	my $type=shift;
-# 	my $account={};
-# 	$account->{pristine}=1;
-# 	if (doAccountExistAdb($user->{userIdNumber},$type)){
-# 		$account->{pristine}=0;
-# 		return $account;
-# 	}else{
-# 		$user->{username}=sanitizeUsername($user->{surname}.$user->{name});
-# 		my $userNameCount=doUsernameExistAdb($user->{username});
-# 		if($userNameCount>0) {$user->{username}=$user->{username}.$userNameCount;}
-# 		
-# 		$account->{username}=$user->{username};
-# 		$account->{active}='false';
-# 		$account->{type}=$type;
-# 		$account->{userIdNumber}=$user->{userIdNumber};
-#
-#
-# 		my $query="INSERT INTO account (username,active,type,userIdNumber) VALUES (\'$account->{username}\',$account->{active},\'$account->{type}\',\'$account->{userIdNumber}\')";
-# 		my $queryH=$adbDbh->prepare($query);
-# 		$queryH->execute();
-# 		
-# 	}
-# 	return $account;
-#  }
+#ok orm ready
+
+sub addAccountAdb{
+ 	my $user=shift;
+ 	my $backend=shift;
+ 	my $result={pristine=>1};
+ 	
+ 	try{
+ 		my $username=sanitizeUsername($user->name.$user->surname);
+ 		#check for username uniqueness
+ 		my $usernameCount=$schema->resultset('AccountAccount')->search({username=>{like=>"$username%"} },{columns=>[qw/username/],distinct=>1})->count;
+ 		$username=$usernameCount?$username.$usernameCount:$username;
+ 		my $account=$user->create_related('account_accounts',creationTimeStampsAdb({username=>$username,active=>'false',backendId_id=>$backend->backend_id}));
+ 		return 1;		
+ 	}catch{
+ 		when (/Can't call method/){
+			return 0;
+		}
+		when ( /Duplicate entry/ ){
+			return 2;		
+		}
+		default {die $_}
+ 	}
+
+  }
 
 
 
@@ -76,25 +77,17 @@ sub getAccountAdb{
 	return $account;
 } 
  
-  
+
+#ok orm ready  
 sub getAccountMainGroupAdb{
 	my $account=shift;
 	my $backend=shift;
 	my $currentYear=getCurrentYearAdb();
 	my $allocation=$account->user_id->allocation_allocations({yearId_id=>$currentYear->school_year_id})->next;
-	
 	my $profile=$schema->resultset('ConfigurationProfile')->search({backendId_id=>$backend->backend_id,role_id=>$allocation->role_id_id})->next;
-	
 	return $profile->main_group;
-		
-	
-#	my $query="SELECT DISTINCT groupName FROM user 
-#			   INNER JOIN account USING(userIdNumber) 
-#			   INNER JOIN role USING(role) 
-#			   INNER JOIN `group` ON(role.mainGroup=`group`.groupId) 
-#			   WHERE username=\'$userName\'";
-#	return executeAdbQuery($query);		   
+
 
 }
-  
+ return 1;
   

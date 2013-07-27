@@ -3,78 +3,56 @@ package Server::AdbOu;
 use DBI;
 use strict;
 use warnings;
-use Switch;
-use Cwd;
-use Getopt::Long;
-use Data::Dumper;
-use Data::Structure::Util qw( unbless );
-use Server::AdbCommon qw($adbDbh executeAdbQuery);
+use Server::AdbCommon qw($schema getCurrentYearAdb);
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
+use feature "switch";
+use Try::Tiny;
+
 require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getAllOuAdb getOuByUsernameAdb getOuByUserIdAdb);
+our @EXPORT_OK = qw(getAllOuAdb getUserOuAdb);
 
-sub getOuByUsernameAdb{
-	my $userName=shift;
-	my $role=shift;
-	my $format=shift;
+sub getUserOuAdb{
+	my $user=shift;
+	my $currentYear=getCurrentYearAdb();
 	
-	switch($format){
-		case 'samba4' {
+	#get user main current allocation
+	
+	my $allocation=$user->allocation_allocations({yearId_id=>$currentYear->school_year_id})->first;
+	for($allocation->role_id->role){
+		when(/student/){
+			#check for possibile student allocation inconsistency
+			my $allocationHandle=$allocation->allocation_didacticalallocations( {aggregate=>0},{join=>{'class_id'=>'school_id'}, select=>['class_id.name','class_id.ou','class_id.schoolId_id'],distinct=>1 } );
+			if( $allocationHandle->count > 1){
+				print "Fatal error, a student cannot have more then one structural allocation\n";
+				return 0;
+			}
+			my	$currentAllocation=$allocationHandle->first;
+			return [$currentAllocation->class_id->ou,$currentAllocation->class_id->school_id->ou];
 			
-			switch($role){
-			case 'student' { 
-						my $query="SELECT DISTINCT CONCAT('ou=',classOu,',ou=',schoolOu) FROM account 
-					   INNER JOIN studentAllocation USING(userIdNumber) 
-					   INNER JOIN class USING(classId) 
-					   INNER JOIN school USING (meccanographic)
-					   WHERE  type=\'$format\' AND year=(SELECT year FROM schoolYear WHERE current=true) AND username=\'$userName\'";
-
-					return executeAdbQuery($query);
-			}
-			case 'teacher' {
-				my $query="SELECT CONCAT('ou=',IF(ou='default',(SELECT defaultOu FROM role WHERE role.role=user.role),ou)) AS ou 
-							FROM user INNER JOIN account USING (userIdNumber) 
-							INNER JOIN teacherAllocation USING(userIdNumber) 
-							INNER JOIN class USING (classId) 
-							INNER JOIN school using(meccanographic) 
-							WHERE meccanographic IN (SELECT meccanographic FROM school WHERE active=true AND username=\'$userName\') ";
-							return executeAdbQuery($query);
-				
-			}
-			case 'ata' {
-					my $query="SELECT CONCAT('ou=',IF(ou='default',(SELECT defaultOu FROM role WHERE role.role=user.role),ou)) AS ou 
-							FROM user INNER JOIN account USING(userIdNumber) 
-							INNER JOIN ataAllocation USING(userIdNumber) 
-							INNER JOIN school using(meccanographic) 
-							WHERE meccanographic IN (SELECT meccanographic FROM school WHERE active=true AND username=\'$userName\') ";
-							return executeAdbQuery($query);
-			}
-			
-			}		   
 		}
-		default {return 0;}
+		when(/teacher/){
+			if ($allocation->ou eq 'default'){
+				return [$allocation->role_id->ou];				
+			}else
+			{return [$allocation->ou];}			
+		}
+		when(/ata/){
+			if ($allocation->ou eq 'default'){
+				return [$allocation->role_id->ou];				
+			}else
+			{return [$allocation->ou];}
+		}
 	}
+	
+	
+
 }
 
-sub getOuByUserIdAdb{
-	my $userIdNumber=shift;
-	my $format=shift;
-	switch($format){
-		case 'samba4' {
-			my $query="SELECT DISTINCT username,CONCAT('ou=',classOu),CONCAT('ou=',schoolOu) FROM account 
-					   INNER JOIN studentAllocation USING(userIdNumber) 
-					   INNER JOIN class USING(classId) 
-					   INNER JOIN school USING (meccanographic)
-					   WHERE  type=\'$format\' AND year=(SELECT year FROM schoolYear WHERE current=true) AND userIdNumber=$userIdNumber";
-			return executeAdbQuery($query);		   
-		}
-		default {return 0;}
-	}
-}
+
 
 sub getAllOuAdb{
 	my $format=shift;
@@ -124,23 +102,7 @@ sub getAllOuAdb{
 	
 	}
 	return $formattedResult;
-	
 }
 
-sub setDefaultOu{
-	my $ou=shift;
-	my $role=shift;
-	switch($role){
-		case 'student' {
-		}
-		case 'teacher'{
-			
-		}
-		case 'ata'{
-			
-		}
-		default {
-			
-		}
-	}	
-}
+
+return 1;

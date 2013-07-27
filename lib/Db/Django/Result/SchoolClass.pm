@@ -85,6 +85,11 @@ __PACKAGE__->table("school_class");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 aggregate
+
+  data_type: 'tinyint'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -122,6 +127,8 @@ __PACKAGE__->add_columns(
     is_foreign_key => 1,
     is_nullable    => 0,
   },
+  "aggregate",
+  { data_type => "tinyint", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -183,8 +190,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7M3JLkKDtaInHFYLxcZR6w
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-26 15:44:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pzZBx1/lHKzKOXI89FVoGw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

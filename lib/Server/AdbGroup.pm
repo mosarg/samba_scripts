@@ -7,6 +7,10 @@ use Data::Structure::Util qw( unbless );
 use Server::AdbCommon qw($schema creationTimeStampsAdb);
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
+
+use feature "switch";
+use Try::Tiny;
+
 require Exporter;
 
 
@@ -26,12 +30,19 @@ sub getAllGroupsAdb{
 sub addGroupAdb{
 	my $groupName=shift;
 	my $groupDescription=shift;
-	my $resultSet=$schema->resultset('GroupGroup')->search({name=>$groupName});
-	my $newGroup=$resultSet->next;
-	if (!$newGroup){
-		$newGroup=$schema->resultset('GroupGroup')->create(creationTimeStampsAdb({name=>$groupName,description=>$groupDescription}));
+	
+	try{
+		$schema->resultset('GroupGroup')->create(creationTimeStampsAdb({name=>$groupName,description=>$groupDescription}));
+		return 1;
+	}catch{
+		when (/Can't call method/){
+			return 0;
+		}
+		when ( /Duplicate entry/ ){
+			return 2;		
+		}
+		default {die $_}
 	}
-	return $newGroup;
 }
 
 

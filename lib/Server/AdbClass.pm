@@ -7,21 +7,19 @@ use Cwd;
 use Getopt::Long;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
-use Server::AdbCommon qw($adbDbh executeAdbQuery);
+use Server::AdbCommon qw($schema creationTimeStampsAdb);
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
+use feature "switch";
+use Try::Tiny;
+
+
 require Exporter;
 
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(syncClassAdb addClassAdb);
 
-sub doClassExistAdb{
- 	my $classId=shift;
- 	my $meccanographic=shift;
- 	my $query="SELECT COUNT(classId) FROM class WHERE classId=\'$classId\' AND meccanographic=\'$meccanographic\'";
-    return executeAdbQuery($query);
- }
 
 sub normalizeClassAdb{
 	my $class=shift;
@@ -44,26 +42,32 @@ sub normalizeClassesAdb{
 
 sub addClassAdb{
   	my $class=shift;
+  	my $dbClass={name=>$class->{classId},ou=>$class->{ou},description=>$class->{description},capacity=>30};
   	
- 	if (doClassExistAdb($class->{classId},$class->{meccanographic}) ){
- 		return 0;
- 	}else{
- 		my $query="INSERT INTO class (classId,classDescription,classOu,classCapacity,meccanographic) 
- 				VALUES (\'$class->{classId}'\,'Class Description',\'$class->{ou}\',30,\'$class->{meccanographic}\')";
- 			my $queryH=$adbDbh->prepare($query);
- 			$queryH->execute();
- 		return 1;
- 	}
+  	#get school object
+  	my $school=$schema->resultset('SchoolSchool')->search({meccanographic=>$class->{meccanographic} })->next;
+  	
+  	try{
+  		$school->create_related('school_classes',creationTimeStampsAdb($dbClass) );
+		return 1;
+  	}catch{
+  			when (/Can't call method/){
+			return 0;
+		}
+		when ( /Duplicate entry/ ){
+			return 2;		
+		}
+		default {die $_}
+  		
+  	}
+
  }
  
 sub syncClassAdb{
  	my $classes=shift;
- 	my $status=1;
- 	#insert empty class
- 	addClassAdb({classId=>'0Ext',classDescription=>'Empty class',ou=>'0Ext',classCapacity=>30,meccanographic=>'UDSSC817F0'});	
  	$classes=normalizeClassesAdb($classes);
  	foreach my $class (@{$classes}){
- 		$status=addClassAdb($class)*$status;
+ 		addClassAdb($class);
  	}
- 	return $status;
- } 
+ }
+  

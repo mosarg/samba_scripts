@@ -7,10 +7,13 @@ use Cwd;
 use Getopt::Long;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
-use Server::AdbCommon qw($schema);
+use Server::AdbCommon qw($schema creationTimeStampsAdb);
 use Db::Django;
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
+use feature "switch";
+use Try::Tiny;
+
 
 require Exporter;
 
@@ -40,12 +43,19 @@ sub normalizeSubjectsAdb {
 sub addSubjectAdb{
 	
 	my $subject=shift;
-	my $resultSet=$schema->resultset('SchoolSubject')->search({code=>$subject->{code}});
-	if(!$resultSet->next){
-		$schema->resultset('SchoolSubject')->create($subject);
+		
+	try{
+		$schema->resultset('SchoolSubject')->create(creationTimeStampsAdb($subject));
 		return 1;
+	}catch{
+		when (/Can't call method/){
+			return 0;
+		}
+		when ( /Duplicate entry/ ){
+			return 2;		
+		}
+		default {die $_}
 	}
-	return 0;
 }
 
 
@@ -61,7 +71,6 @@ sub syncSubjectAdb {
 		created =>"localtime",
 		modified=>"localtime"
 };
-	
 	
 	addSubjectAdb($emptySubject);
 	foreach my $subject ( @{$subjects} ) {

@@ -64,7 +64,7 @@ __PACKAGE__->table("allocation_schoolyear");
 
   data_type: 'varchar'
   is_nullable: 0
-  size: 1000
+  size: 200
 
 =head2 active
 
@@ -96,7 +96,7 @@ __PACKAGE__->add_columns(
   "year",
   { data_type => "integer", extra => { unsigned => 1 }, is_nullable => 0 },
   "description",
-  { data_type => "varchar", is_nullable => 0, size => 1000 },
+  { data_type => "varchar", is_nullable => 0, size => 200 },
   "active",
   { data_type => "tinyint", is_nullable => 0 },
 );
@@ -145,8 +145,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 11:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IUGd90LuhJfaCGZehAs4Ww
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-26 17:48:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:md8ZE0+WU/K1SQmSdGW98A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

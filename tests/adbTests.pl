@@ -9,19 +9,20 @@ use Data::Dumper;
 use HTML::Tabulate qw(render);
 #use Server::AdbUser qw(syncUsersAdb syncUsersAdb);
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis);
-#use Server::AdbClass qw(syncClassAdb);
+use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
 
 
-use Server::AdbCommon qw($schema);
+use Server::AdbCommon qw($schema getCurrentYearAdb);
 use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb setDefaultPolicyAdb);
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
-use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb);
-
+use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb);
+use Server::AdbOu qw(getOuByUsernameAdb);
 
 #my $user={uName=>'chtulu5',password=>'Samback@999',name=>'Test',surname=>'Test',ou=>'ou=liceo,ou=Users',idNumber=>'78999',meccanographic=>'USSP999999'};
 my $extraGroups=['lavoro1','lavoro2'];
+
 
 
 
@@ -34,17 +35,55 @@ sub _dumper_hook {
   }
 $Data::Dumper::Freezer = '_dumper_hook';
 
+#my $school=$schema->resultset('SchoolSchool')->search({meccanographic=>'UDPS011015'})->next;
 
-
+#print "School name ".$school->name,"\n";
   
-my $account=$schema->resultset('AccountAccount')->search({username=>'carlgonz'})->next; 
-my $backend=$schema->resultset('BackendBackend')->search({kind=>'samba4'})->next;
- 
+#my $account=$schema->resultset('AccountAccount')->search({username=>'carlgonz'})->next; 
+#my $backend=$schema->resultset('BackendBackend')->search({kind=>'samba4'})->next;
+my $currentYear=getCurrentYearAdb();
+
 my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>1001})->next;
 
-my $main_group=getAccountMainGroupAdb($account,$backend);
 
- print $main_group->name;
+my $allocation=$user->allocation_allocations({yearId_id=>$currentYear->school_year_id})->first;
+
+
+
+#my $handle=$allocation->allocation_didacticalallocations( {aggregate=>0},{ {columns=>[qw(/name/)],group_by=>[qw(/name/)]} , {prefetch=>'class_id'} });                   
+
+##my $allocationHandle=$allocation->allocation_didacticalallocations( {aggregate=>0},{join=>[qw(class_id)], select=>['class_id.name'],distinct=>1 } );
+my $allocationHandle2=$allocation->allocation_didacticalallocations( {aggregate=>0},{join=>{'class_id'=>'school_id'}, select=>['class_id.name','class_id.schoolId_id'],distinct=>1 } );
+#
+##print $handle->count;
+print $allocationHandle2->count;
+#
+#my $class= $allocationHandle2->first->class_id;
+#
+#print $class->school_id->name;
+
+
+#print $allocationHandle->first->class_id->school_id;
+
+#print $allocationHandle->first->class_id->name;
+#print $handle->first->class_id->school_id->ou;
+my $ou=getOuByUsernameAdb($user);
+
+
+print Dumper join(',',map{'ou='.$_} @{$ou});
+
+
+#my $main_group=getAccountMainGroupAdb($account,$backend);
+
+#my $username='carlgonz';
+#my $count=$schema->resultset('AccountAccount')->search({username=>{like=>"$username%"} },{columns=>[qw/username/],distinct=>1})->count;
+
+#print $count;
+
+#print addAccountAdb($user,$backend);
+
+
+# print $main_group->name;
  
 #my $s4_account= $user->account_accounts({kind=>'samba4'},{prefetch=>'backend_id'})->next;
 
@@ -130,13 +169,13 @@ my $main_group=getAccountMainGroupAdb($account,$backend);
 #print Dumper getAccountGroupsAdb('troianipie','samba4');
 
 
-#print syncClassAdb(getCurrentClassAis());
+#syncClassAdb(getCurrentClassAis());
 
 #print Dumper getCurrentSubjectAis();
 
 
 
-#print Dumper syncSubjectAdb(getCurrentSubjectAis());
+#syncSubjectAdb(getCurrentSubjectAis());
 
 
 #print Dumper getAccountAdb(617143,'samba4');

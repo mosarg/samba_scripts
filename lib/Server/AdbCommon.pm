@@ -22,7 +22,7 @@ our @EXPORT_OK = qw($schema executeAdbQuery getCurrentYearAdb setCurrentYearAdb 
 
 our $schema=Db::Django->connect('dbi:mysql:gestione_scuola','mosa','sambackett');
 
-$schema->storage->debug(1);
+#$schema->storage->debug(1);
 
 #our $adbDbh = DBI->connect( "dbi:mysql:$adb->{'database'}:$adb->{'fqdn'}:3306",
 #	$adb->{'user'}, $adb->{'password'} )

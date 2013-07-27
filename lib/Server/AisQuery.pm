@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis);
+our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis);
 
 
 
@@ -35,8 +35,7 @@ sub executeAisQuery{
 	my $query=shift;
 	my $result = $aisDbh->prepare($query);
 	$result->execute();
-	my $slice={};
-	my $matches = $result->fetchall_arrayref($slice);
+	my $matches = $result->fetchall_arrayref({});
 	return $matches;
 };
 
@@ -56,13 +55,58 @@ sub getCurrentTeachersAis {
 }
 
 
+
 sub getCurrentStudentsAis {
 	my $query = "SELECT DISTINCT codalunnosidi AS \"userIdNumber\",nome AS \"name\",
        			cognome AS \"surname\", datanascita AS \"birthDate\", 
        			annocronologico AS \"classNumber\", sezione AS \"classLabel\",
-       			coddebolescuola AS \"meccanographic\", annoscol AS \"year\" 
+       			coddebolescuola AS \"meccanographic\", annoscol AS \"year\", annocronologico||sezione AS \"classname\"
 				FROM tsisalu_alunni";
 	return executeAisQuery($query);
+}
+
+
+sub getCurrentStudentsClassSubjectUnNormAis{
+	my $query="SELECT DISTINCT m.imatid AS \"code\",ta.sacssdesc||ts.ssezldesc AS \"classname\" FROM
+tclsmatana ma INNER JOIN
+TMAT_MATERIE m on(ma.imatid=m.imatid)  
+INNER JOIN tcls_classi tc ON (ma.iclsid=tc.iclsid)
+INNER JOIN tacs_annicorso ta ON (tc.iacsid=ta.iacsid)
+INNER JOIN tind_indirizzo ti ON (tc.iindid=ti.iindid)
+INNER JOIN tsez_sezioni ts ON (tc.isezid=ts.isezid) ORDER BY ta.SACSSDESC, ts.SSEZLDESC";
+my $result={};
+my $subjectClass=executeAisQuery($query);
+
+foreach my $class (@{$subjectClass}){
+	
+	if(!$result->{$class->{classname}})
+		{$result->{$class->{classname}}=[];
+		
+	}
+	 push(@{$result->{$class->{classname}}},$class->{code});
+	}
+	
+return $result;
+}
+
+sub getCurrentStudentsClassSubjectAis{
+	my $result={};
+	my $subjectClass=getCurrentStudentsClassSubjectUnNormAis();
+	my $students=getCurrentStudentsAis();
+
+	foreach my $student (@{$students}){
+		$result->{$student->{userIdNumber}}=[];
+		foreach my $subject (@{$subjectClass->{$student->{classname}}}){
+			push(@{$result->{$student->{userIdNumber}}},{
+					classLabel=>lc($student->{classLabel}),
+					classNumber=>lc($student->{classNumber}),
+					classId=>lc($student->{classNumber}).lc($student->{classLabel}),
+					subjectId=>$subject,
+					userIdNumber=>$student->{userIdNumber}
+			});
+		}
+	}
+	return $result;
 }
 
 
