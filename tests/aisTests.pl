@@ -7,6 +7,7 @@ use Server::Commands qw(sanitizeString);
 use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
+use Server::AdbCommon qw($schema getCurrentYearAdb addYearAdb getActiveSchools);
 
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis);
 
@@ -20,9 +21,20 @@ my $extraGroups=['lavoro1','lavoro2'];
 
 #print Dumper getCurrentTeacherClassAis(2012);
 
-print Dumper getCurrentStudentsClassSubjectAis();
 
-#print Dumper getAisUsers ('student');
+
+my $school=getActiveSchools();
+
+
+my @schools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
+
+
+print Dumper getCurrentStudentsClassSubjectAis(\@schools);
+
+#print Dumper getAisUsers ('student',\@schools);
+
+
+print scalar @{getAisUsers ('ata')};
 #print getCurrentYearAis();
 
 #print Dumper getCurrentClassAis();

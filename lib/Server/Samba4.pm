@@ -335,11 +335,11 @@ sub addS4User {
 "samba-tool user add $user->{account}->{username} \'$user->{account}->{password}\' --userou $user->{account}->{ou},"
 	  . $ldap->{user_base}
 	  . " --surname=\\\""
-	  . sanitizeString( $user->{surname} )
+	  .  $user->{surname} 
 	  . "\\\" --use-username-as-cn";
 	$command .=
 	    " --given-name=\\\""
-	  . sanitizeString( $user->{name} )
+	  .  $user->{name} 
 	  . "\\\" --profile-path=\"\\\\\\\\\\\\\\\\"
 	  . $server->{windows_name}
 	  . "\\\\\\\\"

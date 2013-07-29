@@ -65,9 +65,11 @@ sub addClassAdb{
  
 sub syncClassAdb{
  	my $classes=shift;
+ 	my $status=1;
  	$classes=normalizeClassesAdb($classes);
  	foreach my $class (@{$classes}){
- 		addClassAdb($class);
+ 		$status=addClassAdb($class)*$status;
  	}
+ 	return $status;
  }
   

@@ -37,12 +37,10 @@ sub executeAisQuery{
 	my $result = $aisDbh->prepare($query);
 	$result->execute();
 	my $matches = $result->fetchall_arrayref({});
-	$aisDbh->commit;
+	$result->finish;
 	$aisDbh->disconnect;	
 	return $matches;
 };
-
-
 
 sub getCurrentTeachersAis {
 	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
@@ -60,11 +58,12 @@ sub getCurrentTeachersAis {
 
 
 sub getCurrentStudentsAis {
+	my $parameters=shift;
 	my $query = "SELECT DISTINCT codalunnosidi AS \"userIdNumber\",nome AS \"name\",
        			cognome AS \"surname\", datanascita AS \"birthDate\", 
        			annocronologico AS \"classNumber\", sezione AS \"classLabel\",
        			coddebolescuola AS \"meccanographic\", annoscol AS \"year\", annocronologico||sezione AS \"classname\"
-				FROM tsisalu_alunni";
+				FROM tsisalu_alunni WHERE coddebolescuola IN (".join(',',@{$parameters}).")";
 	return executeAisQuery($query);
 }
 
@@ -93,9 +92,10 @@ return $result;
 }
 
 sub getCurrentStudentsClassSubjectAis{
+	my $parameters=shift;
 	my $result={};
 	my $subjectClass=getCurrentStudentsClassSubjectUnNormAis();
-	my $students=getCurrentStudentsAis();
+	my $students=getCurrentStudentsAis($parameters);
 
 	foreach my $student (@{$students}){
 		$result->{$student->{userIdNumber}}=[];
@@ -187,7 +187,7 @@ sub getCurrentYearAis{
 	my $queryH=$aisDbh->prepare($query);
  	$queryH->execute();
  	my @result=$queryH->fetchrow_array();
- 	$aisDbh->commit;
+	$queryH->finish;
  	$aisDbh->disconnect;
  	return @result?$result[0]:0;
 }
@@ -196,9 +196,10 @@ sub getCurrentYearAis{
 sub getAisUsers {
 
 my $role=shift;
+my $parameters=shift;
 
 if ($role eq 'student'){
-	return getCurrentStudentsAis();
+	return getCurrentStudentsAis($parameters);
 }
 if ($role eq 'ata'){
 	return getCurrentAtaAis();

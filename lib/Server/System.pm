@@ -125,8 +125,7 @@ sub moveUser {
 
 	for ($backend) {
 		when(/samba4/) {
-			emit
-"Move user $simpleUser->{name} $simpleUser->{surname} to $simpleUser->{account}->{ou}";
+			emit "Move user $simpleUser->{name} $simpleUser->{surname} to $simpleUser->{account}->{ou}";
 			my $oldUserDn = "cn=$simpleUser->{account}->{username},"
 			  . getUserBaseDn( $simpleUser->{account}->{username} );
 			my $newUserDn = "cn="
@@ -178,12 +177,10 @@ sub recordUser {
 	my $users    = shift;
 	my $filename = shift;
 	open FHANDLE, ">$filename" or die("Cannot open $filename");
-	print FHANDLE
-	  "userIdNumber,name,surname,username,password,type,backendUidNumber\n";
-	foreach my $user ( @{$users} ) {
-
-		print FHANDLE
-"$user->{userIdNumber},\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{type},$user->{account}->{backendUidNumber}\n";
+	print FHANDLE " name,surname,username,password,type,backendUidNumber\n";
+	foreach my $fullUser ( @{$users} ) {
+		my $user=$fullUser->{simpleUser};
+		print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$backend,$user->{account}->{backendUidNumber}\n";
 	}
 	close FHANDLE;
 	return 1;
@@ -203,6 +200,7 @@ sub createUser {
 				$user->{simpleUser}->{creationStatus}
 				  ? emit_ok
 				  : emit_error;
+				  
 			}
 			default { emit_error; }
 		}
@@ -210,6 +208,7 @@ sub createUser {
 	else {
 		emit_done "PRESENT";
 	}
+	
 	return $user;
 }
 

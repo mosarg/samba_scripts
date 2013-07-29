@@ -27,7 +27,6 @@ sub syncAllocationAdb {
 	else {
 		return addAllocationAdb( $user, $role, $importedAllocations );
 	}
-
 }
 
 sub updateAllocationAdb {

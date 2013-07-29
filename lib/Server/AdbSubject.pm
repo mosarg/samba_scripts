@@ -21,6 +21,7 @@ our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw(syncSubjectAdb);
 
 
+
 sub normalizeSubjectAdb {
 	my $subject = shift;
 	$subject->{description} = ucfirst( lc( $subject->{description} ) );
@@ -57,7 +58,6 @@ sub addSubjectAdb{
 		default {die $_}
 	}
 }
-
 
 sub syncSubjectAdb {
 	my $subjects = shift;
