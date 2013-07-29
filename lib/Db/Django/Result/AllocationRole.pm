@@ -66,13 +66,6 @@ __PACKAGE__->table("allocation_role");
   is_nullable: 0
   size: 45
 
-=head2 defaultOu
-
-  accessor: 'default_ou'
-  data_type: 'varchar'
-  is_nullable: 0
-  size: 45
-
 =head2 name
 
   data_type: 'varchar'
@@ -111,13 +104,6 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 20 },
   "description",
   { data_type => "varchar", is_nullable => 0, size => 45 },
-  "defaultOu",
-  {
-    accessor => "default_ou",
-    data_type => "varchar",
-    is_nullable => 0,
-    size => 45,
-  },
   "name",
   { data_type => "varchar", is_nullable => 0, size => 45 },
   "ou",
@@ -183,8 +169,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-26 17:48:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:jsrkbwVUyFitBZhsKt5zYw
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-28 23:39:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ps4KB0CEvgZPnro/evB04Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -35,6 +35,18 @@ __PACKAGE__->table("account_policy");
 
 =head1 ACCESSORS
 
+=head2 created
+
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
+  is_nullable: 0
+
+=head2 modified
+
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
+  is_nullable: 0
+
 =head2 policyId
 
   accessor: 'policy_id'
@@ -64,6 +76,18 @@ __PACKAGE__->table("account_policy");
 =cut
 
 __PACKAGE__->add_columns(
+  "created",
+  {
+    data_type => "datetime",
+    datetime_undef_if_invalid => 1,
+    is_nullable => 0,
+  },
+  "modified",
+  {
+    data_type => "datetime",
+    datetime_undef_if_invalid => 1,
+    is_nullable => 0,
+  },
   "policyId",
   {
     accessor          => "policy_id",
@@ -98,7 +122,7 @@ __PACKAGE__->set_primary_key("policyId");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<account_policy_name_42b6fb59870e0912_uniq>
+=head2 C<name>
 
 =over 4
 
@@ -110,10 +134,7 @@ __PACKAGE__->set_primary_key("policyId");
 
 =cut
 
-__PACKAGE__->add_unique_constraint(
-  "account_policy_name_42b6fb59870e0912_uniq",
-  ["name", "backendId_id"],
-);
+__PACKAGE__->add_unique_constraint("name", ["name", "backendId_id"]);
 
 =head1 RELATIONS
 
@@ -178,8 +199,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nqY6kAbn84zxc6iEy0SjfQ
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-28 23:39:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Soxxv9SmFKRtl4mIZS808A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

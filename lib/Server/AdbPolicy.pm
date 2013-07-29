@@ -37,7 +37,7 @@ sub addPolicyAccountAdb{
 			return 2;		
 		}
 		default {die $_}
-	}
+	};
 		
 }
 
@@ -53,31 +53,34 @@ sub getAllPoliciesAdb{
 sub setPolicyGroupAdb{
 	my $group=shift;
 	my $policy=shift;
-	
 	my $success=try {
 		$group->create_related('group_grouppolicies',creationTimeStampsAdb({policyId_id=>$policy->policy_id} ));
 		return 1;
 	}catch{
 		when (/Can't call method/){
+		
 			return 0;
 		}
 		when ( /Duplicate entry/ ){
+			
 			return 2;		
 		}
-		default {die $_}
-	}
+		default {
+			
+			die $_}
+	};
 }
-
 
 #Ok orm ready
  sub setDefaultPolicyAdb{
  	my $account=shift;
  	my $role=shift;
+ 	my $defaultProfile=$schema->resultset('ConfigurationProfile')->search({role_id=>$role->role_id})->next;
  	
- 	my $policy=$schema->resultset('AccountPolicy')->search({ name=>$ldap->{default_policy}->{$role} })->next;
+ 	my $policy=$schema->resultset('AccountPolicy')->search({policyId=>$defaultProfile->default_policy_id});
  		
- 	if ($account && $policy){
- 		return addPolicyAccountAdb($account,$policy);
+ 	if ($policy->count>0){
+ 		return addPolicyAccountAdb($account,$policy->first);
  	 			
  	}else{
  		return 0;

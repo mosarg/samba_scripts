@@ -3,85 +3,50 @@ package Server::AdbUser;
 use DBI;
 use strict;
 use warnings;
-use List::UtilsBy qw(extract_by);
 use Data::Dumper;
-use Server::AdbCommon qw($adbDbh executeAdbQuery getCurrentYearAdb);
-use Server::AdbAccount qw(addAccountAdb doAccountExistAdb getAccountAdb updateAccountAdb  getAccountsAdb);
+use List::UtilsBy qw(extract_by);
+use Server::AdbCommon qw($schema getCurrentYearAdb creationTimeStampsAdb);
+use Server::AdbAccount qw(addAccountAdb  getAccountAdb   getAccountsAdb);
 use Server::AdbPolicy qw(setDefaultPolicyAdb);
-use Server::AdbAllocation qw(addAllocationAdb removeAllocationAdb);
+use Server::AdbAllocation qw(syncAllocationAdb);
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername today);
+use feature "switch";
+use Try::Tiny;
 require Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(syncUsersAdb addUserAdb getAllUsersAdb doUsersExistAdb);
+our @EXPORT_OK = qw(syncUsersAdb addUserAdb getAllUsersAdb doUsersExistAdb deactivateUserAdb);
 
 
 
 
 sub doUsersExistAdb{
-	my $query =
-	  "SELECT COUNT(userIdNumber) FROM user";
-	return executeAdbQuery($query);
+	my $usersNumber=$schema->resultset('SysUserSysUser')->count;
+	return $usersNumber;
 }
-
-sub doUserExistAdb {
-	my $userId = shift;
-	my $query =
-	  "SELECT COUNT(userIdNumber) FROM user WHERE userIdNumber=$userId";
-	return executeAdbQuery($query);
-}
-
-
 
 sub getUserOrderAdb{
-	my $query="SELECT MAX(insertOrder)+1 AS newOrder FROM user";
-	my $result=executeAdbQuery($query);
-	return $result?$result:0;
+	my $newInsertOrder=$schema->resultset('SysuserSysuser')->get_column('insertOrder')->max;
+	$newInsertOrder=$newInsertOrder?$newInsertOrder+1:0;
+	return $newInsertOrder;
 }
-
-
-
-
-
-
-
 
 sub getAllUsersByRoleAdb{
 	my $role=shift;
 	my $year=shift;
-	my $query={};
-	$query->{student}="SELECT DISTINCT user.userIdNumber,user.name,user.surname,user.role,meccanographic  
-				FROM user INNER JOIN studentAllocation USING(userIdNumber) 
-				INNER JOIN class USING(classId) INNER JOIN school USING(meccanographic) 
-				WHERE YEAR=$year 
-				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true)";
-	$query->{teacher}="SELECT DISTINCT  user.userIdNumber,user.name,user.surname,user.role,meccanographic  
-				FROM user INNER JOIN teacherAllocation USING(userIdNumber) 
-				INNER JOIN class USING(classId)
-				INNER JOIN school USING(meccanographic) 
-				WHERE YEAR=$year 
-				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true) GROUP BY userIdNumber";
-	$query->{ata}="SELECT DISTINCT  user.userIdNumber,user.name,user.surname,user.role,meccanographic  
-				FROM user INNER JOIN ataAllocation USING(userIdNumber) 
-				INNER JOIN school USING(meccanographic) 
-				WHERE YEAR=$year
-				AND meccanographic IN (SELECT meccanographic FROM school WHERE active=true)";
-	my $result = $adbDbh->prepare($query->{$role});
-	$result->execute();
-	return $result->fetchall_arrayref({});			
+	my @result=$schema->resultset('SysuserSysuser')->search({roleId_id=>$role->role_id,yearId_id=>$year->school_year_id},{join=>'allocation_allocations'})->all;
+	return \@result;
+				
 }
-
-
-
 
 sub getAllUsersAdb{
 	my $year=shift;
-	return [@{getAllUsersByRoleAdb('student',$year)},@{getAllUsersByRoleAdb('ata',$year)},@{getAllUsersByRoleAdb('teacher',$year)}];
+	my $ata=$schema->resultset('AllocationRole')->search({role=>'ata'})->first;
+	my $student=$schema->resultset('AllocationRole')->search({role=>'student'})->first;
+	my $teacher=$schema->resultset('AllocationRole')->search({role=>'teacher'})->first;
+	return [@{getAllUsersByRoleAdb($student,$year)},@{getAllUsersByRoleAdb($student,$year)},@{getAllUsersByRoleAdb($student,$year)}];
 }
-
-
-
 
 sub normalizeUserAdb {
 	my $user          = shift;
@@ -91,7 +56,7 @@ sub normalizeUserAdb {
 	$user->{surname} = ucfirst( sanitizeString( lc( $user->{surname} ) ) );
 
 	if ( $role eq 'student' ) {
-		$user = normalizeStudentAdb($user);
+		$user = normalizeStudentAdb($user,$allocationMap);
 	}
 	if ( $role eq 'teacher' ) {
 		$user = normalizeTeacherAdb( $user, $allocationMap );
@@ -105,21 +70,23 @@ sub normalizeUserAdb {
 
 sub normalizeStudentAdb {
 	my $user = shift;
+	my $allocations = shift;
+	my $allocation = $allocations->{ $user->{userIdNumber} };
 	$user->{classLabel} = lc( $user->{classLabel} );
 	$user->{classId}    = $user->{classNumber} . $user->{classLabel};
+	$user->{allocations} = $allocation;
 	return $user;
 }
 
 sub normalizeAtaAdb {
 	my $user = shift;
-	$user->{year} = getCurrentYearAdb();
+	
 	return $user;
 }
 
 sub normalizeTeacherAdb {
 	my $user        = shift;
 	my $allocations = shift;
-	$user->{year} = getCurrentYearAdb();
 	my $allocation = $allocations->{ $user->{userIdNumber} };
 	if (!$allocation){
 		$allocation=[{classId=>'0Ext',subjectId=>1000666}];
@@ -142,54 +109,88 @@ sub normalizeUsersAdb {
 	return $users;
 }
 
+
 sub addUserAdb {
 	my $user = shift;
 	my $role = shift;
-	my $origin=shift;
-	$user->{role} = $role;
 	my $userStatus={};
-	my $accountType='samba4';
-	
-	#Check status;
-	$userStatus->{user}=doUserExistAdb( $user->{userIdNumber});
-	$userStatus->{account}=doAccountExistAdb($user->{userIdNumber},$accountType);
+	my $adbAccount;
+	my $accountType=$schema->resultset('BackendBackend')->search({kind=>'samba4'})->first;
+	my $adbUser=$schema->resultset('SysuserSysuser')->search({sidiId=>$user->{userIdNumber}});
+	$userStatus->{user}=$adbUser->count;
+	if ($userStatus->{user}){
+		$adbUser=$adbUser->first;
+		$adbAccount=$schema->resultset('AccountAccount')->search({userId_id=>$adbUser->user_id,backendId_id=>$accountType->backend_id});
+		$userStatus->{account}=$adbAccount->count;	
+	}
 	$user->{pristine}=0;
 	$user->{modified}=0;
 	
-	
 	if(!$userStatus->{user}){
-				my $query =
-"INSERT INTO user (userIdNumber,name,surname,role,origin,creation,insertOrder) VALUES ($user->{userIdNumber},\'$user->{name}\',\'$user->{surname}\',\'$user->{role}\',\'$origin\',localtime,$user->{insertOrder})";
-		my $queryH = $adbDbh->prepare($query);
-		$queryH->execute();
-		$user->{pristine}=1;
+		$adbUser=try{
+			$adbUser=$schema->resultset('SysuserSysuser')->create(creationTimeStampsAdb(
+				{
+				sidiId=>$user->{userIdNumber},
+				name=>$user->{name},
+				surname=>$user->{surname},
+				origin=>$user->{origin},
+				insertOrder=>$user->{insertOrder}	
+				}
+				) );
+				$user->{pristine}=1;		
+				return $adbUser;	
+		}catch{
+		when (/Can't call method/) {
+			$adbUser->{error}=1;
+			return 0;
+		}
+		default { die $_ }
+		};
 	}
+
+	if ($adbUser->{error}){
+		return {result=>$user,data=>$adbUser};
+	}
+
 	if(!$userStatus->{account}){
-		$user->{account} = addAccountAdb( $user, $accountType);
-		$user->{modified}=1;
-	}else{
-		$user->{account} = getAccountAdb($user->{userIdNumber},$accountType);
+		addAccountAdb( $adbUser, $accountType);
+		if(!$user->{pristine}){$user->{modified}=1;}
 	}
 	
-	if (!addAllocationAdb( $user, $role ) ) {
-			$user->{allocation}=0;
-	}else{
-		$user->{modified}=1;
-	}
-	if(setDefaultPolicyAdb( $user->{account}, $user->{role} )){$user->{modified}=1};
+		
+	my $allocationStatus=syncAllocationAdb( $adbUser, $role ,$user->{allocations});
 	
-	return $user;
+	if ($allocationStatus->{sub_allocations_modified}||$allocationStatus->{main_allocation_modified} ) {
+			$user->{modified}=1;
+	}
+	
+	$adbAccount=$adbUser->account_accounts({backendId_id=>$accountType->backend_id})->first;
+		
+	if(setDefaultPolicyAdb($adbAccount, $role )==1){
+		if(!$user->{pristine}){$user->{modified}=1};
+	}
+	
+	return {result=>$user,data=>$adbUser};
 }
 
 sub deactivateUserAdb{
 	my $user=shift;
-	my $role=shift;
-	removeAllocationAdb($user,$role);
-	my $accounts=getAccountsAdb($user->{userIdNumber});
-	$user->{account}=$accounts->[0];
-	foreach my $account (@{$accounts}){
-		$account->{active}=0;	
-		updateAccountAdb($account);	
+	
+	
+	my @allocations=$user->allocation_allocations->all;
+	
+	foreach my $allocation (@allocations){
+		$allocation->delete_related('allocation_didacticalallocations');
+		$allocation->delete_related('allocation_nondidacticalallocations');
+		$allocation->delete;
+	}
+
+	
+	
+	my @accounts=$user->account_accounts->all;
+
+	foreach my $account (@accounts){
+		$account->update({active=>0});		
 	}
 	return $user;
 }
@@ -205,32 +206,46 @@ sub syncUsersAdb{
 	my @modifiedUsers;
 	my @newUsers;
 
-	if ( $role eq 'teacher' ) {
+
+	if ( scalar(@_) ) {
 		$allocationList = shift;
 	}
 	
+	my $yearAdb=$schema->resultset('AllocationSchoolyear')->search({year=>$year})->first;
+	my $roleAdb=$schema->resultset('AllocationRole')->search({role=>$role})->first;
+	
 	$users = normalizeUsersAdb( $users, $role, $allocationList );
 	
-	my $removedUsers=getAllUsersByRoleAdb($role,$year);
-			
+	
+	
+	my $removedUsers=getAllUsersByRoleAdb($roleAdb,$yearAdb);
+	
+	
 	my $insertOrder=getUserOrderAdb();
 	
 	
 	foreach my $user ( @{$users} ) {
 		#set sync status
 		$user->{sync}=1;
+		$user->{origin}='automatic';
 		#set insertion order
 		$user->{insertOrder}=$insertOrder;
-		addUserAdb( $user, $role ,'automatic');
-		extract_by {$_->{userIdNumber}==$user->{userIdNumber}} @{$removedUsers};
-		if ($user->{modified}){push(@modifiedUsers,$user);}
-		if ($user->{pristine}){push(@newUsers,$user);}
+		my $result=addUserAdb( $user, $roleAdb ,'automatic');
+		
+		extract_by {$_->sidi_id==$user->{userIdNumber}} @{$removedUsers};
+	
+		if ($user->{modified}){ print "mod user $user->{name}\n"; push(@modifiedUsers,$result->{data});}
+		if ($user->{pristine}){ print "new user $user->{name}\n"; push(@newUsers,$result->{data});}
 	}
-	#deactivate  user accounts
-	my $currentYear=getCurrentYearAdb();
-	foreach my $oldUser (@{$removedUsers}){
-		$oldUser->{year}=$currentYear;
-		$oldUser=deactivateUserAdb($oldUser,$role);
+	
+	
+		#deactivate  user accounts
+		print scalar(@newUsers),"new users\n";
+		print scalar(@modifiedUsers),"modified users\n";
+	
+		foreach my $oldUser (@{$removedUsers}){
+			print "remove user ",$oldUser->name,"\n";
+			$oldUser=deactivateUserAdb($oldUser);
 	}
 	
 return {'newusers'=>\@newUsers,"removedusers"=>$removedUsers,"modifiedusers"=>\@modifiedUsers,"status"=>1};

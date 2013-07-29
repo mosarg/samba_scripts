@@ -57,9 +57,9 @@ __PACKAGE__->table("sysuser_sysuser");
 =head2 sidiId
 
   accessor: 'sidi_id'
-  data_type: 'varchar'
+  data_type: 'integer'
+  extra: {unsigned => 1}
   is_nullable: 0
-  size: 20
 
 =head2 name
 
@@ -108,7 +108,12 @@ __PACKAGE__->add_columns(
     is_nullable       => 0,
   },
   "sidiId",
-  { accessor => "sidi_id", data_type => "varchar", is_nullable => 0, size => 20 },
+  {
+    accessor    => "sidi_id",
+    data_type   => "integer",
+    extra       => { unsigned => 1 },
+    is_nullable => 0,
+  },
   "name",
   { data_type => "varchar", is_nullable => 0, size => 100 },
   "surname",
@@ -178,8 +183,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-24 21:51:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:EFyv4wJ0c6XIxzCxgk5R+A
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-27 16:37:24
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dZT2q+0luMmu7DXK4yBZ1g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

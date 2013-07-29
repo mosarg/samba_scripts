@@ -47,9 +47,9 @@ __PACKAGE__->table("allocation_nondidacticalallocation");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
-=head2 ataAllocationId
+=head2 nonDidacticalAllocationId
 
-  accessor: 'ata_allocation_id'
+  accessor: 'non_didactical_allocation_id'
   data_type: 'integer'
   is_auto_increment: 1
   is_nullable: 0
@@ -83,9 +83,9 @@ __PACKAGE__->add_columns(
     datetime_undef_if_invalid => 1,
     is_nullable => 0,
   },
-  "ataAllocationId",
+  "nonDidacticalAllocationId",
   {
-    accessor          => "ata_allocation_id",
+    accessor          => "non_didactical_allocation_id",
     data_type         => "integer",
     is_auto_increment => 1,
     is_nullable       => 0,
@@ -110,13 +110,13 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</ataAllocationId>
+=item * L</nonDidacticalAllocationId>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("ataAllocationId");
+__PACKAGE__->set_primary_key("nonDidacticalAllocationId");
 
 =head1 RELATIONS
 
@@ -151,8 +151,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sp017bkQp9ef9LDWtzFj+g
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-28 23:39:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ALuZuRRfSdzcFSdLN8Kytg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

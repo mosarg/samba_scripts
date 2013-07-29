@@ -16,7 +16,7 @@ use Server::AdbAccount qw(getAccountAdb updateAccountAdb);
 use Server::AisQuery qw(getCurrentTeacherClassAis getAisUsers getCurrentClassAis getCurrentYearAis getCurrentSubjectAis);
 use Server::System qw(listOu createOu checkOu init initGroups createUser removeUser moveUser recordUser);
 use Server::AdbClass qw(syncClassAdb);
-use Server::AdbCommon qw(getCurrentYearAdb addYearAdb setCurrentYearAdb);
+use Server::AdbCommon qw($schema getCurrentYearAdb addYearAdb setCurrentYearAdb);
 use Server::AdbSubject qw(syncSubjectAdb);
 
 

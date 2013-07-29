@@ -21,9 +21,7 @@ our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurre
 
 #open ais database connection
 
-my $aisDbh = DBI->connect(
-	"dbi:Firebird:hostname=" . $ais->{'fqdn'} . ";db=" . $ais->{'database'},
-	$ais->{'user'}, $ais->{'password'} );
+
 
   
 #
@@ -32,10 +30,15 @@ my $aisDbh = DBI->connect(
 
 
 sub executeAisQuery{
+	my $aisDbh = DBI->connect(
+	"dbi:Firebird:hostname=" . $ais->{'fqdn'} . ";db=" . $ais->{'database'},
+	$ais->{'user'}, $ais->{'password'} );
 	my $query=shift;
 	my $result = $aisDbh->prepare($query);
 	$result->execute();
 	my $matches = $result->fetchall_arrayref({});
+	$aisDbh->commit;
+	$aisDbh->disconnect;	
 	return $matches;
 };
 
@@ -177,10 +180,15 @@ return $result;
 }
 
 sub getCurrentYearAis{
+	my $aisDbh = DBI->connect(
+	"dbi:Firebird:hostname=" . $ais->{'fqdn'} . ";db=" . $ais->{'database'},
+	$ais->{'user'}, $ais->{'password'} );
 	my $query="SELECT DISTINCT annoscol AS \"year\" FROM tsisalu_alunni";
 	my $queryH=$aisDbh->prepare($query);
  	$queryH->execute();
  	my @result=$queryH->fetchrow_array();
+ 	$aisDbh->commit;
+ 	$aisDbh->disconnect;
  	return @result?$result[0]:0;
 }
 

@@ -134,7 +134,7 @@ __PACKAGE__->set_primary_key("didacticalAllocationId");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<allocation_didacticalallocatio_classId_id_4b07f1cf396d59ff_uniq>
+=head2 C<classId_id>
 
 =over 4
 
@@ -149,7 +149,7 @@ __PACKAGE__->set_primary_key("didacticalAllocationId");
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "allocation_didacticalallocatio_classId_id_4b07f1cf396d59ff_uniq",
+  "classId_id",
   ["classId_id", "subjectId_id", "allocationId_id"],
 );
 
@@ -201,8 +201,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:49:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nirxSTxOJEPFO4fUia7u/Q
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-28 23:39:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:tNp9+K2sKM4eaZuqq/sPQA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

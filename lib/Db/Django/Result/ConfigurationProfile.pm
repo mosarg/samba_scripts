@@ -150,7 +150,7 @@ __PACKAGE__->set_primary_key("profileId");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<configuration_profile_role_id_6f148cf782727591_uniq>
+=head2 C<role_id>
 
 =over 4
 
@@ -162,10 +162,7 @@ __PACKAGE__->set_primary_key("profileId");
 
 =cut
 
-__PACKAGE__->add_unique_constraint(
-  "configuration_profile_role_id_6f148cf782727591_uniq",
-  ["role_id", "backendId_id"],
-);
+__PACKAGE__->add_unique_constraint("role_id", ["role_id", "backendId_id"]);
 
 =head1 RELATIONS
 
@@ -230,8 +227,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-25 21:53:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:K6kc3UmzjQclvOPqJM4rXg
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-28 23:39:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4zzo9h9srjxurOuhC+02GQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -24,16 +24,16 @@ sub getAllGroupsAdb{
 	my $type=shift;
 	
 	my $backend=$schema->resultset('BackendBackend')->search({kind=>$type});
-	return $schema->resultset('GroupGroup')->search( {backendId_id=>$backend->next->backend_id}, {prefetch=>{'group_grouppolicies'=>'policy_id'} }  );
+	return $schema->resultset('GroupGroup')->search( {backendId_id=>$backend->next->backend_id}, {prefetch=>{'group_grouppolicies'=>'policy_id'} });
 }
 
 sub addGroupAdb{
 	my $groupName=shift;
 	my $groupDescription=shift;
 	
-	try{
-		$schema->resultset('GroupGroup')->create(creationTimeStampsAdb({name=>$groupName,description=>$groupDescription}));
-		return 1;
+	my $group=try{
+		my $group=$schema->resultset('GroupGroup')->create(creationTimeStampsAdb({name=>$groupName,description=>$groupDescription}));
+		return $group;
 	}catch{
 		when (/Can't call method/){
 			return 0;
@@ -42,7 +42,7 @@ sub addGroupAdb{
 			return 2;		
 		}
 		default {die $_}
-	}
+	};
 }
 
 

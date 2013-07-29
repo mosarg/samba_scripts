@@ -4,6 +4,7 @@ use DBI;
 use strict;
 use warnings;
 use Data::Dumper;
+use List::UtilsBy qw(extract_by);
 use Server::AdbCommon qw($schema getCurrentYearAdb creationTimeStampsAdb);
 use Server::Configuration qw($server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
@@ -13,28 +14,105 @@ use Try::Tiny;
 require Exporter;
 
 our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(addAllocationAdb removeAllocationAdb);
+our @EXPORT_OK = qw(addAllocationAdb syncAllocationAdb);
 
-sub removeAllocationAdb {
-	my $user = shift;
-	my $role = shift;
-	if ( $role eq 'student' ) {
-		return removeStudentAllocationAdb($user);
+sub syncAllocationAdb {
+	my $user                = shift;
+	my $role                = shift;
+	my $importedAllocations = shift;
+
+	if ( $user->{sync} ) {
+		return updateAllocationAdb( $user, $role, $importedAllocations );
 	}
-	if ( $role eq 'ata' ) {
-		return removeAtaAllocationAdb($user);
+	else {
+		return addAllocationAdb( $user, $role, $importedAllocations );
 	}
-	if ( $role eq 'teacher' ) {
-		return removeTeacherAllocationAdb($user);
-	}
+
 }
 
+sub updateAllocationAdb {
+	my $user                = shift;
+	my $role                = shift;
+	my $importedAllocations = shift;
+
+	my $status = {
+		main_allocation_created  => 0,
+		main_allocation_modified => 0,
+		sub_allocations_modified => 0,
+		sub_allocations_created  => 0
+	};
+
+	my $currentYear = getCurrentYearAdb();
+	if (
+		$user->allocation_allocations(
+			{ yearId_id => $currentYear->school_year_id }
+		)->count == 0
+	  )
+	{
+		return addAllocationAdb( $user, $role, $importedAllocations );
+	}
+	my $currentAllocation = $user->allocation_allocations(
+		{ yearId_id => $currentYear->school_year_id } )->first;
+
+	if ( $currentAllocation->role_id_id != $role->role_id ) {
+		$currentAllocation->update( { roleId_id => $role->role_id } );
+		$status->{main_allocation_modified} = 1;
+	}
+
+	my $currentRole = $role->role;
+
+	for ($currentRole) {
+		when (/ata/) {
+
+#for now ata users do not change allocation after creation just chech for allocation presence
+			if (
+				$currentAllocation->allocation_nondidacticalallocation->count ==
+				0 )
+			{
+				$status->{sub_allocations_modified} = 1;
+				return createSubAllocations( $role, $currentAllocation,
+					$importedAllocations, $status );
+			}
+		}
+		when (/student|teacher/) {
+			my @didacticalAllocations =
+			  $currentAllocation->allocation_didacticalallocations->all;
+
+			foreach my $aisAllocation ( @{$importedAllocations} ) {
+				extract_by {
+					( $_->class_id->name eq $aisAllocation->{classId} )
+					  && (
+						$_->subject_id->code eq $aisAllocation->{subjectId} );
+				}
+				@didacticalAllocations;
+
+			}
+			if ( scalar(@didacticalAllocations) > 0 ) {
+
+				$currentAllocation->delete_related(
+					'allocation_didacticalallocations');
+				$status->{sub_allocations_modified} = 1;
+				return createSubAllocations( $role, $currentAllocation,
+					$importedAllocations, $status );
+			}
+
+		}
+	}
+
+	return $status;
+}
 
 sub addAllocationAdb {
 	my $user                = shift;
 	my $role                = shift;
 	my $importedAllocations = shift;
 	my $currentYear         = getCurrentYearAdb();
+	my $status              = {
+		main_allocation_created  => 0,
+		main_allocation_modified => 0,
+		sub_allocations_modified => 0,
+		sub_allocations_created  => 0
+	};
 
 	#add role allocation
 	my $currentAllocation = try {
@@ -43,10 +121,12 @@ sub addAllocationAdb {
 			creationTimeStampsAdb(
 				{
 					roleId_id => $role->role_id,
-					yearId_id => $currentYear -> school_year_id
+					yearId_id => $currentYear->school_year_id,
+					ou        => 'default'
 				}
 			)
 		);
+		$status->{main_allocation_created} = 1;
 		return $currentAllocation;
 	}
 	catch {
@@ -54,59 +134,98 @@ sub addAllocationAdb {
 			return 0;
 		}
 		when (/Duplicate entry/) {
+			$status->{main_allocation_present} = 1;
 			return 2;
 		}
 		default { die $_ }
+	};
+
+	if ( $status->{main_allocation_created} ) {
+		return createSubAllocations( $role, $currentAllocation,
+			$importedAllocations, $status );
 	}
-	
+	else { 
+		return $status; }
+}
+
+sub createSubAllocations {
+
+	my $role                = shift;
+	my $currentAllocation   = shift;
+	my $importedAllocations = shift;
+	my $status              = shift;
+
 	my $currentRole = $role->role;
-	
 
 	for ($currentRole) {
 		when (/student|teacher/) {
-			foreach my $allocation ( @{$importedAllocations->{$user->sidi_id}} ) {
+
+			foreach my $allocation ( @{$importedAllocations} ) {
+
+				my $class =
+				  $schema->resultset('SchoolClass')
+				  ->search( { name => $allocation->{classId} } )->first;
+				my $subject =
+				  $schema->resultset('SchoolSubject')
+				  ->search( { code => $allocation->{subjectId} } )->first;
+
 				try {
 					$currentAllocation->create_related(
 						'allocation_didacticalallocations',
 						creationTimeStampsAdb(
 							{
-								classId_id   => $allocation->{classId},
-								subjectId_id => $allocation->{subjectId}
+								classId_id   => $class->class_id,
+								subjectId_id => $subject->subject_id
 							}
 						)
 					);
-				return 1;	
+					$status->{sub_allocations_created} = 1;
+					return 1;
 				}
 				catch {
 					when (/Can't call method/) {
 						return 0;
 					}
 					when (/Duplicate entry/) {
+						$status->{sub_allocations_present} = 1;
 						return 2;
 					}
 					default { die $_ }
 
-				}
+				};
 			}
 		}
+
+		#for now all atas are automatically allocated inside main school
 		when (/ata/) {
-			foreach my $allocation ( @{$importedAllocations} ) {
-				try {
-					$currentAllocation->create_related(
-						'allocation_nondidacticalallocations',
-						creationTimeStampsAdb() );
-				}
-				catch {
-					when (/Can't call method/) {
-						return 0;
-					}
-					when (/Duplicate entry/) {
-						return 2;
-					}
-					default { die $_ }
-				}
+
+			#get main school
+			my $school = $schema->resultset('SchoolSchool')->first;
+			try {
+				$currentAllocation->create_related(
+					'allocation_nondidacticalallocations',
+					creationTimeStampsAdb(
+						{ schoolId_id => $school->school_id }
+					)
+				);
+				$status->{sub_allocations_created} = 1;
+				return 1;
 			}
+			catch {
+				when (/Can't call method/) {
+					return 0;
+				}
+				when (/Duplicate entry/) {
+					$status->{sub_allocations_modified} = 1;
+					return 2;
+				}
+				default { die $_ }
+			};
 
 		}
 	}
+
+	return $status;
+
 }
+

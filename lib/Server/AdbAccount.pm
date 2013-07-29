@@ -35,16 +35,17 @@ sub addAccountAdb{
  		my $usernameCount=$schema->resultset('AccountAccount')->search({username=>{like=>"$username%"} },{columns=>[qw/username/],distinct=>1})->count;
  		$username=$usernameCount?$username.$usernameCount:$username;
  		my $account=$user->create_related('account_accounts',creationTimeStampsAdb({username=>$username,active=>'false',backendId_id=>$backend->backend_id}));
- 		return 1;		
+ 		
+ 		return {pristine=>1};		
  	}catch{
  		when (/Can't call method/){
-			return 0;
+ 			return {error=>1};
 		}
 		when ( /Duplicate entry/ ){
-			return 2;		
+			return {present=>1};		
 		}
 		default {die $_}
- 	}
+ 	};
 
   }
 
@@ -53,8 +54,8 @@ sub addAccountAdb{
 #ok orm ready
 sub getAccountGroupsAdb{
 	my $account=shift;
-	my $kind=shift;
-	my @groups=$schema->resultset('GroupGroup')->search({username=>$account->username,kind=>$kind},
+	my $backend=shift;
+	my @groups=$schema->resultset('GroupGroup')->search({username=>$account->username,kind=>$backend->kind},
 						{prefetch=>{'group_grouppolicies'=>[
 															{'policy_id'=>'backend_id'},
 															{'policy_id'=>{'account_assignedpolicies'=>'account_id'}  }]  } } )->all;
@@ -73,7 +74,8 @@ sub getAccountsAdb{
 #ok orm ready
 sub getAccountAdb{
 	my $user=shift;
-	my $account=$user->account_accounts({kind=>'samba4'},{prefetch=>'backend_id'})->next;
+	my $backend=shift;
+	my $account=$user->account_accounts({kind=>$backend->kind},{prefetch=>'backend_id'})->next;
 	return $account;
 } 
  
@@ -86,8 +88,7 @@ sub getAccountMainGroupAdb{
 	my $allocation=$account->user_id->allocation_allocations({yearId_id=>$currentYear->school_year_id})->next;
 	my $profile=$schema->resultset('ConfigurationProfile')->search({backendId_id=>$backend->backend_id,role_id=>$allocation->role_id_id})->next;
 	return $profile->main_group;
-
-
 }
- return 1;
+
+return 1;
   
