@@ -11,6 +11,7 @@ use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
 use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
 use Server::System qw(initGroups init);
 use Server::AdbCommon qw($schema);
+use Server::Moodle qw(doMoodleGroupExist addMoodleGroup);
 use feature "switch";
 
 my $commands = "init add,remove,sync,list";
@@ -52,7 +53,6 @@ switch ( $ARGV[0] ) {
 		initGroups();
 	}
 	else { die("$ARGV[0] is not a command!\n"); }
-
 }
 
 sub addGroup {
@@ -60,13 +60,9 @@ sub addGroup {
 	my $groupName  = $ARGV[1];
 	my $policyName = $ARGV[2];
 
-	for ($backend) {
-		when (/samba4/) {
-
-			( scalar(@ARGV) > 1 ) || die("You must specify a group name\n");
+	( scalar(@ARGV) > 1 ) || die("You must specify a group name\n");
 			if ( ( scalar(@ARGV) > 1 ) && ( scalar(@ARGV) <= 2 ) ) {
 				print "possibile policies:\n";
-
 				foreach my $policy ( @{ getAllPoliciesAdb($backend) } ) {
 					print "Name: ".colored($policy->name,'green'). " Description: ", $policy->description, "\n";
 				}
@@ -74,25 +70,44 @@ sub addGroup {
 			}
 			emit "Inserting group " . $groupName;
 			my $group = addGroupAdb( $groupName, $description );
-			my $policy =$schema->resultset('AccountPolicy')->search({name=>$policyName});
+			
+			if($group==2){
+				$group=$schema->resultset('GroupGroup')->search({name=>$groupName})->next;
+			}
+			
+			my $adbBackend=$schema->resultset('BackendBackend')->search({kind=>$backend})->next;
+			my $policy =$schema->resultset('AccountPolicy')->search({name=>$policyName,backendId_id=>$adbBackend->backend_id});
 			if($policy->count==0){
 				emit_error;
 				return 0;
 			}
 			
-			if($group){
-				setPolicyGroupAdb( $group, $policy->next);
-			}else{
-				emit_error;
-				return 0;
+			
+			my $policyResult=setPolicyGroupAdb( $group, $policy->next);
+			for($policyResult){
+				when(/0/){emit_error; return 0;}
 			}
-			my $result = addS4Group( $ARGV[1] );
+
+	for ($backend) {
+		when (/samba4/) {
+			
+			my $result = addS4Group( $groupName );
 			for ($result) {
 				when (/1/) { emit_ok; }
 				when (/0/) { emit_error; }
 				when (/2/) { emit_done "PRESENT" }
 			}
 		}
+		when (/moodle/){
+			my $result=addMoodleGroup($groupName);
+				for ($result){
+					when (/0/){emit_error;}
+					when(/2/){emit_done "PRESENT";}
+					when(/1/){emit_ok;}
+				}
+		
+		}
+		default {print "$backend not implemented\n";}
 	}
 }
 
@@ -130,22 +145,33 @@ sub removeGroup {
 				}
 			}
 		}
-
+		when(/moodle/){print "Not Implemented\n";}
 	}
 }
 
 #list backend groups
 sub listGroup {
+	my $groups = getAllGroupsAdb($backend);
 	for ($backend) {
 		when (/samba4/) {
-			my $groups = getAllGroupsAdb($backend);
-
-			while ( my $group = $groups->next ) {
+			
+		while ( my $group = $groups->next ) {
 				emit "Samba4 group " . $group->name;
-				if   ( !doS4GroupExist( $group->name ) ) { emit_error; }
+				if   ( !doS4GroupExist( $group->name ) ) { emit_done "NOT PRESENT"; }
 				else                                     { emit_ok; }
 			}
 
+		}
+		when(/moodle/){
+			my $cohortTypes=['classes','groups','schools'];
+			foreach my $cohortType (@{$cohortTypes}){
+			while(my $group=$groups->{$cohortType}->next){
+				emit "Moodle Cohort ".$group->name;
+				if   ( !doMoodleGroupExist( $group->name ) ) { emit_done "NOT PRESENT"; }
+				else                                     { emit_ok; }
+				}
+			}
+			
 		}
 	}
 }

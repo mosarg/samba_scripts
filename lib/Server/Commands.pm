@@ -32,9 +32,7 @@ sub hashNav{
 	my $action=shift;
 	my $legacy;
 	foreach my $key (keys %{$list}){
-	
 	$legacy=$parent?$key.",".$parent:$key;
-	
 	$action->($legacy);	
 		
 		if(ref($list->{$key})eq 'HASH'){

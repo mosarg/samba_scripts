@@ -3,7 +3,7 @@ package Server::Samba4;
 use strict;
 use warnings;
 use Data::Dumper;
-use String::MkPasswd qw(mkpasswd);
+
 use Cwd;
 use Server::Configuration qw($server $ldap);
 use Server::Commands qw(execute doFsObjectExist sanitizeString);
@@ -52,6 +52,7 @@ loginShell: /bin/bash";
 
 	ldbLoadLdif( $ldif, $uid );
 }
+
 
 sub ldbLoadLdif {
 	my $ldif       = shift;
@@ -181,7 +182,7 @@ sub moveS4User {
 
 	#move samba user under new ou
 	if ( $oldDn ne $newDn ) {
-		execute("samba-tool ou move $oldDn $newDn");
+		 execute("samba-tool ou move $oldDn $newDn");
 	}
 	else {
 		return 0;
@@ -193,13 +194,11 @@ sub moveS4User {
 
 	if ( $oldUnixHomeDir ne $newUnixHomeDir ) {
 		moveDir( $oldUnixHomeDir, $newUnixHomeDir );
-
 		#set samba home dir
 		setS4UnixHomeDir($user);
 		return 1;
 	}
-	return 0;
-
+	return 1;
 }
 
 sub deleteS4User {
@@ -322,15 +321,7 @@ sub addS4User {
 		return $user;
 	}
 
-	#generate user password
-	$user->{account}->{password} = mkpasswd(
-		-length     => 8,
-		-minlower   => 5,
-		-minnum     => 1,
-		-minupper   => 2,
-		-minspecial => 0
-	);
-
+	
 	my $command =
 "samba-tool user add $user->{account}->{username} \'$user->{account}->{password}\' --userou $user->{account}->{ou},"
 	  . $ldap->{user_base}
@@ -379,29 +370,22 @@ sub addS4User {
 	);
 
 	#set user primary group
-
 	setS4PrimaryGroup( $user, $group );
-
 	#insert user into default groups
 	setS4GroupMembership( $user->{account}->{username}, $extraGroups );
-
 	#create user home directory
 	if ( !doFsObjectExist( $user->{account}->{unixHomeDir}, 'd' ) ) {
 		execute("mkdir -p $user->{account}->{unixHomeDir}");
 	}
-
 	#clean nscdCache
 	cleanNscdCache();
-
 	#chown user home dir
 	execute("chown "
 		  . $user->{account}->{username} . ":"
 		  . $group
 		  . " $user->{account}->{unixHomeDir}" );
-
 	#set account active
 	$user->{account}->{active} = 1;
-
 	return $user;
 }
 

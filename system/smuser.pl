@@ -11,7 +11,7 @@ use Server::Commands qw(hashNav);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn getUserFromUname);
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist addS4Ou);
 use Server::AdbOu qw(getAllOuAdb);
-use Server::AdbUser qw(getAllUsersAdb syncUsersAdb doUsersExistAdb);
+use Server::AdbUser qw(getAllUsersAdb syncUsersAdb doUsersExistAdb getAllUsersByRoleAdb);
 use Server::AdbAccount qw(getAccountAdb);
 use Server::AisQuery qw(getCurrentTeacherClassAis getAisUsers getCurrentClassAis getCurrentYearAis getCurrentSubjectAis getCurrentStudentsClassSubjectAis);
 use Server::System qw(listOu createOu checkOu init initGroups createUser removeUser moveUser recordUser);
@@ -65,11 +65,9 @@ switch ( $ARGV[0] ) {
 sub syncUsers{
 	
 	#get db current and ais current year
-	
 	my $yearAdb=getCurrentYearAdb();
-	
+	my $newYearAdb;
 	my $yearAis=getCurrentYearAis();
-	
 	my $updates={};
 	
 	#if there are no users present abort
@@ -80,6 +78,7 @@ sub syncUsers{
 	
 	#choose between small update and big update
 	if($yearAdb->year==$yearAis){
+     	$newYearAdb=$yearAdb;
 		emit "Small update for role: ".colored(uc($role),'green');
 		
 	}else{
@@ -88,7 +87,7 @@ sub syncUsers{
 		emit "Update school year: new school year $yearAis";
 	
 		
-		my $newYearAdb=addYearAdb($yearAis);
+		$newYearAdb=addYearAdb($yearAis);
 		for($newYearAdb->{status}){
 			when(/1/){$newYearAdb=$newYearAdb->{data}; emit_ok;}
 			when(/2/){$newYearAdb=$newYearAdb->{data};emit_done "PRESENT";}
@@ -105,8 +104,7 @@ sub syncUsers{
 	#sync subcjects
 	emit "Sync subjects $yearAis";
 	syncSubjectAdb(getCurrentSubjectAis())?emit_ok:emit_done "PRESENT";
-	
-	
+		
 	
 	#get active schools
 	my @activeSchools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
@@ -116,17 +114,17 @@ sub syncUsers{
 	switch($role){
 		case 'student' {
 			emit "Sync students";
-			$updates=syncUsersAdb(getAisUsers('student',\@activeSchools),'student',$yearAdb->year,getCurrentStudentsClassSubjectAis(\@activeSchools) );
+			$updates=syncUsersAdb(1,getAisUsers('student',\@activeSchools),'student',$yearAdb->year,getCurrentStudentsClassSubjectAis(\@activeSchools) );
 			$updates->{status}?emit_ok:emit_error;
 		}
 		case 'teacher' {
 			emit "Sync teachers";
-			$updates=syncUsersAdb(getAisUsers('teacher'),'teacher',$yearAdb->year,getCurrentTeacherClassAis($yearAis));
+			$updates=syncUsersAdb(1,getAisUsers('teacher'),'teacher',$yearAdb->year,getCurrentTeacherClassAis($yearAis));
 			$updates->{status}?emit_ok:emit_error;
 		}
 		case 'ata'	   {
 			emit "Sync ata";
-			$updates=syncUsersAdb(getAisUsers('ata'),'ata',$yearAdb->year);
+			$updates=syncUsersAdb(1,getAisUsers('ata'),'ata',$yearAdb->year);
 			$updates->{status}?emit_ok:emit_error;
 		}
 		default		   {
@@ -148,39 +146,76 @@ sub syncUsers{
 	
 	
 	#remove stale users from backend
-		
 	emit "Update backend accounts";	
 
 	emit "Remove old users";		
 	foreach my $removeUser (@{$updates->{removedusers}}){
-		
 		removeUser($removeUser);
 	}
 	emit_ok;
-	#update  users backend
 	
-	emit "Move users";
+	#update  users backend
+	emit "Update users";
+	my $possibileNewBackendAccounts=[];
+	
 	foreach  my $updatedUser (@{$updates->{modifiedusers}}){
-		moveUser($updatedUser);
-
+		
+		if($updatedUser->{regenerateAccount}){
+			$updatedUser=createUser($updatedUser);	
+			if($updatedUser->{simpleUser}){
+				push(@{$possibileNewBackendAccounts},$updatedUser);
+			}
+		}
+	
+		if($updatedUser->{moved}){
+			moveUser($updatedUser);
+		}
+	
 	}
+	recordUser($possibileNewBackendAccounts,'missingAccounts.csv');
+	
+	
 	emit_ok;
 	#add new users into backend
 	emit "Create new users";
+	my $newUsersData=[];
 	foreach my $newUser (@{$updates->{newusers}}){
-		$newUser=createUser($newUser);
+		
+		push(@{$newUsersData},createUser($newUser));
 	}
 	emit_ok;
 	
 	#record new users
 	emit "Log new users data";
-	recordUser($updates->{newusers},$file);
+	recordUser($newUsersData,$file);
 	emit_ok;
+	
+	
+	#inverse direction sync
+	if($all){
+	my $regenBackendAccounts=[];	
+	my $roleAdb=$schema->resultset('AllocationRole')->search({role=>$role})->first;
+	emit "Check backend account presence";
+		my $allCurrentUsers = getAllUsersByRoleAdb( $roleAdb, $newYearAdb);
+		foreach my $currentUser (@{$allCurrentUsers}){
+			$currentUser=createUser($currentUser);
+			if ($currentUser->{simpleUser}){
+				push(@{$regenBackendAccounts},$currentUser);
+			}
+			
+		}
+		
+		recordUser($regenBackendAccounts,'regeneratedAccounts.csv');
+		
+	emit_ok;	
+		
+	}
+	
 	
 	emit_done;
 }
 
-
+####################################################àà
 sub initUsers{
 	my $year=shift;
 	
@@ -222,11 +257,11 @@ sub initUsers{
 	my @activeSchools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
 	#create adb users
 	emit "Init students $year";
-	(syncUsersAdb(  getAisUsers('student',\@activeSchools),'student',$yearAis,getCurrentStudentsClassSubjectAis(\@activeSchools) ) )->{status}?emit_ok:emit_error;
+	(syncUsersAdb(0,  getAisUsers('student',\@activeSchools),'student',$yearAis,getCurrentStudentsClassSubjectAis(\@activeSchools) ) )->{status}?emit_ok:emit_error;
 	emit "Init teachers $year";
-	(syncUsersAdb(getAisUsers('teacher'),'teacher',$yearAis,getCurrentTeacherClassAis($yearAis)))->{status}?emit_ok:emit_error;
+	(syncUsersAdb(0,getAisUsers('teacher'),'teacher',$yearAis,getCurrentTeacherClassAis($yearAis)))->{status}?emit_ok:emit_error;
 	emit "Init ata $year";
-	(syncUsersAdb(getAisUsers('ata'),'ata',$yearAis))->{status}?emit_ok:emit_error;
+	(syncUsersAdb(0,getAisUsers('ata'),'ata',$yearAis))->{status}?emit_ok:emit_error;
 	
 	
 	#create backend ou

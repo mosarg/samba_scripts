@@ -31,7 +31,7 @@ our $schema=Db::Django->connect('dbi:mysql:gestione_scuola','mosa','sambackett')
 sub setCurrentYearAdb{
 	my $year=shift;
 	$schema->resultset('AllocationSchoolyear')->update({active=>0});
-	return $schema->resultset('AllocationSchoolyear')->find({year=>2012})->update({active=>1});	
+	return $schema->resultset('AllocationSchoolyear')->find({year=>$year})->update({active=>1});	
 }
 
 sub getActiveSchools{

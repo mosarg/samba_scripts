@@ -23,8 +23,22 @@ our @EXPORT_OK = qw(getAllGroupsAdb addGroupAdb);
 sub getAllGroupsAdb{
 	my $type=shift;
 	
-	my $backend=$schema->resultset('BackendBackend')->search({kind=>$type});
-	return $schema->resultset('GroupGroup')->search( {backendId_id=>$backend->next->backend_id}, {prefetch=>{'group_grouppolicies'=>'policy_id'} });
+	my $backend=$schema->resultset('BackendBackend')->search({kind=>$type})->next;
+	
+	my $currentBackend=$backend->kind;
+	
+	for($currentBackend){
+		
+	when(/samba4/){return $schema->resultset('GroupGroup')->search( {backendId_id=>$backend->backend_id}, {prefetch=>{'group_grouppolicies'=>'policy_id'} });}
+	when(/moodle/){
+		my $result;
+		$result->{classes}=$schema->resultset('SchoolClass');
+		$result->{groups}=$schema->resultset('GroupGroup')->search( {backendId_id=>$backend->backend_id}, {prefetch=>{'group_grouppolicies'=>'policy_id'} });
+		$result->{schools}=$schema->resultset('SchoolSchool');
+		return $result;
+		}
+	}
+	
 }
 
 sub addGroupAdb{

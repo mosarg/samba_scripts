@@ -74,8 +74,9 @@ sub setPolicyGroupAdb{
 #Ok orm ready
  sub setDefaultPolicyAdb{
  	my $account=shift;
+ 	my $backend=shift;
  	my $role=shift;
- 	my $defaultProfile=$schema->resultset('ConfigurationProfile')->search({role_id=>$role->role_id})->next;
+ 	my $defaultProfile=$schema->resultset('ConfigurationProfile')->search({role_id=>$role->role_id,backendId_id=>$backend->backend_id})->next;
  	
  	my $policy=$schema->resultset('AccountPolicy')->search({policyId=>$defaultProfile->default_policy_id});
  		

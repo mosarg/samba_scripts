@@ -8,7 +8,8 @@ use List::UtilsBy qw(extract_by);
 use Server::AdbCommon
   qw($schema getCurrentYearAdb creationTimeStampsAdb getActiveSchools);
 use Text::Capitalize;
-use Server::AdbAccount qw(addAccountAdb  getAccountAdb   getAccountsAdb);
+use Server::AdbAccount
+  qw(addAccountAdb  getAccountAdb   getAccountsAdb getRoleAccountTypes);
 use Server::AdbPolicy qw(setDefaultPolicyAdb);
 use Server::AdbAllocation qw(syncAllocationAdb);
 use Server::Configuration qw($server $adb $ldap);
@@ -19,7 +20,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(syncUsersAdb addUserAdb getAllUsersAdb doUsersExistAdb deactivateUserAdb);
+  qw(syncUsersAdb addUserAdb getAllUsersAdb doUsersExistAdb deactivateUserAdb getAllUsersByRoleAdb addUserAccountsAdb);
 
 sub doUsersExistAdb {
 	my $usersNumber = $schema->resultset('SysuserSysuser')->count;
@@ -82,13 +83,15 @@ sub getAllUsersAdb {
 	my $ata =
 	  $schema->resultset('AllocationRole')->search( { role => 'ata' } )->first;
 	my $student =
-	  $schema->resultset('AllocationRole')->search( { role => 'student' } ) ->first;
+	  $schema->resultset('AllocationRole')->search( { role => 'student' } )
+	  ->first;
 	my $teacher =
-	  $schema->resultset('AllocationRole')->search( { role => 'teacher' } ) ->first;
+	  $schema->resultset('AllocationRole')->search( { role => 'teacher' } )
+	  ->first;
 	return [
 		@{ getAllUsersByRoleAdb( $student, $year ) },
 		@{ getAllUsersByRoleAdb( $teacher, $year ) },
-		@{ getAllUsersByRoleAdb( $ata, $year ) }
+		@{ getAllUsersByRoleAdb( $ata,     $year ) }
 	];
 }
 
@@ -96,8 +99,8 @@ sub normalizeUserAdb {
 	my $user          = shift;
 	my $role          = shift;
 	my $allocationMap = shift;
-	$user->{name}    =   sanitizeString( capitalize(lc($user->{name}) ) );
-	$user->{surname} =   sanitizeString( capitalize( lc($user->{surname})) );
+	$user->{name}    = sanitizeString( capitalize( lc( $user->{name} ) ) );
+	$user->{surname} = sanitizeString( capitalize( lc( $user->{surname} ) ) );
 
 	if ( $role eq 'student' ) {
 		$user = normalizeStudentAdb( $user, $allocationMap );
@@ -153,27 +156,24 @@ sub normalizeUsersAdb {
 }
 
 sub addUserAdb {
-	my $user       = shift;
-	my $role       = shift;
+	my $user = shift;
+	my $role = shift;
+
 	my $userStatus = {};
-	my $adbAccount;
-	my $accountType =
-	  $schema->resultset('BackendBackend')->search( { kind => 'samba4' } )
-	  ->first;
+
+	$user->{role} = $role;
+	
+	
 	my $adbUser =
 	  $schema->resultset('SysuserSysuser')
 	  ->search( { sidiId => $user->{userIdNumber} } );
 	$userStatus->{user} = $adbUser->count;
+
 	if ( $userStatus->{user} ) {
-		$adbUser    = $adbUser->first;
-		$adbAccount = $schema->resultset('AccountAccount')->search(
-			{
-				userId_id    => $adbUser->user_id,
-				backendId_id => $accountType->backend_id
-			}
-		);
-		$userStatus->{account} = $adbAccount->count;
+		$adbUser = $adbUser->first;
+
 	}
+
 	$user->{pristine} = 0;
 	$user->{modified} = 0;
 
@@ -206,29 +206,57 @@ sub addUserAdb {
 		return { result => $user, data => $adbUser };
 	}
 
-	if ( !$userStatus->{account} ) {
-		addAccountAdb( $adbUser, $accountType );
-		if ( !$user->{pristine} ) { $user->{modified} = 1; }
-	}
-
+	$adbUser->{sync} = $user->{sync};
 	my $allocationStatus =
 	  syncAllocationAdb( $adbUser, $role, $user->{allocations} );
 
 	if (   $allocationStatus->{sub_allocations_modified}
 		|| $allocationStatus->{main_allocation_modified} )
 	{
+		$adbUser->{moved} = 1;
 		$user->{modified} = 1;
 	}
-
-	$adbAccount =
-	  $adbUser->account_accounts( { backendId_id => $accountType->backend_id } )
-	  ->first;
-
-	if ( setDefaultPolicyAdb( $adbAccount, $role ) == 1 ) {
-		if ( !$user->{pristine} ) { $user->{modified} = 1 }
-	}
+	
 
 	return { result => $user, data => $adbUser };
+}
+
+sub addUserAccountsAdb {
+
+	my $complexUser = shift;
+	my $user        = $complexUser->{result};
+	my $adbUser     = $complexUser->{data};
+
+	my $adbRole = $user->{role};
+	
+	
+	#get role default profiles
+	my $profiles = getRoleAccountTypes($adbRole);
+
+	foreach my $profile ( @{$profiles} ) {
+		my $adbAccount = $adbUser->account_accounts({ backendId_id => $profile->backend_id->backend_id } );
+
+		$adbUser->{$profile->backend_id->kind}={regenerateAccount=>0};
+
+		if ( $adbAccount->count == 0 ) {
+			print "Add account for user ".$adbUser->name." in backend ".$profile->backend_id->kind."\n";						
+			$adbUser->{$profile->backend_id->kind}->{accountCreation}=addAccountAdb( $adbUser, $profile->backend_id );
+			if ( !$user->{pristine} ) {
+				$adbUser->{$profile->backend_id->kind}->{regenerateAccount} = 1;
+				$user->{modified}             = 1;
+			}
+		}
+		else {
+			print "Add account for user ".$adbUser->name." in backend ".$profile->backend_id->kind." already present \n";
+			
+		}
+		$adbAccount = $adbAccount->next;
+
+		if ( setDefaultPolicyAdb( $adbAccount,$profile->backend_id,$adbRole ) == 1 ) {
+			if ( !$user->{pristine} ) { $user->{modified} = 1 }
+		}
+	}
+	return $complexUser;
 }
 
 sub deactivateUserAdb {
@@ -251,6 +279,7 @@ sub deactivateUserAdb {
 }
 
 sub syncUsersAdb {
+	my $sync  = shift;
 	my $users = shift;
 	my $role  = shift;
 	my $year  = shift;
@@ -279,12 +308,14 @@ sub syncUsersAdb {
 	foreach my $user ( @{$users} ) {
 
 		#set sync status
-		$user->{sync}   = 1;
+		$user->{sync}   = $sync;
 		$user->{origin} = 'automatic';
 
 		#set insertion order
 		$user->{insertOrder} = $insertOrder;
 		my $result = addUserAdb( $user, $roleAdb, 'automatic' );
+		
+		$result=addUserAccountsAdb($result);
 
 		extract_by { $_->sidi_id == $user->{userIdNumber} } @{$removedUsers};
 
@@ -293,10 +324,8 @@ sub syncUsersAdb {
 	}
 
 	#deactivate  user accounts
-	
 
 	foreach my $oldUser ( @{$removedUsers} ) {
-		print "remove user ", $oldUser->name, "\n";
 		$oldUser = deactivateUserAdb($oldUser);
 	}
 

@@ -34,7 +34,7 @@ print Dumper getCurrentStudentsClassSubjectAis(\@schools);
 #print Dumper getAisUsers ('student',\@schools);
 
 
-print scalar @{getAisUsers ('ata')};
+#print scalar @{getAisUsers ('ata')};
 #print getCurrentYearAis();
 
 #print Dumper getCurrentClassAis();

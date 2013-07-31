@@ -17,7 +17,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(addAccountAdb getAccountAdb getAccountGroupsAdb getAccountMainGroupAdb  getAccountsAdb );
+our @EXPORT_OK = qw(addAccountAdb getAccountAdb getAccountGroupsAdb getAccountMainGroupAdb  getAccountsAdb getRoleAccountTypes );
 
 
 
@@ -32,17 +32,16 @@ sub addAccountAdb{
  	try{
  		my $username=sanitizeUsername($user->name.$user->surname);
  		#check for username uniqueness
- 		my $usernameCount=$schema->resultset('AccountAccount')->search({username=>{like=>"$username%"} },{columns=>[qw/username/],distinct=>1})->count;
+ 		my $usernameCount=$schema->resultset('AccountAccount')->search({username=>{like=>"$username%"},backendId_id=>$backend->backend_id },{columns=>[qw/username/],distinct=>1})->count;
  		$username=$usernameCount?$username.$usernameCount:$username;
  		my $account=$user->create_related('account_accounts',creationTimeStampsAdb({username=>$username,active=>'false',backendId_id=>$backend->backend_id}));
- 		
- 		return {pristine=>1};		
+ 		return 1;		
  	}catch{
  		when (/Can't call method/){
- 			return {error=>1};
+ 			return 0;
 		}
 		when ( /Duplicate entry/ ){
-			return {present=>1};		
+			return 2;		
 		}
 		default {die $_}
  	};
@@ -55,10 +54,16 @@ sub addAccountAdb{
 sub getAccountGroupsAdb{
 	my $account=shift;
 	my $backend=shift;
-	my @groups=$schema->resultset('GroupGroup')->search({username=>$account->username,kind=>$backend->kind},
+	my $backendType=$backend->kind;
+	
+	
+	
+	my @groups=$schema->resultset('GroupGroup')->search({username=>$account->username,kind=>$backendType},
 						{prefetch=>{'group_grouppolicies'=>[
 															{'policy_id'=>'backend_id'},
 															{'policy_id'=>{'account_assignedpolicies'=>'account_id'}  }]  } } )->all;
+
+	
 	return \@groups;
 }
 
@@ -67,6 +72,13 @@ sub getAccountsAdb{
 	my $user=shift;
 	my @accounts=$user->account_accounts->all;
 	return \@accounts;
+}
+
+
+sub getRoleAccountTypes{
+	my $role=shift;
+	my @roleProfiles=$schema->resultset('ConfigurationProfile')->search({role_id=>$role->role_id})->all;
+	return \@roleProfiles;
 }
 
 
