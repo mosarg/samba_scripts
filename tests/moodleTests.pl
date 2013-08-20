@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Server::Configuration qw($ldap $server);
-use Server::Commands qw(sanitizeString);
+use Server::Commands qw(sanitizeString execute);
 use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
@@ -18,32 +18,18 @@ use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb);
-use Server::System qw(createUser init);
-use Server::Moodle qw(doMoodleUserExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleUser getUserCohorts);
+use Server::System qw(createUser);
+use Server::Moodle qw(doMoodleUserExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleUser getUserCohorts addMoodleCourse defaultEnrol);
+
+my $moosh = "moosh --moodle-path /var/www/moodle";
+
+my $user={name=>'Mattia',surname=>'Bassi',account=>{username=>'mattiabassi',password=>'Samv@dfdf'}};
+my $groups=['1acr','studenti'];
+my $course={categoryid=>10,fullname=>'Matematica e fisica',description=>'tatata tata bla bla',idnumber=>1022,shortname=>'matefis3a4',id=>13};
 
 
 
-my $user={name=>'Matteo',surname=>'Mosangini',account=>{username=>'mosas',password=>'Samv@dfdf'}};
+addMoodleUser($user,$groups);
 
-
-
-addMoodleUser($user,['1acr','1als','1apar','1apsc','1ate']);
-
-
-
-
-
-
-#print doMoodleUserExist($user);
-#print addMoodleOuElement('cosa');
-
-
-
-#print Dumper getMoodleOuId('liceo');
-
-#print addMoodleOu('1acr,ipsia');
-
-
-#print doMoodleOuExist('3al,liceo');
 
 

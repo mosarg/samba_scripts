@@ -18,9 +18,6 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(addAccountAdb getAccountAdb getAccountGroupsAdb getAccountMainGroupAdb  getAccountsAdb getRoleAccountTypes );
-
-
-
  
 #ok orm ready
 
@@ -28,7 +25,6 @@ sub addAccountAdb{
  	my $user=shift;
  	my $backend=shift;
  	my $result={pristine=>1};
- 	
  	try{
  		my $username=sanitizeUsername($user->name.$user->surname);
  		#check for username uniqueness
@@ -56,14 +52,10 @@ sub getAccountGroupsAdb{
 	my $backend=shift;
 	my $backendType=$backend->kind;
 	
-	
-	
 	my @groups=$schema->resultset('GroupGroup')->search({username=>$account->username,kind=>$backendType},
 						{prefetch=>{'group_grouppolicies'=>[
 															{'policy_id'=>'backend_id'},
 															{'policy_id'=>{'account_assignedpolicies'=>'account_id'}  }]  } } )->all;
-
-	
 	return \@groups;
 }
 

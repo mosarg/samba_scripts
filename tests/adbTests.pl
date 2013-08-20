@@ -11,7 +11,7 @@ use Text::Capitalize;
 use Text::Autoformat;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
-use Server::AdbUser qw(syncUsersAdb addUserAdb deactivateUserAdb getAllUsersAdb addUserAccountsAdb);
+use Server::AdbUser qw(syncUsersAdb addUserAdb deactivateUserAdb getAllUsersAdb addUserAccountsAdb getAllUsersByRoleAdb);
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentStudentsClassSubjectAis);
 use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
@@ -22,7 +22,7 @@ use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb getRoleAccountTypes);
-use Server::System qw(createUser init);
+use Server::System qw(createUser);
 
 use Server::AdbOu qw(getUserOuAdb getAllOuAdb);
 
@@ -41,8 +41,9 @@ sub _dumper_hook {
   }
 $Data::Dumper::Freezer = '_dumper_hook';
 
-my $role=$schema->resultset('AllocationRole')->search({role=>'student'})->first;
-my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>2226182})->first;
+my $role=$schema->resultset('AllocationRole')->search({role=>'teacher'})->first;
+my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>1000265})->first;
+my $class=$schema->resultset('SchoolClass')->search({name=>'4al'})->first;
 my $year=getCurrentYearAdb();
 my @activeSchools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
 my $yearAdb=getCurrentYearAdb();
@@ -56,14 +57,20 @@ my $aisUser={userIdNumber=>10056,origin=>'auto',name=>'Giorgiona',surname=>'Aspa
     'userIdNumber' => 10056
 }]}};
 
-my $data->{backend}='samba4';
-init($data);
+
+my @allocations=$class->allocation_didacticalallocations({'allocation_id.yearId_id'=>$year->school_year_id},{join=>'allocation_id',select=>['allocation_id.yearId_id','subjectId_id'],distinct=>1})->all;
+
+foreach my $allocation (@allocations){
+	my @currentTeachers=$schema->resultset('SysuserSysuser')->search({'allocation_allocations.yearId_id'=>$year->school_year_id,
+																	  'allocation_allocations.roleId_id'=>$role->role_id,
+																	'allocation_didacticalallocations.classId_id'=>$class->class_id,
+																	'allocation_didacticalallocations.subjectId_id'=>$allocation->subject_id->subject_id},{join=>{'allocation_allocations'=>'allocation_didacticalallocations'} })->all;
+	
+	my @teachersAccounts;
+	foreach my $currentTeacher (@currentTeachers){
+		print $allocation->subject_id->description," ",$allocation->subject_id->subject_id," ", $currentTeacher->name," ",$currentTeacher->surname,"\n";
+	}
+}
 
 
-#syncUsersAdb(1,getAisUsers('student',\@activeSchools),'student',$yearAdb->year,getCurrentStudentsClassSubjectAis(\@activeSchools) );
-
-my $userData=createUser($user);
-
-
-print Dumper $userData->{simpleUser}->{accounts};
 

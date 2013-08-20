@@ -228,7 +228,7 @@ sub deleteS4User {
 sub addS4Group {
 	my $groupName = shift;
 	my $command =
-	  "samba-tool group add --groupou " . $ldap->{'group_base'} . " $groupName";
+	  "samba-tool group add --mail-address $groupName@".$ldap->{default_mail}." --groupou " . $ldap->{'group_base'} . " $groupName";
 	if ( doS4GroupExist($groupName) ) {
 		return 2;
 	}
@@ -340,7 +340,8 @@ sub addS4User {
 	$command .= " --home-drive=H: --home-directory=$homeDir->{sambaprint}";
 	$command .=
 " --department=$user->{account}->{ou} --description=$user->{userIdNumber}";
-
+	$command.=" --mail-address=$user->{account}->{username}@".$ldap->{default_mail};
+	
 	#create user
 	$user->{creationStatus} = execute($command);
 

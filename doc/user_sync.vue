@@ -1,14 +1,14 @@
-<!-- Tufts VUE 3.2.2 concept-map (user_sync.vue) 2013-07-16 -->
+<!-- Tufts VUE 3.2.2 concept-map (user_sync.vue) 2013-07-17 -->
 <!-- Tufts VUE: http://vue.tufts.edu/ -->
 <!-- Do Not Remove: VUE mapping @version(1.1) jar:file:/opt/vue/VUE.jar!/tufts/vue/resources/lw_mapping_1_1.xml -->
-<!-- Do Not Remove: Saved date Tue Jul 16 10:19:42 CEST 2013 by mosa on platform Linux 3.8.0-25-lowlatency in JVM 1.7.0_25-b15 -->
+<!-- Do Not Remove: Saved date Wed Jul 17 01:23:29 CEST 2013 by mosa on platform Linux 3.8.0-25-lowlatency in JVM 1.7.0_25-b15 -->
 <!-- Do Not Remove: Saving version @(#)VUE: built May 23 2013 at 2146 by tomadm on Linux 2.6.18-348.2.1.el5 i386 JVM 1.7.0_21-b11(bits=32) -->
 <?xml version="1.0" encoding="US-ASCII"?>
 <LW-MAP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="none" ID="0" label="user_sync.vue"
     created="1373810157250" x="0.0" y="0.0" width="1.4E-45"
     height="1.4E-45" strokeWidth="0.0" autoSized="false">
-    <resource referenceCreated="1373962782929" size="20933"
+    <resource referenceCreated="1374017009355" size="20917"
         spec="/home/mosa/Sources/projects/samba_scripts/doc/user_sync.vue"
         type="1" xsi:type="URLResource">
         <title>user_sync.vue</title>

@@ -9,7 +9,7 @@ use Term::Emit ":all", { -color => 1 };
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
 use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
-use Server::System qw(initGroups init);
+use Server::System qw(initGroups);
 use Server::AdbCommon qw($schema);
 use Server::Moodle qw(doMoodleGroupExist addMoodleGroup);
 use feature "switch";
@@ -31,9 +31,7 @@ GetOptions(
 
 $backend or die("You must specify a backend\n");
 
-$data->{backend} = $backend;
 
-init($data);
 
 switch ( $ARGV[0] ) {
 	case 'add' {
@@ -56,7 +54,7 @@ switch ( $ARGV[0] ) {
 }
 
 sub addGroup {
-
+	
 	my $groupName  = $ARGV[1];
 	my $policyName = $ARGV[2];
 

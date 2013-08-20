@@ -7,7 +7,7 @@ use Term::ANSIColor;
 use Switch;
 use Server::Configuration qw($ldap);
 use Server::Commands qw(hashNav);
-use Server::System qw(listOu createOu checkOu init);
+use Server::System qw(listOu createOu checkOu);
 
 
 
@@ -29,20 +29,15 @@ GetOptions(
 );
 $backend or die("You must specify a backend\n");
 
-$data->{backend}=$backend;
-
-init($data);
-
 switch ( $ARGV[0] ) {
-
 	case 'sync' {
-		listOu( \&createOu );
+		listOu($backend, \&createOu );
 	}
 	case 'list' {
-		listOu( \&checkOu );
+		listOu($backend, \&checkOu );
 	}
 	case 'init' {
-		listOu( \&createOu );
+		listOu($backend, \&createOu );
 	}
 	else { die("$ARGV[0] is not a command!\n"); }
 }

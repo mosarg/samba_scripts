@@ -51,7 +51,7 @@ sub getAllUsersByRoleAdb {
 		}
 		when (/student/) {
 			@result = $schema->resultset('SysuserSysuser')->search(
-				{ roleId_id => 1, yearId_id => 1, 'school_id.active' => 1 },
+				{ roleId_id => $role->role_id, yearId_id => $year->school_year_id, 'school_id.active' => 1 },
 				{
 					join => {
 						'allocation_allocations' => {
@@ -239,17 +239,14 @@ sub addUserAccountsAdb {
 		$adbUser->{$profile->backend_id->kind}={regenerateAccount=>0};
 
 		if ( $adbAccount->count == 0 ) {
-			print "Add account for user ".$adbUser->name." in backend ".$profile->backend_id->kind."\n";						
+			
 			$adbUser->{$profile->backend_id->kind}->{accountCreation}=addAccountAdb( $adbUser, $profile->backend_id );
 			if ( !$user->{pristine} ) {
 				$adbUser->{$profile->backend_id->kind}->{regenerateAccount} = 1;
 				$user->{modified}             = 1;
 			}
 		}
-		else {
-			print "Add account for user ".$adbUser->name." in backend ".$profile->backend_id->kind." already present \n";
-			
-		}
+		
 		$adbAccount = $adbAccount->next;
 
 		if ( setDefaultPolicyAdb( $adbAccount,$profile->backend_id,$adbRole ) == 1 ) {
