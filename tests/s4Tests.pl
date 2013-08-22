@@ -18,16 +18,18 @@ use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb);
-use Server::System qw(createUser init);
-use Server::Samba4 qw(doS4GroupExist);
+use Server::System qw(createUser);
+use Server::Samba4 qw(doS4GroupExist updateS4Group);
+
 
 my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>617149})->next;
 
 my $data={backend=>'samba4'};
 
-init($data);
-
-createUser($user);
 
 
-#print doS4GroupExist('ata');
+
+
+
+
+

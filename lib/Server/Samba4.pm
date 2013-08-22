@@ -6,13 +6,14 @@ use Data::Dumper;
 
 use Cwd;
 use Server::Configuration qw($server $ldap);
+use Server::LdapQuery qw(isPosix getGroup);
 use Server::Commands qw(execute doFsObjectExist sanitizeString);
 use Server::Actions qw(moveDir);
 require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(moveS4User addS4Ou doS4UserExist getNewUid  addS4User addS4Group   deleteS4User  setS4GroupMembership deleteS4Group doS4GroupExist);
+  qw(moveS4User addS4Ou doS4UserExist getNewUid  addS4User addS4Group   deleteS4User  setS4GroupMembership deleteS4Group doS4GroupExist updateS4Group getGroup);
 
 sub posixifyGroup {
 	my $groupName = shift;
@@ -112,9 +113,9 @@ sub doS4UserExist {
 
 sub doS4GroupExist {
 	my $group     = shift;
-	my $gidReport = execute("getent group|grep -c \^$group");
-	chomp($gidReport);
-	return $gidReport;
+	my $groupData=getGroup($group);
+	return $groupData->{gidNumber}?1:0;
+	
 }
 
 sub getS4UnixHomeDir {
@@ -225,6 +226,11 @@ sub deleteS4User {
 	return 1;
 }
 
+
+
+
+
+
 sub addS4Group {
 	my $groupName = shift;
 	my $command =
@@ -295,6 +301,26 @@ sub setS4GroupMembership {
 		}
 	}
 }
+
+sub updateS4Group{
+	my $group=shift;
+	my $groupData=getGroup($group);
+	
+	if($groupData){
+		#posixify group
+		if(!$groupData->{gidNumber}){
+			my $gid    = getNewGid($group);
+			posixifyGroup($group,$gid);
+			$groupData->{gidNumber}=$gid;
+		}		
+	}else{
+		print "Group $group not present\n";
+	}
+	
+	return $groupData;
+	
+}
+
 
 sub addS4Ou {
 	my $ou   = shift;

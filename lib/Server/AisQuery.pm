@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis);
+our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis getStudyPlanSubject);
 
 
 
@@ -42,6 +42,22 @@ sub executeAisQuery{
 	return $matches;
 };
 
+sub executeAisPlaneQuery{
+	my $aisDbh = DBI->connect(
+	"dbi:Firebird:hostname=" . $ais->{'fqdn'} . ";db=" . $ais->{'database'},
+	$ais->{'user'}, $ais->{'password'} );
+	my $query=shift;
+	my $result = $aisDbh->prepare($query);
+	$result->execute();
+	my $matches = $result->fetchall_arrayref();
+	$result->finish;
+	$aisDbh->disconnect;	
+	return [map {@$_} @{$matches}];
+};
+
+
+
+
 sub getCurrentTeachersAis {
 	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
                 t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'UDSSC817F0\' As meccanographic
@@ -57,25 +73,68 @@ sub getCurrentTeachersAis {
 
 
 
-sub getCurrentStudentsAis {
+
+
+
+sub getStudentsAis 	{
 	my $parameters=shift;
-	my $query = "SELECT DISTINCT codalunnosidi AS \"userIdNumber\",nome AS \"name\",
-       			cognome AS \"surname\", datanascita AS \"birthDate\", 
-       			annocronologico AS \"classNumber\", sezione AS \"classLabel\",
-       			coddebolescuola AS \"meccanographic\", annoscol AS \"year\", annocronologico||sezione AS \"classname\"
-				FROM tsisalu_alunni WHERE coddebolescuola IN (".join(',',@{$parameters}).")";
+	my $year=shift;
+
+	my $query="SELECT DISTINCT ana.IANAID as \"userIdNumber\", ana.SANACOGNOME as \"surname\", ana.SANANOME as \"name\", ana.DANANASCITA as \"birthDate\",
+			sed.SSEDMECCOD as \"meccanographic\",cls.SSEZLDESC as \"classLabel\",cls.IACSANNOCORSO as \"classNumber\",
+			 \'$year\' as \"year\",cls.IACSANNOCORSO||cls.SSEZLDESC AS \"classname\",clspst.IPSTID AS \"studyPlan\"
+			FROM TANA_ANAGRAFICHE ana INNER JOIN TANACAG anacag ON ( ana.IANAID = anacag.IANAID ) 
+      		INNER JOIN TCAG_ANACATEG cag ON ( cag.ICAGID = anacag.ICAGID ) 
+        	LEFT JOIN TSIT_SITUAZIONI sit ON ( ana.IANAID = sit.IANAID ) 
+        	LEFT JOIN TCLSPST clspst ON ( clspst.ICLSPSTID = sit.ICLSPSTID) 
+        	LEFT JOIN VCLS_CLASSI cls ON ( cls.ICLSID = clspst.ICLSID) 
+        	LEFT JOIN VSED_SEDI sed ON (sed.IDWGSEDID = cls.IDWGSEDID) 
+        	WHERE (ana.DDELETE IS NULL) AND (CAG.iCagId = 1 ) AND ((SIT.isitordine = 1) AND (SIT.dstart='".$year."-09-01') AND (CLS.idwgid=102)) AND sed.SSEDMECCOD IN (".join(',',@{$parameters}).")";
+
+#	my $query = "SELECT DISTINCT codalunnosidi AS \"userIdNumber\",nome AS \"name\",
+#       			cognome AS \"surname\", datanascita AS \"birthDate\", 
+#       			annocronologico AS \"classNumber\", sezione AS \"classLabel\",
+#       			coddebolescuola AS \"meccanographic\", annoscol AS \"year\", annocronologico||sezione AS \"classname\"
+#				FROM tsisalu_alunni WHERE coddebolescuola IN (".join(',',@{$parameters}).")";
+
+
 	return executeAisQuery($query);
 }
 
 
+
+sub getCurrentStudentsAis{
+	my $parameters=shift;
+	return getStudentsAis($parameters,$ais->{year})
+}
+
+
+
+sub getStudyPlanSubject{
+	my $studyPlan=shift;
+	my $query="SELECT  TMat.iMatId as \"code\"         
+        FROM TMatRmaPst TMatRmaPst    
+        INNER JOIN TMatRma TMatRma ON (TMatRma.iMatRmaId = TMatRmaPst.iMatRmaId AND TMatRma.dDelete IS NULL) 
+        INNER JOIN TMat_Materie TMat   ON (TMat.iMatId = TMatRma.iMatId AND TMat.dDelete IS NULL)         
+        LEFT JOIN TCompAsse TAsse       ON (TMatRmaPst.iCompAsseId = TAsse.iCompAsseId)
+        LEFT OUTER JOIN TOan_OreAn TOan ON (TOan.iOanId = TMatRmaPst.iOanId AND TOan.dDelete IS NULL)   
+        WHERE (TMatRmaPst.dDelete IS NULL) and TMATRMAPST.IPSTID=$studyPlan";
+	return executeAisPlaneQuery($query);
+}
+
+
 sub getCurrentStudentsClassSubjectUnNormAis{
-	my $query="SELECT DISTINCT m.imatid AS \"code\",ta.sacssdesc||ts.ssezldesc AS \"classname\" FROM
+
+
+
+my $query="SELECT DISTINCT m.imatid AS \"code\",ta.sacssdesc||ts.ssezldesc AS \"classname\" FROM
 tclsmatana ma INNER JOIN
 TMAT_MATERIE m on(ma.imatid=m.imatid)  
 INNER JOIN tcls_classi tc ON (ma.iclsid=tc.iclsid)
 INNER JOIN tacs_annicorso ta ON (tc.iacsid=ta.iacsid)
 INNER JOIN tind_indirizzo ti ON (tc.iindid=ti.iindid)
 INNER JOIN tsez_sezioni ts ON (tc.isezid=ts.isezid) ORDER BY ta.SACSSDESC, ts.SSEZLDESC";
+
 my $result={};
 my $subjectClass=executeAisQuery($query);
 
@@ -94,12 +153,12 @@ return $result;
 sub getCurrentStudentsClassSubjectAis{
 	my $parameters=shift;
 	my $result={};
-	my $subjectClass=getCurrentStudentsClassSubjectUnNormAis();
 	my $students=getCurrentStudentsAis($parameters);
 
 	foreach my $student (@{$students}){
+		my $studentSubjects=getStudyPlanSubject($student->{studyPlan});	
 		$result->{$student->{userIdNumber}}=[];
-		foreach my $subject (@{$subjectClass->{$student->{classname}}}){
+		foreach my $subject (@{$studentSubjects}){
 			push(@{$result->{$student->{userIdNumber}}},{
 					classLabel=>lc($student->{classLabel}),
 					classNumber=>lc($student->{classNumber}),
@@ -114,9 +173,16 @@ sub getCurrentStudentsClassSubjectAis{
 
 
 sub getCurrentClassAis{
-	my $query ="SELECT DISTINCT a.annocronologico AS \"classNumber\", a.sezione AS \"classLabel\",
-       			a.coddebolescuola AS \"meccanographic\",s.descrsede AS \"description\"
-				FROM tsisalu_alunni a INNER JOIN tsissed_sedi s ON(a.coddebolescuola=s.coddebolescuola);";
+
+	my $query="select vc.IACSANNOCORSO as \"classNumber\", vc.SSEZLDESC AS \"classLabel\" ,sed.SSEDMECCOD AS \"meccanographic\" ,sed.SSEDNOMLDESC AS \"description\"
+				 from VCLS_CLASSI vc
+				 left join vsed_sedi sed on(vc.IDWGSEDID=sed.IDWGSEDID) where vc.SCLSANNOSCOL like \'$ais->{year}%\'";
+	
+#
+#
+#	my $query ="SELECT DISTINCT a.annocronologico AS \"classNumber\", a.sezione AS \"classLabel\",
+#       			a.coddebolescuola AS \"meccanographic\",s.descrsede AS \"description\"
+#				FROM tsisalu_alunni a INNER JOIN tsissed_sedi s ON(a.coddebolescuola=s.coddebolescuola);";
 	return executeAisQuery($query);
 }
 
@@ -180,16 +246,18 @@ return $result;
 }
 
 sub getCurrentYearAis{
-	my $aisDbh = DBI->connect(
-	"dbi:Firebird:hostname=" . $ais->{'fqdn'} . ";db=" . $ais->{'database'},
-	$ais->{'user'}, $ais->{'password'} );
-	my $query="SELECT DISTINCT annoscol AS \"year\" FROM tsisalu_alunni";
-	my $queryH=$aisDbh->prepare($query);
- 	$queryH->execute();
- 	my @result=$queryH->fetchrow_array();
-	$queryH->finish;
- 	$aisDbh->disconnect;
- 	return @result?$result[0]:0;
+#	my $aisDbh = DBI->connect(
+#	"dbi:Firebird:hostname=" . $ais->{'fqdn'} . ";db=" . $ais->{'database'},
+#	$ais->{'user'}, $ais->{'password'} );
+#	my $query="SELECT DISTINCT annoscol AS \"year\" FROM tsisalu_alunni";
+#	my $queryH=$aisDbh->prepare($query);
+# 	$queryH->execute();
+# 	my @result=$queryH->fetchrow_array();
+#	$queryH->finish;
+# 	$aisDbh->disconnect;
+# 	return @result?$result[0]:0;
+	return $ais->{year};
+
 }
 
 

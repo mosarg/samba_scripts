@@ -158,11 +158,8 @@ sub normalizeUsersAdb {
 sub addUserAdb {
 	my $user = shift;
 	my $role = shift;
-
 	my $userStatus = {};
-
 	$user->{role} = $role;
-	
 	
 	my $adbUser =
 	  $schema->resultset('SysuserSysuser')

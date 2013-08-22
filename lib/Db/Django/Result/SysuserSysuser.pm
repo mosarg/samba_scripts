@@ -85,6 +85,13 @@ __PACKAGE__->table("sysuser_sysuser");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 syncModel
+
+  accessor: 'sync_model'
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 30
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -122,6 +129,13 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 45 },
   "insertOrder",
   { accessor => "insert_order", data_type => "integer", is_nullable => 0 },
+  "syncModel",
+  {
+    accessor => "sync_model",
+    data_type => "varchar",
+    is_nullable => 0,
+    size => 30,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -183,8 +197,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-07-27 16:37:24
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dZT2q+0luMmu7DXK4yBZ1g
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-08-21 15:32:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uKoRUIFIOPFz4o5k1FpYHA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -9,7 +9,8 @@ use Term::Emit ":all", { -color => 1 };
 use Server::Configuration qw($ldap);
 use Server::Commands qw(hashNav sanitizeSubjectname sanitizeString);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn getUserFromUname);
-use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist addS4Ou);
+
+use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist addS4Ou updateS4Group);
 use Server::AdbOu qw(getAllOuAdb);
 use Server::AdbUser
   qw(getAllUsersAdb syncUsersAdb doUsersExistAdb getAllUsersByRoleAdb);
@@ -114,13 +115,12 @@ sub syncUsers {
 
 	#sync classes
 	emit "Sync classes $yearAis";
-
-	# syncClassAdb(getCurrentClassAis())?emit_ok:emit_done "PRESENT";
+	syncClassAdb(getCurrentClassAis())?emit_ok:emit_done "PRESENT";
 
 	#sync subcjects
 	emit "Sync subjects $yearAis";
+	syncSubjectAdb(getCurrentSubjectAis())?emit_ok:emit_done "PRESENT";
 
-	# syncSubjectAdb(getCurrentSubjectAis())?emit_ok:emit_done "PRESENT";
 
 	#get active schools
 	my @activeSchools =
@@ -272,6 +272,11 @@ sub initUsers {
 		print "System already initialized!\n";
 		return 0;
 	}
+
+
+	#Posixify Domain Users group (in case no one did it before)
+	
+	updateS4Group('Domain Users');
 
 	#get current school year in school Ais DB
 	my $yearAis = getCurrentYearAis();

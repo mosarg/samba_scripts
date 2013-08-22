@@ -9,14 +9,15 @@ use Net::LDAP;
 use Data::Dumper;
 use Filesys::DiskSpace;
 use Data::Structure::Util qw( unbless );
-
+use feature "switch";
+use Try::Tiny;
 use Server::Configuration qw($server $ldap $ldap_users);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
 require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(getFreeDiskSpace getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap doOuExist getAllOu getUserBaseDn);
+  qw(getGroup isPosix getFreeDiskSpace getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap doOuExist getAllOu getUserBaseDn);
 
 my $ldapConnection = Net::LDAP->new( $ldap->{'server'} )
   || print "can't connect to !: $@";
@@ -26,6 +27,7 @@ $ldapConnection->bind(
 	$ldap->{'bind_root'} . ',' . $ldap->{'dir_base'},
 	password => $ldap->{'bind_root_password'}
 );
+
 
 sub getUsers {
 	my $dn;
@@ -224,6 +226,75 @@ sub doOuExist{
 	}
 }
 
+
+sub getGroup{
+	my $name=shift;
+	
+	my $base=$ldap->{group_base}. ','.$ldap->{dir_base};;
+	my $filter="&(objectclass=group) (cn=$name)";
+	my $attributes=['distinguishedName','gidNumber','cn','name'];
+	my $result={};	
+			
+	my $data = $ldapConnection->search(
+		base   => $base,
+		scope  => 'sub',
+		attrs => $attributes,
+		filter => $filter
+	);
+	my @answer=$data->entries();
+	
+	if(@answer){
+		$result->{distinguisedName}=lc($answer[0]->get_value('distinguishedName'));
+		$result->{gidNumber}=$answer[0]->get_value('gidNumber');
+		$result->{cn}=$answer[0]->get_value('cn');
+		$result->{name}=$answer[0]->get_value('name');
+		
+	}
+	
+	return $result;
+			
+	
+}
+
+
+
+
+sub isPosix{
+	my $objectName=shift;
+	my $type=shift;
+	my $base=$ldap->{dir_base};
+	my $filter;
+	my $attributes=[];
+	for($type){
+		when(/user/){
+			$base=$ldap->{user_base}. ',' .$base;
+			$filter="&(objectclass=posixAccount) (cn=$objectName)";
+			$attributes=['distinguishedName'];
+		}
+		when(/group/){
+			$base=$ldap->{group_base}. ',' .$base;
+			$filter="&(objectclass=posixGroup) (cn=$objectName)";
+			$attributes=['distinguishedName'];
+		}	
+	}
+	my $data = $ldapConnection->search(
+		base   => $base,
+		scope  => 'sub',
+		attrs => $attributes,
+		filter => $filter
+	);
+	$data->code && die $data->error;
+	
+	my @answer=$data->entries();
+	
+	return $answer[0]?1:0;
+	
+	
+	
+	
+}
+
+
 sub getUserBaseDn{
 	my $userName=shift;
 	my $result=0;
@@ -281,6 +352,9 @@ sub getFreeDiskSpace {
 		return '';
 	}
 }
+
+
+
 
 sub unbindLdap {
 	$ldapConnection->unbind;

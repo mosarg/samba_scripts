@@ -15,23 +15,16 @@ use Server::AdbUser qw(syncUsersAdb addUserAdb deactivateUserAdb getAllUsersAdb 
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentStudentsClassSubjectAis);
 use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
-
-
 use Server::AdbCommon qw($schema getCurrentYearAdb addYearAdb getActiveSchools);
 use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb setDefaultPolicyAdb);
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb getRoleAccountTypes);
 use Server::System qw(createUser);
-
 use Server::AdbOu qw(getUserOuAdb getAllOuAdb);
 
 
 my $extraGroups=['lavoro1','lavoro2'];
-
-
-
-
 
 sub _dumper_hook {
     $_[0] = bless {
@@ -57,20 +50,16 @@ my $aisUser={userIdNumber=>10056,origin=>'auto',name=>'Giorgiona',surname=>'Aspa
     'userIdNumber' => 10056
 }]}};
 
-
 my @allocations=$class->allocation_didacticalallocations({'allocation_id.yearId_id'=>$year->school_year_id},{join=>'allocation_id',select=>['allocation_id.yearId_id','subjectId_id'],distinct=>1})->all;
 
-foreach my $allocation (@allocations){
-	my @currentTeachers=$schema->resultset('SysuserSysuser')->search({'allocation_allocations.yearId_id'=>$year->school_year_id,
-																	  'allocation_allocations.roleId_id'=>$role->role_id,
-																	'allocation_didacticalallocations.classId_id'=>$class->class_id,
-																	'allocation_didacticalallocations.subjectId_id'=>$allocation->subject_id->subject_id},{join=>{'allocation_allocations'=>'allocation_didacticalallocations'} })->all;
-	
-	my @teachersAccounts;
-	foreach my $currentTeacher (@currentTeachers){
-		print $allocation->subject_id->description," ",$allocation->subject_id->subject_id," ", $currentTeacher->name," ",$currentTeacher->surname,"\n";
-	}
-}
 
+#my $updates = syncUsersAdb(
+#				1,
+#				getAisUsers( 'student', \@activeSchools ),
+#				'student',
+#				$year->year,
+#				getCurrentStudentsClassSubjectAis( \@activeSchools )
+#			);
+getCurrentStudentsClassSubjectAis( \@activeSchools );
 
 

@@ -287,17 +287,22 @@ sub recordUser {
 	my $users    = shift;
 	my $filename = shift;
 	open FHANDLE, ">$filename" or die("Cannot open $filename");
-	print FHANDLE " name,surname,username,password,type,backendUidNumber\n";
+	print FHANDLE " name,surname,username,password,ou\n";
 	
 	
 	foreach my $fullUser ( @{$users} ) {
-		foreach  my $userElement (@{$fullUser}){ 
-			my $user = $userElement->{simpleUser};
-				if($user){
-						print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{backend}\n";
-				}
-		
-			}
+	
+		my $userData=$fullUser->[0];
+		my $user=$userData->{simpleUser};
+		print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{ou}\n";
+	
+#		foreach  my $userElement (@{$fullUser}){ 
+#			my $user = $userElement->{simpleUser};
+#				if($user){
+#						print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{backend}\n";
+#				}
+#		
+#			}
 	}
 	close FHANDLE;
 	return 1;

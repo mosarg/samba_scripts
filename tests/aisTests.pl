@@ -9,7 +9,7 @@ use Data::Dumper;
 use HTML::Tabulate qw(render);
 use Server::AdbCommon qw($schema getCurrentYearAdb addYearAdb getActiveSchools);
 
-use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis);
+use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis getStudyPlanSubject);
 
 
 
@@ -28,15 +28,8 @@ my $school=getActiveSchools();
 
 my @schools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
 
+print Dumper getStudyPlanSubject(1000112);
 
 print Dumper getCurrentStudentsClassSubjectAis(\@schools);
 
-#print Dumper getAisUsers ('student',\@schools);
 
-
-#print scalar @{getAisUsers ('ata')};
-#print getCurrentYearAis();
-
-#print Dumper getCurrentClassAis();
-#print Dumper getCurrentStudentsAis(); 
-#print Dumper getCurrentTeachersAis();
