@@ -61,6 +61,13 @@ sub getUserOuAdb {
 			}
 			else { return [ $allocation->ou ]; }
 		}
+		
+		default {
+			if ( $allocation->ou eq 'default' ) {
+				return [ $allocation->role_id->ou ];
+			}
+			else { return [ $allocation->ou ]; }
+		}
 	}
 
 }

@@ -226,11 +226,6 @@ sub deleteS4User {
 	return 1;
 }
 
-
-
-
-
-
 sub addS4Group {
 	my $groupName = shift;
 	my $command =
@@ -259,15 +254,26 @@ sub setS4PrimaryGroup {
 	my $rid = getRid($group);
 	execute(
 		"samba-tool group addmembers $group " . $user->{account}->{username} );
-	my $ldif =
+
+#Uncomment to set windows primary  group=linux primary group
+#	my $ldif =
+#"dn: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}
+#changetype: modify
+#replace: primaryGroupID
+#primaryGroupID: $rid
+#-
+#changetype: modify
+#replace: gidNumber
+#gidNumber: $gid";
+
+#We are settings only unix primary group because of AD primary group backlinking problems
+my $ldif =
 "dn: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}
-changetype: modify
-replace: primaryGroupID
-primaryGroupID: $rid
--
 changetype: modify
 replace: gidNumber
 gidNumber: $gid";
+
+
 	ldbLoadLdif( $ldif, $gid );
 }
 
@@ -291,6 +297,8 @@ sub setS4GroupMembership {
 	my $user   = shift;
 	my $groups = shift;
 	if ( !( doS4UserExist($user) ) ) { return 0; }
+	#all users members of Domain Users
+	push (@{$groups},"Domain Users");
 	foreach my $group ( @{$groups} ) {
 		if ( doS4GroupExist($group) ) {
 			execute("samba-tool group addmembers $group $user");
@@ -396,10 +404,12 @@ sub addS4User {
 		getGid($group), $user->{account}->{unixHomeDir}
 	);
 
-	#set user primary group
-	setS4PrimaryGroup( $user, $group );
 	#insert user into default groups
 	setS4GroupMembership( $user->{account}->{username}, $extraGroups );
+		
+	#set user primary group
+	setS4PrimaryGroup( $user, $group );
+	
 	#create user home directory
 	if ( !doFsObjectExist( $user->{account}->{unixHomeDir}, 'd' ) ) {
 		execute("mkdir -p $user->{account}->{unixHomeDir}");

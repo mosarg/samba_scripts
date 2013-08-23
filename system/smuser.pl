@@ -18,7 +18,7 @@ use Server::AdbAccount qw(getAccountAdb);
 use Server::AisQuery
   qw(getCurrentTeacherClassAis getAisUsers getCurrentClassAis getCurrentYearAis getCurrentSubjectAis getCurrentStudentsClassSubjectAis);
 use Server::System
-  qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser);
+  qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser);
 use Server::AdbClass qw(syncClassAdb);
 use Server::AdbCommon
   qw($schema getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools);
@@ -26,13 +26,17 @@ use Server::AdbSubject qw(syncSubjectAdb);
 use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll);
 use feature "switch";
 
-my $commands = "init,sync,list,syncCourses";
+my $commands = "init,sync,list,syncCourses,add";
 
 my $backend     = 'samba4';
 my $all         = 0;
 my $description = 'generic description';
 my $role        = 'student';
 my $file        = 'new_users.csv';
+my $userRole		= 'visitors';
+my $userName		= 'Utente';
+my $userSurname		= 'Esterno';
+my $usersNumber		=1;
 my $data        = {};
 
 ( scalar(@ARGV) > 0 ) || die("Possibile commands are: $commands\n");
@@ -41,9 +45,14 @@ GetOptions(
 	'backend=s'     => \$backend,
 	'all'           => \$all,
 	'description=s' => \$description,
-	'role=s'        => \$role,
-	'users-file=s'  => \$file
+	'syncrole=s'        => \$role,
+	'users-file=s'  => \$file,
+	'role=s'		=> \$userRole,
+	'name=s'		=>\$userName,
+	'surname=s'		=>\$userSurname,
+	'number=i'		=>\$usersNumber
 );
+
 
 $backend or die("You must specify a backend\n");
 our $adbBackend =
@@ -63,9 +72,35 @@ for ( $ARGV[0] ) {
 	when(/syncCourses/){
 		syncCourses();
 	}
+	when(/add/){
+		addUser();
+	}
 	
 	default { die("$ARGV[0] is not a command!\n"); }
 }
+
+
+###############################
+#
+# Add User
+#
+###############################
+
+sub addUser{
+my $users=[];	
+	
+	if($usersNumber>1){
+		for(my $index=1;$index<=$usersNumber;$index++){	
+			push(@{$users},createFullUser($userRole,$userName,$userSurname.$index));
+		}
+	}else{
+		push(@{$users}, createFullUser($userRole,$userName,$userSurname));
+	}
+recordUser( $users, 'manualUsers.csv' );
+
+}
+
+
 
 #####################################
 #

@@ -11,7 +11,7 @@ use Text::Capitalize;
 use Text::Autoformat;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
-use Server::AdbUser qw(syncUsersAdb addUserAdb deactivateUserAdb getAllUsersAdb addUserAccountsAdb getAllUsersByRoleAdb);
+use Server::AdbUser qw(syncUsersAdb addUserAdb deactivateUserAdb getAllUsersAdb addUserAccountsAdb getAllUsersByRoleAdb addFullUserAdb);
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentStudentsClassSubjectAis);
 use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
@@ -20,8 +20,9 @@ use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb getRoleAccountTypes);
-use Server::System qw(createUser);
+use Server::System qw(createUser createFullUser);
 use Server::AdbOu qw(getUserOuAdb getAllOuAdb);
+
 
 
 my $extraGroups=['lavoro1','lavoro2'];
@@ -52,14 +53,11 @@ my $aisUser={userIdNumber=>10056,origin=>'auto',name=>'Giorgiona',surname=>'Aspa
 
 my @allocations=$class->allocation_didacticalallocations({'allocation_id.yearId_id'=>$year->school_year_id},{join=>'allocation_id',select=>['allocation_id.yearId_id','subjectId_id'],distinct=>1})->all;
 
+my $currentMaxId=$schema->resultset('SysuserSysuser')->search({syncModel=>'manual'})->get_column('sidiId')->max();
+	$currentMaxId=$currentMaxId?$currentMaxId+1:666666;
 
-#my $updates = syncUsersAdb(
-#				1,
-#				getAisUsers( 'student', \@activeSchools ),
-#				'student',
-#				$year->year,
-#				getCurrentStudentsClassSubjectAis( \@activeSchools )
-#			);
-getCurrentStudentsClassSubjectAis( \@activeSchools );
+createFullUser('visitors','Ennoia','Gorletti');
 
 
+	
+	

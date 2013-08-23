@@ -42,13 +42,13 @@ switch ( $ARGV[0] ) {
 		removeGroup();
 	}
 	case 'sync' {
-		initGroups();
+		initGroups($backend);
 	}
 	case 'list' {
 		listGroup();
 	}
 	case 'init' {
-		initGroups();
+		initGroups($backend);
 	}
 	else { die("$ARGV[0] is not a command!\n"); }
 }

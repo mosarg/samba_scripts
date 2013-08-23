@@ -21,13 +21,14 @@ use Server::AdbAccount
 use Server::AdbGroup qw(getAllGroupsAdb);
 use Server::Moodle
   qw(doMoodleUserExist doMoodleGroupExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleGroup addMoodleUser deleteMoodleUser);
+use Server::AdbUser qw(addFullUserAdb);
 
 use feature "switch";
 require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(checkOu createOu listOu  initGroups createUser removeUser moveUser recordUser);
+  qw(checkOu createOu listOu  initGroups createUser removeUser moveUser recordUser createFullUser);
 
 sub checkOu {
 	my $backend=shift;
@@ -83,7 +84,10 @@ sub listOu {
 sub initGroups {
 	
 	my $backend=shift;	
+	print "Current backend $backend\n";
+	
 	#Get all backend groups from adb database;
+	
 	my $groups = getAllGroupsAdb($backend);
 	for ($backend) {
 		when (/samba4/) {
@@ -161,6 +165,7 @@ sub simplifyUser {
 		
 	}
 	$account=$account->first;
+
 	my $ou = join( ',', map { 'ou=' . $_ } @{ getUserOuAdb($user) } );
 	$result = {
 		adbUser		=>$user,
@@ -211,13 +216,21 @@ sub moveUser {
 				  . $currentUser->{account}->{ou} . ","
 				  . $ldap->{user_base} . ","
 				  . $ldap->{'dir_base'};
+			
+				print "Old $oldUserDn -> New $newUserDn\n";
+			
+				if($oldUserDn eq $newUserDn){
+					emit_done "PRESENT";	
+				}else{	
 
-				if ( moveS4User( $currentUser, $oldUserDn, $newUserDn ) ) {
-					emit_ok;
+					if ( moveS4User( $currentUser, $oldUserDn, $newUserDn ) ) {
+						emit_ok;
+						}
+					else {
+						emit_error;
 					}
-				else {
-					emit_error;
 				}
+				
 			}
 			when(/moodle/){
 				
@@ -295,18 +308,24 @@ sub recordUser {
 		my $userData=$fullUser->[0];
 		my $user=$userData->{simpleUser};
 		print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{ou}\n";
-	
-#		foreach  my $userElement (@{$fullUser}){ 
-#			my $user = $userElement->{simpleUser};
-#				if($user){
-#						print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{backend}\n";
-#				}
-#		
-#			}
+
 	}
 	close FHANDLE;
 	return 1;
 }
+
+
+
+sub createFullUser{
+	my $role=shift;
+	my $name=shift;
+	my $surname=shift;
+	
+	my $user=addFullUserAdb($role,$name,$surname);
+	return createUser($user);
+	
+}
+
 
 
 

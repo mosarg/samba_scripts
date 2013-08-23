@@ -20,7 +20,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(syncUsersAdb addUserAdb getAllUsersAdb doUsersExistAdb deactivateUserAdb getAllUsersByRoleAdb addUserAccountsAdb);
+  qw(syncUsersAdb addUserAdb getAllUsersAdb doUsersExistAdb deactivateUserAdb getAllUsersByRoleAdb addUserAccountsAdb addFullUserAdb);
 
 sub doUsersExistAdb {
 	my $usersNumber = $schema->resultset('SysuserSysuser')->count;
@@ -44,14 +44,15 @@ sub getAllUsersByRoleAdb {
 			@result = $schema->resultset('SysuserSysuser')->search(
 				{
 					roleId_id => $role->role_id,
-					yearId_id => $year->school_year_id
+					yearId_id => $year->school_year_id,
+					syncModel=> 'sync'
 				},
 				{ join => 'allocation_allocations' }
 			)->all;
 		}
 		when (/student/) {
 			@result = $schema->resultset('SysuserSysuser')->search(
-				{ roleId_id => $role->role_id, yearId_id => $year->school_year_id, 'school_id.active' => 1 },
+				{syncModel=> 'sync', roleId_id => $role->role_id, yearId_id => $year->school_year_id, 'school_id.active' => 1 },
 				{
 					join => {
 						'allocation_allocations' => {
@@ -67,7 +68,8 @@ sub getAllUsersByRoleAdb {
 			@result = $schema->resultset('SysuserSysuser')->search(
 				{
 					roleId_id => $role->role_id,
-					yearId_id => $year->school_year_id
+					yearId_id => $year->school_year_id,
+					syncModel=> 'sync'
 				},
 				{ join => 'allocation_allocations' }
 			)->all;
@@ -155,6 +157,34 @@ sub normalizeUsersAdb {
 	return $users;
 }
 
+
+sub addFullUserAdb{
+	
+	my $role=shift;
+	my $name=shift;
+	my $surname=shift;
+	my $baseManualUser=1000000000;
+	
+	#get next free manual fake sidiId
+	my $newId=$schema->resultset('SysuserSysuser')->search({syncModel=>'manual'})->get_column('sidiId')->max();
+	$newId=$newId?$newId+1:$baseManualUser;
+	 	
+	#get current year
+	my $yearAdb =getCurrentYearAdb();
+	#get role
+	my $roleAdb =  $schema->resultset('AllocationRole')->search( { role => $role } )->first;
+	#create user
+	my $user={userIdNumber=>$newId, name=>$name, surname=>$surname,origin=>'manual',insertOrder=>getUserOrderAdb()};
+	my $result = addUserAdb( $user, $roleAdb, 'automatic' );
+	$result=addUserAccountsAdb($result);
+	$result->{data}->update({syncModel=>'manual'});
+	return $result->{data};
+	
+}
+
+
+
+
 sub addUserAdb {
 	my $user = shift;
 	my $role = shift;
@@ -183,7 +213,8 @@ sub addUserAdb {
 						name        => $user->{name},
 						surname     => $user->{surname},
 						origin      => $user->{origin},
-						insertOrder => $user->{insertOrder}
+						insertOrder => $user->{insertOrder},
+						syncModel 	=> 'sync'
 					}
 				)
 			);
@@ -307,7 +338,7 @@ sub syncUsersAdb {
 
 		#set insertion order
 		$user->{insertOrder} = $insertOrder;
-		my $result = addUserAdb( $user, $roleAdb, 'automatic' );
+		my $result = addUserAdb( $user, $roleAdb);
 		
 		$result=addUserAccountsAdb($result);
 

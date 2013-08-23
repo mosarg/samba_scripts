@@ -56,8 +56,6 @@ sub executeAisPlaneQuery{
 };
 
 
-
-
 sub getCurrentTeachersAis {
 	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
                 t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'UDSSC817F0\' As meccanographic
@@ -70,10 +68,6 @@ sub getCurrentTeachersAis {
    				WHERE p.idctid=1 AND p.istabperid=1  AND tq.iquapusercode IN (12,14,17,25)";
 	return executeAisQuery($query);
 }
-
-
-
-
 
 
 sub getStudentsAis 	{
@@ -90,13 +84,6 @@ sub getStudentsAis 	{
         	LEFT JOIN VCLS_CLASSI cls ON ( cls.ICLSID = clspst.ICLSID) 
         	LEFT JOIN VSED_SEDI sed ON (sed.IDWGSEDID = cls.IDWGSEDID) 
         	WHERE (ana.DDELETE IS NULL) AND (CAG.iCagId = 1 ) AND ((SIT.isitordine = 1) AND (SIT.dstart='".$year."-09-01') AND (CLS.idwgid=102)) AND sed.SSEDMECCOD IN (".join(',',@{$parameters}).")";
-
-#	my $query = "SELECT DISTINCT codalunnosidi AS \"userIdNumber\",nome AS \"name\",
-#       			cognome AS \"surname\", datanascita AS \"birthDate\", 
-#       			annocronologico AS \"classNumber\", sezione AS \"classLabel\",
-#       			coddebolescuola AS \"meccanographic\", annoscol AS \"year\", annocronologico||sezione AS \"classname\"
-#				FROM tsisalu_alunni WHERE coddebolescuola IN (".join(',',@{$parameters}).")";
-
 
 	return executeAisQuery($query);
 }
@@ -177,12 +164,7 @@ sub getCurrentClassAis{
 	my $query="select vc.IACSANNOCORSO as \"classNumber\", vc.SSEZLDESC AS \"classLabel\" ,sed.SSEDMECCOD AS \"meccanographic\" ,sed.SSEDNOMLDESC AS \"description\"
 				 from VCLS_CLASSI vc
 				 left join vsed_sedi sed on(vc.IDWGSEDID=sed.IDWGSEDID) where vc.SCLSANNOSCOL like \'$ais->{year}%\'";
-	
-#
-#
-#	my $query ="SELECT DISTINCT a.annocronologico AS \"classNumber\", a.sezione AS \"classLabel\",
-#       			a.coddebolescuola AS \"meccanographic\",s.descrsede AS \"description\"
-#				FROM tsisalu_alunni a INNER JOIN tsissed_sedi s ON(a.coddebolescuola=s.coddebolescuola);";
+
 	return executeAisQuery($query);
 }
 
@@ -246,18 +228,7 @@ return $result;
 }
 
 sub getCurrentYearAis{
-#	my $aisDbh = DBI->connect(
-#	"dbi:Firebird:hostname=" . $ais->{'fqdn'} . ";db=" . $ais->{'database'},
-#	$ais->{'user'}, $ais->{'password'} );
-#	my $query="SELECT DISTINCT annoscol AS \"year\" FROM tsisalu_alunni";
-#	my $queryH=$aisDbh->prepare($query);
-# 	$queryH->execute();
-# 	my @result=$queryH->fetchrow_array();
-#	$queryH->finish;
-# 	$aisDbh->disconnect;
-# 	return @result?$result[0]:0;
 	return $ais->{year};
-
 }
 
 

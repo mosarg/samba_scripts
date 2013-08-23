@@ -34,6 +34,7 @@ sub updateAllocationAdb {
 	my $role                = shift;
 	my $importedAllocations = shift;
 
+	#empty execution status
 	my $status = {
 		main_allocation_created  => 0,
 		main_allocation_modified => 0,
@@ -42,16 +43,24 @@ sub updateAllocationAdb {
 	};
 
 	my $currentYear = getCurrentYearAdb();
+	
+	#if user has no primary allocation, update allocation is useless call add allocation
 	if (
 		$user->allocation_allocations(
 			{ yearId_id => $currentYear->school_year_id }
 		)->count == 0
 	  )
 	{
-		return addAllocationAdb( $user, $role, $importedAllocations );
+		$status->{main_allocation_modified}=1;
+		return addAllocationAdb( $user, $role, $importedAllocations,$status);
 	}
+	
+	
+	
 	my $currentAllocation = $user->allocation_allocations(
 		{ yearId_id => $currentYear->school_year_id } )->first;
+	
+	# update role 
 
 	if ( $currentAllocation->role_id_id != $role->role_id ) {
 		$currentAllocation->update( { roleId_id => $role->role_id } );
@@ -65,7 +74,7 @@ sub updateAllocationAdb {
 
 #for now ata users do not change allocation after creation just chech for allocation presence
 			if (
-				$currentAllocation->allocation_nondidacticalallocation->count ==
+				$currentAllocation->allocation_nondidacticalallocations->count() ==
 				0 )
 			{
 				$status->{sub_allocations_modified} = 1;
@@ -74,9 +83,21 @@ sub updateAllocationAdb {
 			}
 		}
 		when (/student|teacher/) {
+								  
+			#get current allocations	
 			my @didacticalAllocations =
-			  $currentAllocation->allocation_didacticalallocations->all;
-
+				$currentAllocation->allocation_didacticalallocations->all;
+			
+			#if there are no didactical allocations create them
+		
+			if (scalar(@didacticalAllocations)==0) {
+				$status->{sub_allocations_modified} = 1;
+				return createSubAllocations( $role, $currentAllocation,
+					$importedAllocations, $status );
+			}
+		
+			#remove from current adb allocations current ais allocations
+			#all remaining allocations must be removed
 			foreach my $aisAllocation ( @{$importedAllocations} ) {
 				extract_by {
 					( $_->class_id->name eq $aisAllocation->{classId} )
@@ -84,8 +105,10 @@ sub updateAllocationAdb {
 						$_->subject_id->code eq $aisAllocation->{subjectId} );
 				}
 				@didacticalAllocations;
-
 			}
+				
+		
+			#if there are stale allocations remove them all and recreate them according to ais db
 			if ( scalar(@didacticalAllocations) > 0 ) {
 
 				$currentAllocation->delete_related(
@@ -106,13 +129,18 @@ sub addAllocationAdb {
 	my $role                = shift;
 	my $importedAllocations = shift;
 	my $currentYear         = getCurrentYearAdb();
-	my $status              = {
-		main_allocation_created  => 0,
-		main_allocation_modified => 0,
-		sub_allocations_modified => 0,
-		sub_allocations_created  => 0
+	my $status=shift;
+	
+	if (!$status){
+	
+		 $status              = {
+			main_allocation_created  => 0,
+			main_allocation_modified => 0,
+			sub_allocations_modified => 0,
+			sub_allocations_created  => 0
 	};
-
+	}
+	
 	#add role allocation
 	my $currentAllocation = try {
 		my $currentAllocation = $user->create_related(

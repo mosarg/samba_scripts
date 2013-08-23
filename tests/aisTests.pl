@@ -28,8 +28,7 @@ my $school=getActiveSchools();
 
 my @schools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
 
-print Dumper getStudyPlanSubject(1000112);
+
 
 print Dumper getCurrentStudentsClassSubjectAis(\@schools);
-
 
