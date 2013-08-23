@@ -6,7 +6,7 @@ use Getopt::Long;
 use Term::ANSIColor;
 use Switch;
 use Term::Emit ":all", { -color => 1 };
-use Server::Configuration qw($ldap);
+use Server::Configuration qw($ldap $schema);
 use Server::Commands qw(hashNav sanitizeSubjectname sanitizeString);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn getUserFromUname);
 
@@ -21,7 +21,7 @@ use Server::System
   qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser);
 use Server::AdbClass qw(syncClassAdb);
 use Server::AdbCommon
-  qw($schema getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools);
+  qw(getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools);
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll);
 use feature "switch";

@@ -6,13 +6,13 @@ use warnings;
 use Data::Dumper;
 use List::UtilsBy qw(extract_by);
 use Server::AdbCommon
-  qw($schema getCurrentYearAdb creationTimeStampsAdb getActiveSchools);
+  qw(getCurrentYearAdb creationTimeStampsAdb getActiveSchools);
 use Text::Capitalize;
 use Server::AdbAccount
   qw(addAccountAdb  getAccountAdb   getAccountsAdb getRoleAccountTypes);
 use Server::AdbPolicy qw(setDefaultPolicyAdb);
 use Server::AdbAllocation qw(syncAllocationAdb);
-use Server::Configuration qw($server $adb $ldap);
+use Server::Configuration qw($schema $server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername today);
 use feature "switch";
 use Try::Tiny;

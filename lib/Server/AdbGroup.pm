@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
-use Server::AdbCommon qw($schema creationTimeStampsAdb);
-use Server::Configuration qw($server $adb $ldap);
+use Server::AdbCommon qw(creationTimeStampsAdb);
+use Server::Configuration qw($schema $server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
 
 use feature "switch";

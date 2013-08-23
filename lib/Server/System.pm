@@ -9,8 +9,8 @@ use String::MkPasswd qw(mkpasswd);
 use Data::Dumper;
 use Term::Emit ":all", { -color => 1 };
 use Data::Structure::Util qw( unbless );
-use Server::AdbCommon qw($schema getCurrentYearAdb);
-use Server::Configuration qw($server $adb $ldap);
+use Server::AdbCommon qw(getCurrentYearAdb);
+use Server::Configuration qw($schema $server $adb $ldap);
 use Server::Commands qw(hashNav);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn);
 use Server::Samba4

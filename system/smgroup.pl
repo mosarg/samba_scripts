@@ -10,8 +10,8 @@ use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
 use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
 use Server::System qw(initGroups);
-use Server::AdbCommon qw($schema);
 use Server::Moodle qw(doMoodleGroupExist addMoodleGroup);
+use Server::Configuration qw(schema);
 use feature "switch";
 
 my $commands = "init add,remove,sync,list";

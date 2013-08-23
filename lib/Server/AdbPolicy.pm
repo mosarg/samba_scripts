@@ -7,8 +7,8 @@ use Cwd;
 use Getopt::Long;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
-use Server::AdbCommon qw($schema creationTimeStampsAdb);
-use Server::Configuration qw($server $adb $ldap);
+use Server::AdbCommon qw(creationTimeStampsAdb);
+use Server::Configuration qw($schema $server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
 
 use Try::Tiny;

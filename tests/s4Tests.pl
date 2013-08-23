@@ -13,7 +13,7 @@ use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
 
 
-use Server::AdbCommon qw($schema getCurrentYearAdb);
+use Server::AdbCommon qw(getCurrentYearAdb);
 use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb setDefaultPolicyAdb);
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);

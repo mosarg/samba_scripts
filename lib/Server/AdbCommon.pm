@@ -5,24 +5,26 @@ use strict;
 use warnings;
 use Cwd;
 use Getopt::Long;
-use Db::Django;
 use Data::Dumper;
 use DateTime;
 use feature "switch";
 use Try::Tiny;
 use Data::Structure::Util qw( unbless );
-use Server::Configuration qw($server $adb);
+use Server::Configuration qw( $schema $server $adb);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
 require Exporter;
 
 
+
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw($schema  getCurrentYearAdb setCurrentYearAdb addYearAdb creationTimeStampsAdb getActiveSchools);
+our @EXPORT_OK = qw(getCurrentYearAdb setCurrentYearAdb addYearAdb creationTimeStampsAdb getActiveSchools);
 
 #open user account database connections
 
-our $schema=Db::Django->connect('dbi:mysql:gestione_scuola','mosa','sambackett');
+
+
+
 
 #$schema->storage->debug(1);
 

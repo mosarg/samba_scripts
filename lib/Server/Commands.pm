@@ -46,7 +46,14 @@ sub hashNav{
 
 sub execute{
 	my $command=shift;
-	my $toExecute= "ssh ".$server->{'root'}."@".$server->{'fqdn'}." $command";
+	my $backend=shift;
+	my $fqdn=$server->{'fqdn'};
+	
+	if ($backend){
+		
+	}
+	
+	my $toExecute= "ssh ".$server->{'root'}."@".$fqdn." $command";
 	if($server->{dry_run}){
 		return $toExecute;
 	}else{

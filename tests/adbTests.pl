@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Server::Configuration qw($ldap $server);
+use Server::Configuration qw($ldap $server $schema);
 use Server::Commands qw(sanitizeString);
 use Net::LDAP;
 use Text::Capitalize;
@@ -15,7 +15,7 @@ use Server::AdbUser qw(syncUsersAdb addUserAdb deactivateUserAdb getAllUsersAdb 
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentStudentsClassSubjectAis);
 use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
-use Server::AdbCommon qw($schema getCurrentYearAdb addYearAdb getActiveSchools);
+use Server::AdbCommon qw(getCurrentYearAdb addYearAdb getActiveSchools);
 use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb setDefaultPolicyAdb);
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
