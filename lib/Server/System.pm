@@ -14,21 +14,25 @@ use Server::Configuration qw($schema $server $adb $ldap);
 use Server::Commands qw(hashNav);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn);
 use Server::Samba4
-  qw(addS4Group deleteS4Group doS4GroupExist addS4Ou addS4User deleteS4User moveS4User);
+  qw(addS4Group deleteS4Group doS4GroupExist addS4Ou addS4User deleteS4User moveS4User changeSamba4Password);
 use Server::AdbOu qw(getAllOuAdb getUserOuAdb);
 use Server::AdbAccount
   qw(getAccountGroupsAdb getAccountMainGroupAdb getAccountAdb getRoleAccountTypes);
 use Server::AdbGroup qw(getAllGroupsAdb);
 use Server::Moodle
-  qw(doMoodleUserExist doMoodleGroupExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleGroup addMoodleUser deleteMoodleUser);
+  qw(doMoodleUserExist doMoodleGroupExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleGroup addMoodleUser deleteMoodleUser changeMoodlePassword);
+use Server::Django qw(addDjangoUser deleteDjangoUser doDjangoUserExist changeDjangoPassword);
+
 use Server::AdbUser qw(addFullUserAdb);
+
+
 
 use feature "switch";
 require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(checkOu createOu listOu  initGroups createUser removeUser moveUser recordUser createFullUser);
+  qw(checkOu createOu listOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword);
 
 sub checkOu {
 	my $backend=shift;
@@ -91,7 +95,10 @@ sub initGroups {
 	my $groups = getAllGroupsAdb($backend);
 	for ($backend) {
 		when (/samba4/) {
-			while ( my $group = $groups->next ) {
+			
+			my $groupTypes = [ 'automatic', 'userdef' ];
+			foreach my $groupType ( @{$groupTypes} ) {
+			while ( my $group = $groups->{$groupType}->next ) {
 				if ( !doS4GroupExist( $group->name ) ) {
 					emit "Inserting group " . $group->name;
 					my $result = addS4Group( $group->name );
@@ -103,6 +110,9 @@ sub initGroups {
 					}
 				}
 			}
+		}
+			
+			
 		}
 
 		when (/moodle/) {
@@ -128,6 +138,43 @@ sub initGroups {
 	}
 }
 
+
+sub changeUserPassword{
+	my $username=shift;
+	my $password=shift;
+	my $user=$schema->resultset('SysuserSysuser')->search({'account_accounts.username'=>$username},{join=>'account_accounts'})->first;
+	
+	if(!$user) {return 0;}
+	#get user accounts
+	my @accounts=$user->account_accounts->all;
+	foreach my $account (@accounts){
+		my $kind=$account->backend_id->kind;
+			for($kind){
+			when (/samba4/){
+				emit "Change Samba4 Password";
+				my $sambaResult=changeSamba4Password($username,$password);
+				$sambaResult==1?emit_ok:emit_error;				
+			}
+			when(/moodle/){
+				emit "Change Moodle Password";
+				changeMoodlePassword($username,$password);
+				emit_ok;
+			}
+			when(/django/){
+				emit "Change Django Password";
+				changeMoodlePassword($username,$password);
+				emit_ok;
+				
+			}
+		
+		}	
+
+	}
+
+}
+
+
+
 sub removeUser {
 	my $user = shift;
 	
@@ -149,6 +196,9 @@ sub removeUser {
 			}
 			when (/moodle/){
 				deleteMoodleUser($account->username)? emit_ok : emit_error;				
+			}
+			when (/django/){
+				deleteDjangoUser($account->username)? emit_ok : emit_error;	
 			}
 		}
 	}
@@ -248,24 +298,36 @@ sub moveUser {
 					default   {emit_ok;}
 				}
 			}
+			when(/django/){
+				
+			}
 		}
 
 	}
 }
+
 
 sub createS4User {
 	my $user = shift;
 
 	#get adb groups
 	my $extraGroups =getAccountGroupsAdb( $user->{adbaccount}, $user->{adbbackend} );
+
 	#get adb main group
 	my $mainGroup =
 	  getAccountMainGroupAdb( $user->{adbaccount}, $user->{adbbackend} )->name;
 
+	my $baseExtraGroups=[ map { ($_)->name } @{$extraGroups} ];
+
+	if( 'alunni'~~$baseExtraGroups){
+		$user->{simpleUser}->{account}->{ou}=~m/^ou=(\w+)/ ;
+		push (@{$baseExtraGroups},$1);	
+	}
+	
 	#create user
 	$user->{simpleUser} =
 	  addS4User( $user->{simpleUser}, $mainGroup,
-		[ map { ($_)->name } @{$extraGroups} ] );
+		$baseExtraGroups );
 		
  	$user->{adbaccount}->update(
 		{
@@ -276,6 +338,26 @@ sub createS4User {
 	);
 	return $user;
 }
+
+
+
+sub createDjangoUser{
+	my $user = shift;
+		
+		$user->{simpleUser} = addDjangoUser($user->{simpleUser});
+		$user->{simpleUser}->{accounts}->{django}=$user->{simpleUser}->{account};
+		$user->{adbaccount}->update(
+		{
+			active => 1,
+			backendUidNumber =>
+			  $user->{simpleUser}->{account}->{backendUidNumber}
+		}
+	);
+	return $user;
+	
+}
+
+
 
 sub createMoodleUser {
 	my $user = shift;
@@ -296,9 +378,12 @@ sub createMoodleUser {
 	return $user;
 }
 
+
 sub recordUser {
 	my $users    = shift;
 	my $filename = shift;
+	$filename=$filename."_".localtime(time).".csv";
+	$filename=~s/\s/_/g;
 	open FHANDLE, ">$filename" or die("Cannot open $filename");
 	print FHANDLE " name,surname,username,password,ou\n";
 	
@@ -316,6 +401,10 @@ sub recordUser {
 
 
 
+
+
+
+
 sub createFullUser{
 	my $role=shift;
 	my $name=shift;
@@ -325,10 +414,6 @@ sub createFullUser{
 	return createUser($user);
 	
 }
-
-
-
-
 
 
 sub createUser {
@@ -384,6 +469,17 @@ sub createUser {
 					emit_done "PRESENT";
 				}
 				
+			}
+			when (/django/) {
+				if (!doDjangoUserExist( $simpleUser->{simpleUser})) {
+					$simpleUser = createDjangoUser($simpleUser);
+					push(@{$results},$simpleUser);
+					$simpleUser->{simpleUser}->{creationStatus}
+					  ? emit_ok
+					  : emit_error;
+				}else {
+					emit_done "PRESENT";
+				}
 			}
 			default { emit_error; }
 		}

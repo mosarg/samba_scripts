@@ -20,8 +20,9 @@ use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb getRoleAccountTypes);
-use Server::System qw(createUser createFullUser);
+use Server::System qw(createUser createFullUser changeUserPassword);
 use Server::AdbOu qw(getUserOuAdb getAllOuAdb);
+use Server::Commands qw(execute);
 
 
 
@@ -56,7 +57,7 @@ my @allocations=$class->allocation_didacticalallocations({'allocation_id.yearId_
 my $currentMaxId=$schema->resultset('SysuserSysuser')->search({syncModel=>'manual'})->get_column('sidiId')->max();
 	$currentMaxId=$currentMaxId?$currentMaxId+1:666666;
 
-createFullUser('visitors','Ennoia','Gorletti');
+changeUserPassword('alantoneatto','Samback@000');
 
 
 	

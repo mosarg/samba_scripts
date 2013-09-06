@@ -18,7 +18,7 @@ use Server::AdbAccount qw(getAccountAdb);
 use Server::AisQuery
   qw(getCurrentTeacherClassAis getAisUsers getCurrentClassAis getCurrentYearAis getCurrentSubjectAis getCurrentStudentsClassSubjectAis);
 use Server::System
-  qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser);
+  qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword);
 use Server::AdbClass qw(syncClassAdb);
 use Server::AdbCommon
   qw(getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools);
@@ -26,16 +26,18 @@ use Server::AdbSubject qw(syncSubjectAdb);
 use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll);
 use feature "switch";
 
-my $commands = "init,sync,list,syncCourses,add";
+my $commands = "init,sync,list,syncCourses,add,password";
 
 my $backend     = 'samba4';
 my $all         = 0;
 my $description = 'generic description';
 my $role        = 'student';
-my $file        = 'new_users.csv';
+my $file        = 'new_users';
 my $userRole		= 'visitors';
 my $userName		= 'Utente';
 my $userSurname		= 'Esterno';
+my $systemUserName	= '';
+my $newPassword= '';
 my $usersNumber		=1;
 my $data        = {};
 
@@ -45,12 +47,14 @@ GetOptions(
 	'backend=s'     => \$backend,
 	'all'           => \$all,
 	'description=s' => \$description,
-	'syncrole=s'        => \$role,
+	'syncrole=s'    => \$role,
 	'users-file=s'  => \$file,
 	'role=s'		=> \$userRole,
-	'name=s'		=>\$userName,
-	'surname=s'		=>\$userSurname,
-	'number=i'		=>\$usersNumber
+	'name=s'		=> \$userName,
+	'surname=s'		=> \$userSurname,
+	'number=i'		=> \$usersNumber,
+	'username=s'	=> \$systemUserName,
+	'password=s'	=> \$newPassword
 );
 
 
@@ -75,6 +79,9 @@ for ( $ARGV[0] ) {
 	when(/add/){
 		addUser();
 	}
+	when(/password/){
+		changePassword();
+	}
 	
 	default { die("$ARGV[0] is not a command!\n"); }
 }
@@ -96,11 +103,27 @@ my $users=[];
 	}else{
 		push(@{$users}, createFullUser($userRole,$userName,$userSurname));
 	}
-recordUser( $users, 'manualUsers.csv' );
+recordUser( $users, 'manualUsers' );
 
 }
 
 
+##########################################
+#
+# Change User Password
+#
+##########################################
+
+sub changePassword{
+	
+	if ($systemUserName && $newPassword){
+		if (!changeUserPassword($systemUserName,$newPassword)){print "Username does not exist\n"; };
+	}else{
+		print "You must supply at least username and password\n";
+	}
+	
+	
+}
 
 #####################################
 #
@@ -245,7 +268,7 @@ sub syncUsers {
 		}
 
 	}
-	recordUser( $possibileNewBackendAccounts, 'missingAccounts.csv' );
+	recordUser( $possibileNewBackendAccounts, 'missingAccounts' );
 
 	emit_ok;
 
@@ -286,7 +309,7 @@ sub syncUsers {
 
 		}
 
-		recordUser( $regenBackendAccounts, 'regeneratedAccounts.csv' );
+		recordUser( $regenBackendAccounts, 'regeneratedAccounts' );
 
 		emit_ok;
 

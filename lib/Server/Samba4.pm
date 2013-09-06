@@ -3,7 +3,8 @@ package Server::Samba4;
 use strict;
 use warnings;
 use Data::Dumper;
-
+use feature "switch";
+use Try::Tiny;
 use Cwd;
 use Server::Configuration qw($server $ldap);
 use Server::LdapQuery qw(isPosix getGroup);
@@ -13,7 +14,28 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(moveS4User addS4Ou doS4UserExist getNewUid  addS4User addS4Group   deleteS4User  setS4GroupMembership deleteS4Group doS4GroupExist updateS4Group getGroup);
+  qw(changeSamba4Password moveS4User addS4Ou doS4UserExist getNewUid  addS4User addS4Group   deleteS4User  setS4GroupMembership deleteS4Group doS4GroupExist updateS4Group getGroup);
+
+
+my $backendId='samba4';
+
+
+sub changeSamba4Password{
+	my $username=shift;
+	my $password=shift;
+	my $command="samba-tool user setpassword $username --newpassword=\'$password\' ";
+	my $result=execute($command,$backendId);
+	for($result){
+		when(/short/){return 3;}
+		when(/complexity/){return 4;}
+		when(/OK/){return 1;}
+		default {return 0;}
+		}
+	}
+	
+
+
+
 
 sub posixifyGroup {
 	my $groupName = shift;
@@ -69,25 +91,25 @@ sub ldbLoadLdif {
 	my $output = `$command`;
 
 	return execute(
-"ldbmodify --url=ldap://$ldap->{'server_fqdn'} --user=$ldap->{'domain'}/$ldap->{'domain_admin'}%$ldap->{'bind_root_password'} $fileName"
+"ldbmodify --url=ldap://$ldap->{'server_fqdn'} --user=$ldap->{'domain'}/$ldap->{'domain_admin'}%$ldap->{'bind_root_password'} $fileName",$backendId
 	);
 }
 
 sub cleanNscdCache {
-	execute('nscd --invalidate passwd');
-	execute('nscd --invalidate group');
+	execute('nscd --invalidate passwd',$backendId);
+	execute('nscd --invalidate group',$backendId);
 }
 
 sub getNewUid {
 	my $userName = shift;
-	my $uid      = execute("wbinfo -i $userName | cut -d \":\" -f3");
+	my $uid      = execute("wbinfo -i $userName | cut -d \":\" -f3",$backendId);
 	chomp($uid);
 	return $uid =~ /^\d+$/ ? $uid : 0;
 }
 
 sub getNewGid {
 	my $groupName = shift;
-	my $gid = execute("wbinfo --group-info=$groupName | cut -d \":\" -f 3");
+	my $gid = execute("wbinfo --group-info=$groupName | cut -d \":\" -f 3",$backendId);
 	chomp($gid);
 	return $gid =~ /^\d+$/ ? $gid : 0;
 }
@@ -95,19 +117,19 @@ sub getNewGid {
 sub getGid {
 	my $groupName = shift;
 	return execute(
-		"\'echo -n \$(wbinfo --group-info=$groupName|cut -d \":\" -f3 -n)\'");
+		"\'echo -n \$(wbinfo --group-info=$groupName|cut -d \":\" -f3 -n)\'",$backendId);
 }
 
 sub getRid {
 	my $groupName = shift;
 	return execute(
-"\'echo -n \$\(wbinfo --gid-to-sid=\$\(echo -n \$\(wbinfo --group-info=$groupName|cut -d \":\" -f3 -n\)\)|cut -d \"-\" -f 8\)\'"
+"\'echo -n \$\(wbinfo --gid-to-sid=\$\(echo -n \$\(wbinfo --group-info=$groupName|cut -d \":\" -f3 -n\)\)|cut -d \"-\" -f 8\)\'",$backendId
 	);
 }
 
 sub doS4UserExist {
 	my $userName = shift;
-	my $idReport = execute("id $userName");
+	my $idReport = execute("id $userName",$backendId);
 	$idReport =~ m/uid/ ? return 1 : return 0;
 }
 
@@ -123,7 +145,7 @@ sub getS4UnixHomeDir {
 	my $ldbBaseCommand =
 "ldbsearch --url=ldap://$ldap->{'server_fqdn'} --user=$ldap->{'domain'}/$ldap->{'domain_admin'}%$ldap->{'bind_root_password'}";
 	return execute(
-"\' echo -n \$($ldbBaseCommand cn=$userName | grep unix | cut -d \":\" -f2) \'"
+"\' echo -n \$($ldbBaseCommand cn=$userName | grep unix | cut -d \":\" -f2) \'",$backendId
 	);
 }
 
@@ -158,7 +180,7 @@ sub getGroupCard {
 	my $group = shift;
 	my @members =
 	  split( ',',
-		execute(" \' echo -n \$(getent group $group | cut -d \":\" -f4)\'") );
+		execute(" \' echo -n \$(getent group $group | cut -d \":\" -f4)\'",$backendId) );
 	return scalar(@members);
 }
 
@@ -168,7 +190,7 @@ sub deleteS4Group {
 		return 3;
 	}
 	if ( doS4GroupExist($group) ) {
-		execute("samba-tool group delete $group");
+		execute("samba-tool group delete $group",$backendId);
 		cleanNscdCache();
 		return 1;
 	}
@@ -183,7 +205,7 @@ sub moveS4User {
 
 	#move samba user under new ou
 	if ( $oldDn ne $newDn ) {
-		 execute("samba-tool ou move $oldDn $newDn");
+		 execute("samba-tool ou move $oldDn $newDn",$backendId);
 	}
 	else {
 		return 0;
@@ -211,17 +233,17 @@ sub deleteS4User {
 	#remove home dir
 	my $homeDir = getS4UnixHomeDir($userName);
 	if ( doFsObjectExist( $homeDir, 'd' ) ) {
-		execute("rm -rf $homeDir");
+		execute("rm -rf $homeDir",$backendId);
 	}
 
 	#remove samba4 profile
 	my $profileDir = $server->{profiles_dir} . "/" . $userName;
 	if ( doFsObjectExist( $profileDir, 'd' ) ) {
-		execute("rm -rf $profileDir\*");
+		execute("rm -rf $profileDir\*",$backendId);
 	}
 
 	#delete user
-	execute("samba-tool user delete $userName");
+	execute("samba-tool user delete $userName",$backendId);
 	cleanNscdCache();
 	return 1;
 }
@@ -233,7 +255,7 @@ sub addS4Group {
 	if ( doS4GroupExist($groupName) ) {
 		return 2;
 	}
-	my $result = execute($command);
+	my $result = execute($command,$backendId);
 	my $gid    = getNewGid($groupName);
 	
 	
@@ -253,7 +275,7 @@ sub setS4PrimaryGroup {
 	my $gid = getGid($group);
 	my $rid = getRid($group);
 	execute(
-		"samba-tool group addmembers $group " . $user->{account}->{username} );
+		"samba-tool group addmembers $group " . $user->{account}->{username} ,$backendId);
 
 #Uncomment to set windows primary  group=linux primary group
 #	my $ldif =
@@ -296,18 +318,21 @@ homeDirectory: $homeDir->{samba}";
 sub setS4GroupMembership {
 	my $user   = shift;
 	my $groups = shift;
+	my $error=1;
 	if ( !( doS4UserExist($user) ) ) { return 0; }
+	
 	#all users members of Domain Users
-	push (@{$groups},"Domain Users");
+	#push (@{$groups},"Domain Users");
+		
 	foreach my $group ( @{$groups} ) {
 		if ( doS4GroupExist($group) ) {
-			execute("samba-tool group addmembers $group $user");
-			return 1;
+			execute("samba-tool group addmembers $group $user",$backendId);	
 		}
 		else {
-			return 0;
+			$error=0;
 		}
 	}
+	return $error;
 }
 
 sub updateS4Group{
@@ -337,7 +362,7 @@ sub addS4Ou {
 	    "samba-tool ou create $ou,"
 	  . $ldap->{ $type . "_base" } . ","
 	  . $ldap->{dir_base};
-	my $result = execute($command);
+	my $result = execute($command,$backendId);
 	return $result =~ m/created/ ? 1 : 0;
 }
 
@@ -377,12 +402,12 @@ sub addS4User {
 	$command.=" --mail-address=$user->{account}->{username}@".$ldap->{default_mail};
 	
 	#create user
-	$user->{creationStatus} = execute($command);
+	$user->{creationStatus} = execute($command,$backendId);
 
 	#set user to no expire
 	execute("samba-tool user setexpiry "
 		  . $user->{account}->{username}
-		  . " --noexpiry" );
+		  . " --noexpiry" ,$backendId);
 
 	#set unix home dir
 
@@ -407,12 +432,15 @@ sub addS4User {
 	#insert user into default groups
 	setS4GroupMembership( $user->{account}->{username}, $extraGroups );
 		
+	### CHECK https://lists.samba.org/archive/samba-technical/2012-May/083285.html
 	#set user primary group
-	setS4PrimaryGroup( $user, $group );
+	setS4PrimaryGroup( $user, "Domain\\ Users" );
+	
+	
 	
 	#create user home directory
 	if ( !doFsObjectExist( $user->{account}->{unixHomeDir}, 'd' ) ) {
-		execute("mkdir -p $user->{account}->{unixHomeDir}");
+		execute("mkdir -p $user->{account}->{unixHomeDir}",$backendId);
 	}
 	#clean nscdCache
 	cleanNscdCache();
@@ -420,7 +448,7 @@ sub addS4User {
 	execute("chown "
 		  . $user->{account}->{username} . ":"
 		  . $group
-		  . " $user->{account}->{unixHomeDir}" );
+		  . " $user->{account}->{unixHomeDir}" ,$backendId);
 	#set account active
 	$user->{account}->{active} = 1;
 	return $user;

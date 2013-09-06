@@ -11,7 +11,7 @@ use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
 use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
 use Server::System qw(initGroups);
 use Server::Moodle qw(doMoodleGroupExist addMoodleGroup);
-use Server::Configuration qw(schema);
+use Server::Configuration qw($schema);
 use feature "switch";
 
 my $commands = "init add,remove,sync,list";
@@ -152,12 +152,18 @@ sub listGroup {
 	my $groups = getAllGroupsAdb($backend);
 	for ($backend) {
 		when (/samba4/) {
-			
-		while ( my $group = $groups->next ) {
+			my $groupTypes=['automatic','userdef'];	
+		foreach my $groupType (@{$groupTypes}){
+		while ( my $group = $groups->{$groupType}->next ) {
 				emit "Samba4 group " . $group->name;
 				if   ( !doS4GroupExist( $group->name ) ) { emit_done "NOT PRESENT"; }
 				else                                     { emit_ok; }
 			}
+		}
+			
+			
+			
+			
 
 		}
 		when(/moodle/){

@@ -10,20 +10,21 @@ use Server::Commands qw(execute doFsObjectExist sanitizeString);
 use Server::Actions qw(moveDir);
 use feature "switch";
 use Try::Tiny;
-
 require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(doMoodleUserExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist doMoodleGroupExist addMoodleGroup addMoodleUser getUserCohorts deleteMoodleUser addMoodleCourse defaultEnrol unenrolAll);
+  qw(doMoodleUserExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist doMoodleGroupExist addMoodleGroup addMoodleUser getUserCohorts deleteMoodleUser addMoodleCourse defaultEnrol unenrolAll changeMoodlePassword);
 
 
 my $moosh = "moosh --moodle-path /var/www/moodle";
 
+my $backendId="moodle";
+
 sub getUserCohorts {
 	my $user    = shift;
 	my @results = execute(
-"$moosh sql-run \\\"select distinct name,c.id from {user}  u inner join {cohort_members} m on\\(u.id=m.userid\\) inner join {cohort} c on \\(m.cohortid=c.id\\) where username=\\\'$user\\\'\\\"|grep \'\\\[name\\\]\\\|\\\[id\\\]\'"
+"$moosh sql-run \\\"select distinct name,c.id from {user}  u inner join {cohort_members} m on\\(u.id=m.userid\\) inner join {cohort} c on \\(m.cohortid=c.id\\) where username=\\\'$user\\\'\\\"|grep \'\\\[name\\\]\\\|\\\[id\\\]\'",$backendId
 	);
 
 	chomp(@results);
@@ -41,17 +42,30 @@ sub getUserCohorts {
 }
 
 
+sub changeMoodlePassword{
+	
+	my $username=shift;
+	my $password=shift;
+	
+	my $command="$moosh user-mod --password \\\"$password\\\" $username";
+	
+	execute($command,$backendId);
+	
+	
+}
+
+
 sub addMoodleCourse{
 	my $course=shift;
 
 	my $category=getMoodleOuId($course->{category});
 		
-	my $result=execute("$moosh course-create --category $category->{id} --fullname \\\"$course->{fullname}\\\" --description \\\"$course->{description}\\\" --idnumber \\\"$course->{id}\\\" --format \\\"topics\\\" $course->{shortname}");
+	my $result=execute("$moosh course-create --category $category->{id} --fullname \\\"$course->{fullname}\\\" --description \\\"$course->{description}\\\" --idnumber \\\"$course->{id}\\\" --format \\\"topics\\\" $course->{shortname}",$backendId);
 
 	for ($result){
 		when(/^\d+$/){$course->{creation}=1;$course->{message}='Course created succesfully';$course->{id}=$result; return $course;}
 		when(/Short name is already used for another course/){
-			my $id=execute("$moosh sql-run \\\"select id from {course} where shortname=\\\'$course->{shortname}\\\'\\\"|grep id|cut -d \"\>\" -f2");	
+			my $id=execute("$moosh sql-run \\\"select id from {course} where shortname=\\\'$course->{shortname}\\\'\\\"|grep id|cut -d \"\>\" -f2",$backendId);	
 			chomp($id);
 			$course->{id}=$id;
 			$course->{creation}=2;
@@ -83,7 +97,7 @@ sub addMoodleUser {
 			$command.=" --country=IT --city=".$ldap->{city};
 			$command.=" --auth manual $user->{account}->{username}";
 						
-			$result = execute($command);
+			$result = execute($command,$backendId);
 			for ($result) {
 				when (/^\d+/) {
 					chomp($result);
@@ -110,7 +124,7 @@ sub addMoodleUser {
 	}
 
 	$user->{account}->{backendUidNumber} =
-	  execute("$moosh user-getidbyname $user->{account}->{username}");
+	  execute("$moosh user-getidbyname $user->{account}->{username}",$backendId);
 	chomp( $user->{account}->{backendUidNumber} );
 	my $currentGroups = {};
 	if ( $user->{creationStatus} == 2 ) {
@@ -121,7 +135,7 @@ sub addMoodleUser {
 			delete($currentGroups->{$group});
 		}
 		else {
-			my $enrolStatus = execute("$moosh cohort-enrol -u $user->{account}->{backendUidNumber} $group");
+			my $enrolStatus = execute("$moosh cohort-enrol -u $user->{account}->{backendUidNumber} $group",$backendId);
 			for ($enrolStatus) {
 				when (/Cohort does not exist/) { $user->{account}->{error}=1; }
 				when (/Notice:: not found/){print "Group not found\n"; $user->{account}->{error}=1;}
@@ -131,7 +145,7 @@ sub addMoodleUser {
 		}
 	}
 	foreach my $removeGroup ( keys(%{$currentGroups} ) ){
-		my $unenrolStatus = execute("$moosh cohort-unenrol  $currentGroups->{$removeGroup} $user->{account}->{backendUidNumber}"
+		my $unenrolStatus = execute("$moosh cohort-unenrol  $currentGroups->{$removeGroup} $user->{account}->{backendUidNumber}",$backendId
 		);
 		for ($unenrolStatus) {
 			when (/Cohort does not exist/) { print "Cohort $removeGroup not present\n"; }
@@ -145,7 +159,7 @@ sub doMoodleUserExist {
 	my $user = shift;
 
 	my $result =
-	  execute("$moosh user-getidbyname $user->{account}->{username}");
+	  execute("$moosh user-getidbyname $user->{account}->{username}",$backendId);
 	chomp($result);
 	for ($result) {
 		when (/^\d+$/)               { return $result; }
@@ -167,7 +181,7 @@ sub getMoodleOuId {
 	my $ou     = shift;
 	my $result = { error => 0 };
 	my $data   = execute(
-"\'echo -n \$\($moosh category-list |egrep \'^[0-9]*[[:space:]]*".$ou."[[:space:]]\'\)\'"
+"\'echo -n \$\($moosh category-list |egrep \'^[0-9]*[[:space:]]*".$ou."[[:space:]]\'\)\'",$backendId
 	);
 	
 	
@@ -220,10 +234,10 @@ sub addMoodleOuElement {
 	if ($parentId) {
 
 		$result =
-		  execute("$moosh category-create -p $parentId -v 1  $ouElement");
+		  execute("$moosh category-create -p $parentId -v 1  $ouElement",$backendId);
 	}
 	else {
-		$result = execute("$moosh category-create  -v 1  $ouElement");
+		$result = execute("$moosh category-create  -v 1  $ouElement",$backendId);
 	}
 
 	chomp($result);
@@ -241,7 +255,7 @@ sub addMoodleOuElement {
 
 sub doMoodleGroupExist {
 	my $cohort = shift;
-	my $result = execute("$moosh cohort-enrol $cohort");
+	my $result = execute("$moosh cohort-enrol $cohort",$backendId);
 	for ($result) {
 		when (/Not enough arguments/)  { return 1 }
 		when (/Cohort does not exist/) { return 0 }
@@ -251,7 +265,7 @@ sub doMoodleGroupExist {
 
 sub addMoodleGroup {
 	my $cohort = shift;
-	my $result = execute("$moosh cohort-create $cohort");
+	my $result = execute("$moosh cohort-create $cohort",$backendId);
 	for ($result) {
 		when (/\d+/)                           { return 1 }
 		when (/Not enough arguments provided/) { return 0; }
@@ -264,7 +278,7 @@ sub addMoodleGroup {
 sub deleteMoodleUser{
 	
 	my $username=shift;
-	my $result=execute("$moosh user-delete $username");
+	my $result=execute("$moosh user-delete $username",$backendId);
 	for ($result){
 		when(/User not found/){return 0;}
 		default {return 1;}
@@ -276,7 +290,7 @@ sub deleteMoodleUser{
 sub unenrolAll{
 	my $course=shift;
 	
-	my $result=execute("$moosh course-unenrol --role editingteacher,teacher --cohort 1 $course->{id}");
+	my $result=execute("$moosh course-unenrol --role editingteacher,teacher --cohort 1 $course->{id}",$backendId);
 	
 	for($result){
 		when(/Can not find data record in database table course/){return $course->{result}=0;}
@@ -295,7 +309,7 @@ sub defaultEnrol{
 	
 	
 	foreach my $teacher (@{$teachers}){	
-		my $teacherResult=execute("$moosh course-enrol  -r editingteacher $course->{id}  $teacher ");
+		my $teacherResult=execute("$moosh course-enrol  -r editingteacher $course->{id}  $teacher ",$backendId);
 	
 		for ($teacherResult){
 			when(/Error code: invaliduser/){return {error=>1,message=>'Invalid user'};}
@@ -304,7 +318,7 @@ sub defaultEnrol{
 	}
 	
 	#enrol cohort to course
-	my $cohortError=execute("$moosh cohort-enrol -c $course->{id} $cohort");
+	my $cohortError=execute("$moosh cohort-enrol -c $course->{id} $cohort",$backendId);
 	
 	
 	

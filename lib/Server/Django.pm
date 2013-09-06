@@ -13,33 +13,59 @@ use Try::Tiny;
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(addDjangoUser deleteDjangoUser doDjangoUserExist);
-my $django_user="python /opt/django_utils/user.py";
+our @EXPORT_OK = qw(addDjangoUser deleteDjangoUser doDjangoUserExist changeDjangoPassword);
+
+my $django_user="$server->{virtualenvs}->{gestione_scuola} /opt/django_utils/user.py";
+
+my $backendId='django';
+
+
+
+sub changeDjangoPassword{
+	my $username=shift;
+	my $password=shift;
+	my $command="$django_user setpassword $username --password \\\"$password\\\" ";
+	print execute($command,$backendId);
+		
+}
 
 
 sub addDjangoUser{
 	my $user=shift;
 	
-	my $command="$django_user create $user->{account}->{username}";
+	
+	my $command="$django_user add $user->{account}->{username}";
 			$command.=" --name \\\"$user->{name}\\\" --surname \\\"$user->{surname}\\\"";
 			$command.=" --email \\\"$user->{account}->{username}\@".$ldap->{default_mail}."\\\"";
 			$command.=" --password \\\"$user->{account}->{password}\\\"";
-	my $result=execute($command);
+	my $result=execute($command,$backendId);
+	
+	for($result){
+		when (/duplicate/){ $user->{creationStatus} = 2; }
+		when (/error/) { $user->{creationStatus} = 0; }
+		when (/(\d+)/) {
+			$user->{creationStatus}=1;
+			chomp($_);
+			$user->{account}->{backendUidNumber}=$_;
+		}
+		default   { $user->{creationStatus} =   0; }
+	}
+	
+	return $user;
 }
 
 sub deleteDjangoUser{
 	my $username=shift;
 	my $command="$django_user delete $username";
-	
-	return execute($command);
+	return execute($command,$backendId);
 		
 }
 
 sub doDjangoUserExist{
-	my $username=shift;
-	my $command="$django_user check $username";
+	my $user=shift;
+	my $command="$django_user check $user->{account}->{username}";
 	
-	my $result=execute($command);
+	my $result=execute($command,$backendId);
 	for($result){
 		when (/user present/){return 1;}
 		when (/user not found/){return 0;}

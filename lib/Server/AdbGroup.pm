@@ -29,7 +29,12 @@ sub getAllGroupsAdb{
 	
 	for($currentBackend){
 		
-	when(/samba4/){return $schema->resultset('GroupGroup')->search( {backendId_id=>$backend->backend_id}, {prefetch=>{'group_grouppolicies'=>'policy_id'} });}
+	when(/samba4/){
+		my $result;
+		$result->{automatic}=$schema->resultset('SchoolSchool');
+		$result->{userdef}=$schema->resultset('GroupGroup')->search( {backendId_id=>$backend->backend_id}, {prefetch=>{'group_grouppolicies'=>'policy_id'} });
+		return $result;
+	}
 	when(/moodle/){
 		my $result;
 		$result->{classes}=$schema->resultset('SchoolClass');

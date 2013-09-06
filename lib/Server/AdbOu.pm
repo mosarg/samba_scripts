@@ -2,6 +2,7 @@ package Server::AdbOu;
 
 use DBI;
 use strict;
+use Data::Dumper;
 use warnings;
 use Server::AdbCommon qw(getCurrentYearAdb);
 use Server::Configuration qw($schema $server $adb $ldap);
@@ -125,6 +126,11 @@ FROM
 			role=>"SELECT DISTINCT  ou FROM allocation_role",
 			allocation=>"SELECT DISTINCT ou FROM sysuser_sysuser u INNER JOIN allocation_allocation a ON (a.userId_id=u.userId) WHERE ou!='default'"
 				
+		},
+		django=>{
+			main=>"SELECT DISTINCT  ou FROM allocation_role",
+			role=>"SELECT DISTINCT  ou FROM allocation_role",
+			allocation=>"SELECT DISTINCT ou FROM sysuser_sysuser u INNER JOIN allocation_allocation a ON (a.userId_id=u.userId) WHERE ou!='default'"
 		}
 		
 	};
@@ -133,6 +139,7 @@ FROM
 	my $result = $adbDbh->prepare($query);
 	$result->execute();
 	$data   = $result->fetchall_arrayref();
+	
 	$query  = $queries->{$format}->{role};
 	$result = $adbDbh->prepare($query);
 	$result->execute();
@@ -143,8 +150,9 @@ FROM
 		$result = $adbDbh->prepare($query);
 		$result->execute();
 		$temp = $result->fetchall_arrayref();
+			
 		if ( scalar( @{$temp} ) > 0 ) {
-			$data = [ @{$data}, @{ $result->fetchall_arrayref() } ];
+			$data = [ @{$data}, @{$temp} ];
 		}
 	}
 

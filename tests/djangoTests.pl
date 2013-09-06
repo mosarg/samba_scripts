@@ -19,9 +19,11 @@ use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb);
 use Server::System qw(createUser);
-use Server::Django qw(addDjangoUser deleteDjangoUser doDjangoUserExist);
+use Server::Django qw(addDjangoUser deleteDjangoUser doDjangoUserExist changeDjangoPassword	 ) ;
 
 
-my $user={account=>{username=>'cagnoso',password=>'cajfkjfd'},name=>'Amilcare',surname=>'Bendetti'};
+my $user={account=>{username=>'alansstoneatto',password=>'cajfkjfd'},name=>'Amil5225care',surname=>'B5225endetti'};
 
-print addDjangoUser($user);
+print  changeDjangoPassword('alantoneatto','sambackett');
+
+print doDjangoUserExist($user)

@@ -3,7 +3,7 @@ package Server::Commands;
 use strict;
 use warnings;
 use Cwd;
-use Server::Configuration qw($server);
+use Server::Configuration qw($server $schema);
 use DateTime;
 
 
@@ -43,14 +43,14 @@ sub hashNav{
 }
 
 
-
 sub execute{
 	my $command=shift;
 	my $backend=shift;
 	my $fqdn=$server->{'fqdn'};
 	
 	if ($backend){
-		
+		my $adbBackend=$schema->resultset('BackendBackend')->find({kind=>$backend});
+		$fqdn=$adbBackend->server_fqdn();			
 	}
 	
 	my $toExecute= "ssh ".$server->{'root'}."@".$fqdn." $command";
