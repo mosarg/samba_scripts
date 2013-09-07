@@ -9,7 +9,7 @@ our @EXPORT_OK =qw($log_info $reports $paths $remote_share $remote_executer
 				   $domain $network_user $remote_user $remote_password 
 				   $database $wsus_log $client $remote_conf);
 
-my %Config = %{ LoadFile('/opt/samba_scripts/configuration.yaml') };
+my %Config = %{ LoadFile('/etc/samba_scripts/configuration.yaml') };
 
 our $remote_executer = $Config{remote_executer};
 our $domain          = $Config{domain};
