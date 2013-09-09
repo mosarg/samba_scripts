@@ -7,14 +7,14 @@ use Term::ANSIColor;
 use Switch;
 use Term::Emit ":all", { -color => 1 };
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);
-use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist);
+use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist updateS4Group);
 use Server::AdbPolicy qw(getAllPoliciesAdb setPolicyGroupAdb);
 use Server::System qw(initGroups);
 use Server::Moodle qw(doMoodleGroupExist addMoodleGroup);
 use Server::Configuration qw($schema);
 use feature "switch";
 
-my $commands = "init add,remove,sync,list";
+my $commands = "init add,remove,sync,list,update";
 
 my $backend     = 'samba4';
 my $all         = 0;
@@ -50,8 +50,27 @@ switch ( $ARGV[0] ) {
 	case 'init' {
 		initGroups($backend);
 	}
+	case 'update'{
+		updateGroup()
+	}
+	
 	else { die("$ARGV[0] is not a command!\n"); }
 }
+
+
+
+sub updateGroup{
+	
+	my $groupName=$ARGV[1];
+	
+	if(!$groupName){
+		print "You must specify exactly one group name\n";
+	}
+	updateS4Group($groupName);
+	
+}
+
+
 
 sub addGroup {
 	
