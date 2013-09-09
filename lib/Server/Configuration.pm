@@ -20,6 +20,6 @@ our $programs		  =$Config{programs};
 our $ais			  =$Config{ais};
 our $adb			  =$Config{adb};
 
-our $schema=Db::Django->connect('dbi:mysql:gestione_scuola;host=$adb->{fqdn}','mosa','sambackett');
+our $schema=Db::Django->connect('dbi:mysql:gestione_scuola;host='.$adb->{fqdn},'mosa','sambackett');
 
 1;
