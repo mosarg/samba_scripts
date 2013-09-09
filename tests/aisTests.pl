@@ -2,12 +2,12 @@
 
 use strict;
 use warnings;
-use Server::Configuration qw($ldap $server);
+use Server::Configuration qw($schema $ldap $server);
 use Server::Commands qw(sanitizeString);
 use Net::LDAP;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
-use Server::AdbCommon qw($schema getCurrentYearAdb addYearAdb getActiveSchools);
+use Server::AdbCommon qw(getCurrentYearAdb addYearAdb getActiveSchools);
 
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis getStudyPlanSubject);
 
@@ -30,5 +30,5 @@ my @schools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
 
 
 
-print Dumper getCurrentStudentsClassSubjectAis(\@schools);
+print Dumper getAisUsers('ata');
 

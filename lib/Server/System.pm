@@ -316,11 +316,9 @@ sub createS4User {
 	#get adb main group
 	my $mainGroup =
 	  getAccountMainGroupAdb( $user->{adbaccount}, $user->{adbbackend} )->name;
-
 	my $baseExtraGroups=[ map { ($_)->name } @{$extraGroups} ];
-
-	if( 'alunni'~~$baseExtraGroups){
-		$user->{simpleUser}->{account}->{ou}=~m/^ou=(\w+)/ ;
+	if ( ('alunni'~~$baseExtraGroups) && !( 'docenti'~~$baseExtraGroups)){
+		$user->{simpleUser}->{account}->{ou}=~m/ou=(\w+)$/;
 		push (@{$baseExtraGroups},$1);	
 	}
 	

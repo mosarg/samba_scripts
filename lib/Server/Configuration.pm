@@ -9,7 +9,7 @@ require Exporter;
 our @ISA       = qw(Exporter);
 our @EXPORT_OK =qw($schema $programs $ldap_users $ldap $dirs $server $mail $ais $adb);
 
-my %Config = %{ LoadFile('/opt/samba_scripts/server_configuration.yaml') };
+my %Config = %{ LoadFile('/etc/samba_scripts/server_configuration.yaml') };
 
 our $ldap			  =$Config{ldap};
 our $dirs			  =$Config{dirs};

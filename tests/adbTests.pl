@@ -37,10 +37,15 @@ sub _dumper_hook {
 $Data::Dumper::Freezer = '_dumper_hook';
 
 my $role=$schema->resultset('AllocationRole')->search({role=>'teacher'})->first;
-my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>1000265})->first;
+
+my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>1005262})->first;
+
 my $class=$schema->resultset('SchoolClass')->search({name=>'4al'})->first;
+
 my $year=getCurrentYearAdb();
+
 my @activeSchools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
+
 my $yearAdb=getCurrentYearAdb();
 
 
@@ -52,12 +57,27 @@ my $aisUser={userIdNumber=>10056,origin=>'auto',name=>'Giorgiona',surname=>'Aspa
     'userIdNumber' => 10056
 }]}};
 
-my @allocations=$class->allocation_didacticalallocations({'allocation_id.yearId_id'=>$year->school_year_id},{join=>'allocation_id',select=>['allocation_id.yearId_id','subjectId_id'],distinct=>1})->all;
+#my @allocations=$class->allocation_didacticalallocations({'allocation_id.yearId_id'=>$year->school_year_id},{join=>'allocation_id',select=>['allocation_id.yearId_id','subjectId_id'],distinct=>1})->all;
 
 my $currentMaxId=$schema->resultset('SysuserSysuser')->search({syncModel=>'manual'})->get_column('sidiId')->max();
 	$currentMaxId=$currentMaxId?$currentMaxId+1:666666;
 
-changeUserPassword('alantoneatto','Samback@000');
+
+my $s4Account=$user->account_accounts({kind=>'samba4'},{prefetch=>'backend_id'})->next;
+
+my $extGroup=getAccountGroupsAdb( $s4Account, $s4Account->backend_id );
+my $baseExtraGroups=[ map { ($_)->name } @{$extGroup} ];
+
+print Dumper $baseExtraGroups;
+my $ou = join( ',', map { 'ou=' . $_ } @{ getUserOuAdb($user) } );
+
+#push(@{$baseExtraGroups},'docenti');
+
+if ( ('alunni'~~$baseExtraGroups) && !( 'docenti'~~$baseExtraGroups) )  {
+	$ou=~m/ou=(\w+)$/ ;
+	print $1;
+	#	push (@{$baseExtraGroups},$1);	
+	}
 
 
 	
