@@ -227,10 +227,19 @@ sub doOuExist{
 }
 
 
+
+sub getUserGid{
+	
+	my $username=shift;
+		
+	my $base=$ldap->{user_base}. ','.$ldap->{dir_base};
+}
+
+
 sub getGroup{
 	my $name=shift;
 	
-	my $base=$ldap->{group_base}. ','.$ldap->{dir_base};;
+	my $base=$ldap->{group_base}. ','.$ldap->{dir_base};
 	my $filter="&(objectclass=group) (cn=$name)";
 	my $attributes=['distinguishedName','gidNumber','cn','name'];
 	my $result={};	

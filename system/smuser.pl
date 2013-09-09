@@ -10,7 +10,7 @@ use Server::Configuration qw($ldap $schema);
 use Server::Commands qw(hashNav sanitizeSubjectname sanitizeString);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn getUserFromUname);
 
-use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist addS4Ou updateS4Group);
+use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist addS4Ou updateS4Group updateS4User);
 use Server::AdbOu qw(getAllOuAdb);
 use Server::AdbUser
   qw(getAllUsersAdb syncUsersAdb doUsersExistAdb getAllUsersByRoleAdb);
@@ -26,7 +26,7 @@ use Server::AdbSubject qw(syncSubjectAdb);
 use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll);
 use feature "switch";
 
-my $commands = "init,sync,list,syncCourses,add,password";
+my $commands = "init,sync,list,syncCourses,add,password,update";
 
 my $backend     = 'samba4';
 my $all         = 0;
@@ -40,6 +40,7 @@ my $systemUserName	= '';
 my $newPassword= '';
 my $usersNumber		=1;
 my $data        = {};
+my $container= '';
 
 ( scalar(@ARGV) > 0 ) || die("Possibile commands are: $commands\n");
 
@@ -54,7 +55,8 @@ GetOptions(
 	'surname=s'		=> \$userSurname,
 	'number=i'		=> \$usersNumber,
 	'username=s'	=> \$systemUserName,
-	'password=s'	=> \$newPassword
+	'password=s'	=> \$newPassword,
+	'container=s'	=> \$container
 );
 
 
@@ -82,9 +84,27 @@ for ( $ARGV[0] ) {
 	when(/password/){
 		changePassword();
 	}
+	when(/update/){
+		updateUser();
+	}
 	
 	default { die("$ARGV[0] is not a command!\n"); }
 }
+
+
+
+sub updateUser{
+	
+	my $username=$ARGV[1];
+	
+	if(!$username){
+		print "You must specify exactly one username\n";
+		return;
+	}
+	updateS4User($username,$container);
+}
+
+
 
 
 ###############################

@@ -19,11 +19,13 @@ use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb);
 use Server::System qw(createUser);
-use Server::Samba4 qw(changePassword doS4GroupExist updateS4Group);
+use Server::Samba4 qw( doS4GroupExist updateS4Group updateS4User getNewUid);
 
 
 
-print changePassword('alantoneatto','Sambackett');
+updateS4User('giocondo2','');
+
+
 
 
 

@@ -14,7 +14,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(changeSamba4Password moveS4User addS4Ou doS4UserExist getNewUid  addS4User addS4Group   deleteS4User  setS4GroupMembership deleteS4Group doS4GroupExist updateS4Group getGroup);
+  qw(changeSamba4Password moveS4User addS4Ou doS4UserExist getNewUid  addS4User addS4Group   deleteS4User  setS4GroupMembership deleteS4Group doS4GroupExist updateS4Group getGroup updateS4User);
 
 
 my $backendId='samba4';
@@ -73,7 +73,7 @@ unixHomeDirectory: $unixHome
 add: loginShell
 loginShell: /bin/bash";
 
-	ldbLoadLdif( $ldif, $uid );
+ldbLoadLdif( $ldif, $uid );
 }
 
 
@@ -353,6 +353,38 @@ sub updateS4Group{
 	return $groupData;
 	
 }
+
+
+
+sub updateS4User{
+	my $username=shift;
+	my $container=shift;
+	my $dn;
+	my $homeDir;
+	my $uid=getNewUid( $username);
+	
+	
+	print "uid $uid\n";
+	
+	if($container){
+		$dn="cn=".$username.","
+		  ."ou=". $container.","
+		  . $ldap->{user_base};
+	$homeDir = genS4HomeDir({account=>{username=>$username,ou=>$container}});	
+	$homeDir=$homeDir->{long};
+	}else{
+		$dn="cn=".$username.",". $ldap->{user_base};
+		$homeDir=$server->{home_base} . "/". $username;
+	}
+	
+	my $gid=getGid('Domain\ Users');
+	
+		
+	posixifyUser($dn,$uid,$gid,$homeDir);
+		
+	
+}
+
 
 
 sub addS4Ou {
