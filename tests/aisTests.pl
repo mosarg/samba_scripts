@@ -30,5 +30,5 @@ my @schools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
 
 
 
-print Dumper getAisUsers('ata');
+print Dumper  getCurrentTeacherClassAis(2013);
 
