@@ -258,14 +258,14 @@ sub moveUser {
 			when (/samba4/) {
 				my $currentUser=$simpleUser->{simpleUser};	
 				emit "Move user account  $currentUser->{account}->{username} kind ".colored($backendKind,'yellow')." to $currentUser->{account}->{ou}";	
-				my $oldUserDn = "cn=$currentUser->{account}->{username},"
-				  . getUserBaseDn( $currentUser->{account}->{username} );
+				my $oldUserDn =lc( "cn=$currentUser->{account}->{username},"
+				  . getUserBaseDn( $currentUser->{account}->{username} ));
 
-				my $newUserDn = "cn="
+				my $newUserDn =lc( "cn="
 				  . $currentUser->{account}->{username} . ","
 				  . $currentUser->{account}->{ou} . ","
 				  . $ldap->{user_base} . ","
-				  . $ldap->{'dir_base'};
+				  . $ldap->{'dir_base'});
 			
 				print "Old $oldUserDn -> New $newUserDn\n";
 			
