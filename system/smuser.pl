@@ -18,7 +18,7 @@ use Server::AdbAccount qw(getAccountAdb);
 use Server::AisQuery
   qw(getCurrentTeacherClassAis getAisUsers getCurrentClassAis getCurrentYearAis getCurrentSubjectAis getCurrentStudentsClassSubjectAis);
 use Server::System
-  qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword);
+  qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword activateAccount);
 use Server::AdbClass qw(syncClassAdb);
 use Server::AdbCommon
   qw(getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools);
@@ -26,7 +26,7 @@ use Server::AdbSubject qw(syncSubjectAdb);
 use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll);
 use feature "switch";
 
-my $commands = "init,sync,list,syncCourses,add,password,update";
+my $commands = "init,sync,list,syncCourses,add,password,update activate";
 
 my $backend     = 'samba4';
 my $all         = 0;
@@ -87,8 +87,22 @@ for ( $ARGV[0] ) {
 	when(/update/){
 		updateUser();
 	}
+	when(/activate/){
+		activateUserAccount();
+	}
 	
 	default { die("$ARGV[0] is not a command!\n"); }
+}
+
+
+
+sub activateUserAccount{
+	my $username=$ARGV[1];
+	
+	if (!$username){print "You must specify a username\n";return;}
+	activateAccount($username,$backend);
+	
+	
 }
 
 

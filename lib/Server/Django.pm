@@ -57,8 +57,16 @@ sub addDjangoUser{
 sub deleteDjangoUser{
 	my $username=shift;
 	my $command="$django_user delete $username";
-	return execute($command,$backendId);
-		
+	my $result=execute($command,$backendId);
+	for ($result){
+		when(/successfull/){
+			return 1;
+		}
+		when(/not/){
+			return 0;
+		}
+	}
+	return 0;
 }
 
 sub doDjangoUserExist{

@@ -18,12 +18,10 @@ use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb);
-use Server::System qw(createUser);
+use Server::System qw(createUser deleteDjangoUser);
 use Server::Django qw(addDjangoUser deleteDjangoUser doDjangoUserExist changeDjangoPassword	 ) ;
 
 
 my $user={account=>{username=>'alansstoneatto',password=>'cajfkjfd'},name=>'Amil5225care',surname=>'B5225endetti'};
 
-print  changeDjangoPassword('alantoneatto','sambackett');
-
-print doDjangoUserExist($user)
+print deleteDjangoUser('galdinopater');

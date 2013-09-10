@@ -18,8 +18,8 @@ use Server::AdbPolicy qw(getAllPoliciesAdb addPolicyAccountAdb setPolicyGroupAdb
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb );
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::AdbAccount qw(getAccountGroupsAdb getAccountsAdb getAccountMainGroupAdb addAccountAdb);
-use Server::System qw(createUser);
-use Server::Moodle qw(changePassword doMoodleUserExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleUser getUserCohorts addMoodleCourse defaultEnrol);
+use Server::System qw(createUser activateAccount);
+use Server::Moodle qw( doMoodleUserExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleUser getUserCohorts addMoodleCourse defaultEnrol);
 
 my $moosh = "moosh --moodle-path /var/www/moodle";
 
@@ -27,8 +27,5 @@ my $user={name=>'Mattia',surname=>'Bassi',account=>{username=>'mattiabassi',pass
 my $groups=['1acr','studenti'];
 my $course={categoryid=>10,fullname=>'Matematica e fisica',description=>'tatata tata bla bla',idnumber=>1022,shortname=>'matefis3a4',id=>13};
 
-
-
-
-changePassword('alantoneatto','cagone');
+activateAccount('gretazorzi','moodle');
 

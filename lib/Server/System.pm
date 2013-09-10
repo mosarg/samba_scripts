@@ -32,7 +32,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(checkOu createOu listOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword);
+  qw(checkOu createOu listOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword deleteDjangoUser activateAccount);
 
 sub checkOu {
 	my $backend=shift;
@@ -484,5 +484,40 @@ sub createUser {
 	}
 	return $results;
 }
+
+sub activateAccount{
+	my $username=shift;
+	my $backend=shift;
+	
+	my $adbBackend=$schema->resultset('BackendBackend')->search({kind=>$backend})->next;
+	my $adbAccount=$schema->resultset('AccountAccount')->search({username=>$username,backendId_id=>$adbBackend->backend_id})->next;
+	
+	
+	if(!$adbAccount){
+		print "no account found\n";
+		return;}
+			
+	for($backend){
+		when(/moodle/){
+			my $moodleUid=doMoodleUserExist({account=>{username=>$username}});
+			if($moodleUid>0){
+				$adbAccount->update({active => 1,backendUidNumber =>$moodleUid});
+			}else{
+				print "Backend account does not exist\n";
+				
+			}
+		}
+		when(/samba4/){
+			
+			
+		}
+		when(/django/){
+			
+			
+		}
+	}	
+	
+}
+
 
 1;
