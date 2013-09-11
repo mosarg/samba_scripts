@@ -14,7 +14,7 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis getStudyPlanSubject);
+our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis getStudyPlanSubject getCurrentStudentsAis);
 
 
 
@@ -83,7 +83,7 @@ sub getStudentsAis 	{
         	LEFT JOIN TCLSPST clspst ON ( clspst.ICLSPSTID = sit.ICLSPSTID) 
         	LEFT JOIN VCLS_CLASSI cls ON ( cls.ICLSID = clspst.ICLSID) 
         	LEFT JOIN VSED_SEDI sed ON (sed.IDWGSEDID = cls.IDWGSEDID) 
-        	WHERE (ana.DDELETE IS NULL) AND (CAG.iCagId = 1 ) AND ((SIT.isitordine = 1) AND (SIT.dstart='".$year."-09-01') AND (CLS.idwgid=102)) AND sed.SSEDMECCOD IN (".join(',',@{$parameters}).")";
+        	WHERE (ana.DDELETE IS NULL) AND (CAG.iCagId = 1 ) AND ((SIT.isitordine = 1) AND (SIT.dstart='".$year."-09-01') AND (CLS.idwgid=102)) AND sed.SSEDMECCOD IN (".join(',',@{$parameters}).") and TSIT_SITUAZIONI.ISITPOSREG<>0";
 
 	return executeAisQuery($query);
 }
