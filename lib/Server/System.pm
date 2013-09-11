@@ -381,7 +381,8 @@ sub recordUser {
 	my $users    = shift;
 	my $filename = shift;
 	$filename=$filename."_".localtime(time).".csv";
-	$filename=~s/\s/_/g;
+	$filename=~s/\s|\:/_/g;
+		
 	open FHANDLE, ">$filename" or die("Cannot open $filename");
 	print FHANDLE " name,surname,username,password,ou\n";
 	
