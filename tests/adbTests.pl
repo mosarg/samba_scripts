@@ -68,17 +68,8 @@ my $s4Account=$user->account_accounts({kind=>'samba4'},{prefetch=>'backend_id'})
 my $extGroup=getAccountGroupsAdb( $s4Account, $s4Account->backend_id );
 my $baseExtraGroups=[ map { ($_)->name } @{$extGroup} ];
 
-print Dumper $baseExtraGroups;
-my $ou = join( ',', map { 'ou=' . $_ } @{ getUserOuAdb($user) } );
-
-#push(@{$baseExtraGroups},'docenti');
-
-if ( ('alunni'~~$baseExtraGroups) && !( 'docenti'~~$baseExtraGroups) )  {
-	$ou=~m/ou=(\w+)$/ ;
-	print $1;
-	#	push (@{$baseExtraGroups},$1);	
-	}
 
 
+print syncClassAdb(getCurrentClassAis());
 	
 	

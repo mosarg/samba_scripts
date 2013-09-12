@@ -310,7 +310,6 @@ sub syncUsers {
 	emit "Create new users";
 	my $newUsersData = [];
 	foreach my $newUser ( @{ $updates->{newusers} } ) {
-
 		push( @{$newUsersData}, createUser($newUser) );
 	}
 	emit_ok;

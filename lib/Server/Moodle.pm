@@ -79,8 +79,6 @@ sub addMoodleCourse{
 
 }
 
-
-
 sub addMoodleUser {
 	my $user   = shift;
 	my $groups = shift;
@@ -122,6 +120,9 @@ sub addMoodleUser {
 			$user->{creationStatus} =  2;
 		}
 	}
+	
+	
+	
 
 	$user->{account}->{backendUidNumber} =
 	  execute("$moosh user-getidbyname $user->{account}->{username}",$backendId);

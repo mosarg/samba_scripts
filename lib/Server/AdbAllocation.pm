@@ -72,7 +72,7 @@ sub updateAllocationAdb {
 	for ($currentRole) {
 		when (/ata/) {
 
-#for now ata users do not change allocation after creation just chech for allocation presence
+#for now ata users do not change allocation after creation just check for allocation presence
 			if (
 				$currentAllocation->allocation_nondidacticalallocations->count() ==
 				0 )
@@ -89,8 +89,12 @@ sub updateAllocationAdb {
 				$currentAllocation->allocation_didacticalallocations->all;
 			
 			#if there are no didactical allocations create them
+			
+		
 		
 			if (scalar(@didacticalAllocations)==0) {
+					
+				
 				$status->{sub_allocations_modified} = 1;
 				return createSubAllocations( $role, $currentAllocation,
 					$importedAllocations, $status );
@@ -99,6 +103,8 @@ sub updateAllocationAdb {
 			#remove from current adb allocations current ais allocations
 			#all remaining allocations must be removed
 			foreach my $aisAllocation ( @{$importedAllocations} ) {
+			
+				
 				extract_by {
 					( $_->class_id->name eq $aisAllocation->{classId} )
 					  && (
@@ -106,7 +112,8 @@ sub updateAllocationAdb {
 				}
 				@didacticalAllocations;
 			}
-				
+			
+			
 		
 			#if there are stale allocations remove them all and recreate them according to ais db
 			if ( scalar(@didacticalAllocations) > 0 ) {
@@ -195,6 +202,9 @@ sub createSubAllocations {
 				my $subject =
 				  $schema->resultset('SchoolSubject')
 				  ->search( { code => $allocation->{subjectId} } )->first;
+				
+				
+
 
 				try {
 					$currentAllocation->create_related(

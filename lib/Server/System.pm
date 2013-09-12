@@ -88,7 +88,6 @@ sub listOu {
 sub initGroups {
 	
 	my $backend=shift;	
-	print "Current backend $backend\n";
 	
 	#Get all backend groups from adb database;
 	
@@ -101,7 +100,7 @@ sub initGroups {
 			while ( my $group = $groups->{$groupType}->next ) {
 				if ( !doS4GroupExist( $group->name ) ) {
 					emit "Inserting group " . $group->name;
-					my $result = addS4Group( $group->name );
+					my $result = addS4Group( $group->name);
 					for ($result) {
 						when (/1/) { emit_ok; }
 						when (/0/) { emit_error; }
@@ -257,7 +256,6 @@ sub moveUser {
 		for ($backendKind) {
 			when (/samba4/) {
 				my $currentUser=$simpleUser->{simpleUser};	
-				emit "Move user account  $currentUser->{account}->{username} kind ".colored($backendKind,'yellow')." to $currentUser->{account}->{ou}";	
 				my $oldUserDn =lc( "cn=$currentUser->{account}->{username},"
 				  . getUserBaseDn( $currentUser->{account}->{username} ));
 
@@ -270,9 +268,9 @@ sub moveUser {
 				print "Old $oldUserDn -> New $newUserDn\n";
 			
 				if($oldUserDn eq $newUserDn){
-					emit_done "PRESENT";	
+					emit_done "NOT MOVED";	
 				}else{	
-
+					emit "Move user account  $currentUser->{account}->{username} kind ".colored($backendKind,'yellow')." to $currentUser->{account}->{ou}";	
 					if ( moveS4User( $currentUser, $oldUserDn, $newUserDn ) ) {
 						emit_ok;
 						}
@@ -366,6 +364,11 @@ sub createMoodleUser {
 	my $extraGroups = [ @{$defaultGroups}, @{$allocationGroups} ];
 	$user->{simpleUser} = addMoodleUser( $user->{simpleUser}, $extraGroups );
 	$user->{simpleUser}->{accounts}->{moodle}=$user->{simpleUser}->{account};
+	
+	
+	print "uid account ".$user->{simpleUser}->{account}->{backendUidNumber},"\n";
+	
+	
 	$user->{adbaccount}->update(
 		{
 			active => 1,

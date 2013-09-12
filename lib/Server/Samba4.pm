@@ -252,7 +252,7 @@ sub addS4Group {
 	my $groupName = shift;
 	my $command =
 	  "samba-tool group add --mail-address $groupName@".$ldap->{default_mail}." --groupou " . $ldap->{'group_base'} . " $groupName";
-	if ( doS4GroupExist($groupName) ) {
+		if ( doS4GroupExist($groupName) ) {
 		return 2;
 	}
 	my $result = execute($command,$backendId);

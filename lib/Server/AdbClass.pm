@@ -44,9 +44,11 @@ sub addClassAdb{
   	my $class=shift;
   	my $dbClass={name=>$class->{classId},ou=>$class->{ou},description=>$class->{description},capacity=>30};
   	
+  	  	
   	#get school object
   	my $school=$schema->resultset('SchoolSchool')->search({meccanographic=>$class->{meccanographic} })->next;
   	
+  	  	
   	try{
   		$school->create_related('school_classes',creationTimeStampsAdb($dbClass) );
 		return 1;
@@ -66,7 +68,15 @@ sub addClassAdb{
 sub syncClassAdb{
  	my $classes=shift;
  	my $status=1;
+ 	
+ 	
  	$classes=normalizeClassesAdb($classes);
+ 	
+ 	
+ 	my $genericClass={classId=>'0Ext',ou=>'esterna',description=>'Classe smistamento',meccanographic=>'UDSSC817F0'};
+ 	
+ 	addClassAdb($genericClass);
+ 	
  	foreach my $class (@{$classes}){
  		$status=addClassAdb($class)*$status;
  	}
