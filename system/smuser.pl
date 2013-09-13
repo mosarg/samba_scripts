@@ -279,6 +279,17 @@ sub syncUsers {
 	}
 	emit_ok;
 
+
+	#add new users into backend
+	emit "Create new users";
+	my $newUsersData = [];
+	foreach my $newUser ( @{ $updates->{newusers} } ) {
+		push( @{$newUsersData}, createUser($newUser) );
+	}
+	emit_ok;
+
+
+
 	#update  users backend
 	emit "Update users";
 	my $possibileNewBackendAccounts = [];
@@ -298,20 +309,14 @@ sub syncUsers {
 		}
 
 		if ( $updatedUser->{moved} ) {
+			
+			
 			moveUser($updatedUser);
 		}
 
 	}
 	recordUser( $possibileNewBackendAccounts, 'missingAccounts' );
 
-	emit_ok;
-
-	#add new users into backend
-	emit "Create new users";
-	my $newUsersData = [];
-	foreach my $newUser ( @{ $updates->{newusers} } ) {
-		push( @{$newUsersData}, createUser($newUser) );
-	}
 	emit_ok;
 
 	#record new users

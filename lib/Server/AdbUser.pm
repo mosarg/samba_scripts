@@ -238,8 +238,7 @@ sub addUserAdb {
 	my $allocationStatus =
 	  syncAllocationAdb( $adbUser, $role, $user->{allocations} );
 
-	if (   $allocationStatus->{sub_allocations_modified}
-		|| $allocationStatus->{main_allocation_modified} )
+	if ($allocationStatus->{sub_allocations_modified} || $allocationStatus->{main_allocation_modified} )
 	{
 		$adbUser->{moved} = 1;
 		$user->{modified} = 1;
@@ -344,7 +343,7 @@ sub syncUsersAdb {
 
 		extract_by { $_->sidi_id == $user->{userIdNumber} } @{$removedUsers};
 
-		if ( $user->{modified} ) { push( @modifiedUsers, $result->{data} ); }
+		if ( ($user->{modified})&& !($user->{pristine})  ) { push( @modifiedUsers, $result->{data} ); }
 		if ( $user->{pristine} ) { push( @newUsers,      $result->{data} ); }
 	}
 
