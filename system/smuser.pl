@@ -309,19 +309,19 @@ sub syncUsers {
 		}
 
 		if ( $updatedUser->{moved} ) {
-			
+		
 			
 			moveUser($updatedUser);
 		}
 
 	}
-	recordUser( $possibileNewBackendAccounts, 'missingAccounts' );
+	recordUser( $possibileNewBackendAccounts, $role.'_missingAccounts' );
 
 	emit_ok;
 
 	#record new users
 	emit "Log new users data";
-	recordUser( $newUsersData, $file );
+	recordUser( $newUsersData, $role."_".$file );
 	emit_ok;
 
 	#inverse direction sync
@@ -347,7 +347,7 @@ sub syncUsers {
 
 		}
 
-		recordUser( $regenBackendAccounts, 'regeneratedAccounts' );
+		recordUser( $regenBackendAccounts, $role.'_regeneratedAccounts' );
 
 		emit_ok;
 
