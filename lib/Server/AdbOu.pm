@@ -131,6 +131,11 @@ FROM
 			main=>"SELECT DISTINCT  ou FROM allocation_role",
 			role=>"SELECT DISTINCT  ou FROM allocation_role",
 			allocation=>"SELECT DISTINCT ou FROM sysuser_sysuser u INNER JOIN allocation_allocation a ON (a.userId_id=u.userId) WHERE ou!='default'"
+		},
+		gapps=>{
+			main=>"SELECT DISTINCT  ou FROM allocation_role",
+			role=>"SELECT DISTINCT  ou FROM allocation_role",
+			allocation=>"SELECT DISTINCT ou FROM sysuser_sysuser u INNER JOIN allocation_allocation a ON (a.userId_id=u.userId) WHERE ou!='default'"
 		}
 		
 	};

@@ -199,6 +199,9 @@ sub removeUser {
 			when (/django/){
 				deleteDjangoUser($account->username)? emit_ok : emit_error;	
 			}
+			when(/gapps/){
+				emit_ok;
+			}
 		}
 	}
 }
@@ -299,6 +302,10 @@ sub moveUser {
 			when(/django/){
 				
 			}
+			
+			when(/gapps/){
+				
+			}
 		}
 
 	}
@@ -353,6 +360,15 @@ sub createDjangoUser{
 	
 }
 
+
+sub createGappsUser{
+	my $user = shift;
+	$user->{adbaccount}->update(
+		{
+			active => 1,
+			backendUidNumber => 0
+		});
+}
 
 
 sub createMoodleUser {
@@ -482,6 +498,11 @@ sub createUser {
 				}else {
 					emit_done "PRESENT";
 				}
+			}
+			
+			when(/gapps/){
+				$simpleUser = createGappsUser($simpleUser);
+				emit_ok;
 			}
 			default { emit_error; }
 		}
