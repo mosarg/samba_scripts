@@ -16,7 +16,7 @@ my $osName='Windows 7';
 my $osVersion='6.1';
 my $osArch='x86';
 
-GetOptions('group=s'=>\$group,'format=s'=>\$format,'osname=s'=>\$osName,'osversion=s'=>\$osVersion);
+GetOptions('group=s'=>\$group,'format=s'=>\$format,'osname=s'=>\$osName,'osversion=s'=>\$osVersion,'osarch=s'=>\$osArch);
 
 
 for ($format){
