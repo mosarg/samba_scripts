@@ -377,7 +377,6 @@ sub createMoodleUser {
 	$user->{simpleUser}->{accounts}->{moodle}=$user->{simpleUser}->{account};
 	
 	
-	print "uid account ".$user->{simpleUser}->{account}->{backendUidNumber},"\n";
 	
 	
 	$user->{adbaccount}->update(

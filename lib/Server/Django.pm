@@ -40,8 +40,6 @@ sub addDjangoUser{
 			$command.=" --password=\\\"$user->{account}->{password}\\\"";
 	my $result=execute($command,$backendId);
 	
-	print "django data ".$result."\n";
-	
 	for($result){
 		when (/duplicate/){ $user->{creationStatus} = 2; }
 		when (/error/) { $user->{creationStatus} = 0; }
