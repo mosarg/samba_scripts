@@ -27,8 +27,12 @@ when(/plain/){
 	}
 }
 when(/xml/){
+		my $computername='';
 		foreach (@{get_clients_info($group)}){
-		print "<node name=\"$_->[0]\" description=\"pc laboratorio\" tags=\"\" hostname=\"$_->[0].linussio.net\" osArch=\"$osArch\" osFamily=\"windows\" osName=\"$osName\" osVersion=\"$osVersion\" username=\"installservice\"/>\n";
+			
+		$computername=$_->[0];
+		$computername=~s/\s+//;
+		print "<node name=\"$computername\" description=\"pc laboratorio\" tags=\"\" hostname=\"$computername.linussio.net\" osArch=\"$osArch\" osFamily=\"windows\" osName=\"$osName\" osVersion=\"$osVersion\" username=\"installservice\"/>\n";
 	    
 	}
 }
