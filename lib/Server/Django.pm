@@ -35,9 +35,9 @@ sub addDjangoUser{
 	
 	
 	my $command="$django_user add $user->{account}->{username}";
-			$command.=" --name \\\"$user->{name}\\\" --surname \\\"$user->{surname}\\\"";
-			$command.=" --email \\\"$user->{account}->{username}\@".$ldap->{default_mail}."\\\"";
-			$command.=" --password \\\"$user->{account}->{password}\\\"";
+			$command.=" --name=\\\"$user->{name}\\\" --surname=\\\"$user->{surname}\\\"";
+			$command.=" --email=\\\"$user->{account}->{username}\@".$ldap->{default_mail}."\\\"";
+			$command.=" --password=\\\"$user->{account}->{password}\\\"";
 	my $result=execute($command,$backendId);
 	
 	for($result){
