@@ -244,7 +244,8 @@ sub moveUser {
 	my $year = getCurrentYearAdb();
 	my $adbRole = $user->allocation_allocations( { yearId_id => $year->school_year_id } )->next->role_id;
 	my $profiles = getRoleAccountTypes($adbRole);
-
+	
+	$user->{commonPassword}="unchanged";
 	foreach my $profile ( @{$profiles} ) {
 		
 		my $simpleUser = simplifyUser( $user, $profile->backend_id );
