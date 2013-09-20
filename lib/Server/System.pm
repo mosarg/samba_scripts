@@ -228,14 +228,8 @@ sub simplifyUser {
 		
 	};
 
-	#generate user password
-	$result->{account}->{password} = mkpasswd(
-		-length     => 8,
-		-minlower   => 5,
-		-minnum     => 1,
-		-minupper   => 2,
-		-minspecial => 0
-	);
+	
+	$result->{account}->{password} = $user->{commonPassword};
 	
 	
 	return {
@@ -427,7 +421,6 @@ sub createFullUser{
 	my $role=shift;
 	my $name=shift;
 	my $surname=shift;
-	
 	my $user=addFullUserAdb($role,$name,$surname);
 	return createUser($user);
 	
@@ -444,6 +437,18 @@ sub createUser {
 	
 	my $simpleUser=$user;
 	my $results=[];
+	
+	#generate common password
+	my $password= mkpasswd(
+		-length     => 8,
+		-minlower   => 5,
+		-minnum     => 1,
+		-minupper   => 2,
+		-minspecial => 0
+	);
+	
+	$user->{commonPassword}=$password;
+	
 	
 	foreach my $profile ( @{$profiles} ) {
 
