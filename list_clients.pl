@@ -28,7 +28,7 @@ when(/plain/){
 }
 when(/xml/){
 		foreach (@{get_clients_info($group)}){
-		print "<node name=\"$_->[0]\" description=\"pc laboratorio\" tags=\"\" hostname=\"$_->[0].linussio.net\" osArch=\"x86\" osFamily=\"windows\" osName=\"Windows 7\" osVersion=\"6.1\" username=\"installservice\"/>\n";
+		print "<node name=\"$_->[0]\" description=\"pc laboratorio\" tags=\"\" hostname=\"$_->[0].linussio.net\" osArch=\"$osArch\" osFamily=\"windows\" osName=\"$osName\" osVersion=\"$osVersion\" username=\"installservice\"/>\n";
 	    
 	}
 }
