@@ -64,7 +64,7 @@ sub addMoodleCourse{
 
 	for ($result){
 		when(/^\d+$/){$course->{creation}=1;$course->{message}='Course created succesfully';$course->{id}=$result; return $course;}
-		when(/Short name is already used for another course/){
+		when(/Short name|Il titolo abbreviato/){
 			my $id=execute("$moosh sql-run \\\"select id from {course} where shortname=\\\'$course->{shortname}\\\'\\\"|grep id|cut -d \"\>\" -f2",$backendId);	
 			chomp($id);
 			$course->{id}=$id;
@@ -309,6 +309,7 @@ sub defaultEnrol{
 	#enrol teacher to course
 	
 	
+	
 	foreach my $teacher (@{$teachers}){	
 		my $teacherResult=execute("$moosh course-enrol  -r editingteacher $course->{id}  $teacher ",$backendId);
 	
@@ -319,9 +320,9 @@ sub defaultEnrol{
 	}
 	
 	#enrol cohort to course
-	print "$moosh cohort-enrol -c $course->{id} $cohort\n";
+
 	my $cohortError=execute("$moosh cohort-enrol -c $course->{id} $cohort",$backendId);
-	print $cohortError."\n";
+	
 	
 	
 	
