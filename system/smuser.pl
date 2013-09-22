@@ -495,28 +495,32 @@ sub syncCourses {
 			push(@teacherAccounts,$currentTeacher->account_accounts({backendId_id=>$backend->backend_id})->first->username);
 		}
 				
-		emit "Create Course  ".colored($cohort,'green')." ".sanitizeString($allocation->subject_id->description);
-		my $result=addMoodleCourse({category=>$cohort, description=>sanitizeString($allocation->subject_id->description),
-					     fullname=>sanitizeString($allocation->subject_id->short_description),id=>$cohort."@".$allocation->subject_id->code,
+		
+		my $courseName=sanitizeString($allocation->subject_id->short_description);
+		
+		if ( ($courseName ne 'Condotta')||($courseName ne 'Nessuna Materia') ){
+			emit "Create Course  ".colored($cohort,'green')." ".sanitizeString($allocation->subject_id->description);
+			my $result=addMoodleCourse({category=>$cohort, description=>sanitizeString($allocation->subject_id->description),
+					     fullname=>$courseName,id=>$cohort."@".$allocation->subject_id->code,
 					     shortname=>$cohort."_".sanitizeSubjectname($allocation->subject_id->short_description)});
-		for ($result->{creation}){
-			when($_==2){emit_done "PRESENT";}
-			when($_==1){emit_ok;}
-			when($_==3){emit_error;}
-			when($_==4){emit_error;}
-			when($_==0){emit_fatal;}
+			for ($result->{creation}){
+				when($_==2){emit_done "PRESENT";}
+				when($_==1){emit_ok;}
+				when($_==3){emit_error;}
+				when($_==4){emit_error;}
+				when($_==0){emit_fatal;}
 			
-		}
+			}
 		
-		if($result->{creation}==2){
-			emit "Unenrol all users";
-				unenrolAll($result);
-			emit_ok;
-		}
-		emit "Enrol default users";
-			defaultEnrol(\@teacherAccounts,$cohort,$result);
-		emit_ok;
-		
+			if($result->{creation}==2){
+				emit "Unenrol all users";
+					unenrolAll($result);
+				emit_ok;
+				}
+				emit "Enrol $cohort to $courseName";
+					defaultEnrol(\@teacherAccounts,$cohort,$result);
+				emit_ok;
+			}
 		
 
 		}

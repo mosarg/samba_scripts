@@ -320,6 +320,7 @@ sub defaultEnrol{
 	
 	#enrol cohort to course
 	my $cohortError=execute("$moosh cohort-enrol -c $course->{id} $cohort",$backendId);
+	print $cohortError."\n";
 	
 	
 	
