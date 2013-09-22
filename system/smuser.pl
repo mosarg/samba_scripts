@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use Text::CSV;
 use Data::Dumper;
 use Getopt::Long;
 use Term::ANSIColor;
@@ -23,10 +24,10 @@ use Server::AdbClass qw(syncClassAdb);
 use Server::AdbCommon
   qw(getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools);
 use Server::AdbSubject qw(syncSubjectAdb);
-use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll);
+use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll changeMoodlePassword);
 use feature "switch";
 
-my $commands = "init,sync,list,syncCourses,add,password,update activate";
+my $commands = "init,sync,list,syncCourses,add,password,update activate,bulkpassword";
 
 my $backend     = 'samba4';
 my $all         = 0;
@@ -41,6 +42,7 @@ my $newPassword= '';
 my $usersNumber		=1;
 my $data        = {};
 my $container= '';
+my $bulkFile='passwords.csv';
 
 ( scalar(@ARGV) > 0 ) || die("Possibile commands are: $commands\n");
 
@@ -56,7 +58,8 @@ GetOptions(
 	'number=i'		=> \$usersNumber,
 	'username=s'	=> \$systemUserName,
 	'password=s'	=> \$newPassword,
-	'container=s'	=> \$container
+	'container=s'	=> \$container,
+	'bulkfile=s'	=> \$bulkFile 
 );
 
 
@@ -81,7 +84,7 @@ for ( $ARGV[0] ) {
 	when(/add/){
 		addUser();
 	}
-	when(/password/){
+	when(/^password/){
 		changePassword();
 	}
 	when(/update/){
@@ -90,7 +93,9 @@ for ( $ARGV[0] ) {
 	when(/activate/){
 		activateUserAccount();
 	}
-	
+	when(/^bulkpassword$/){
+		bulkPasswordChange();
+	}
 	default { die("$ARGV[0] is not a command!\n"); }
 }
 
@@ -549,3 +554,24 @@ sub listUsers {
 		  . getUserBaseDn( $account->username ) . "\n";
 	}
 }
+
+sub bulkPasswordChange{
+		my @columns;
+		my $csvParser=Text::CSV->new();
+		
+		open (CSVDATA, "<", $bulkFile) or die "Cannot open input file\n";
+		while(<CSVDATA>){
+			next if($.==1);
+			if ($csvParser->parse($_)){
+				@columns=$csvParser->fields();
+				emit "Change Moodle Password for $columns[2]";
+				changeMoodlePassword($columns[2],$columns[3]);
+				emit_ok;
+			}
+		}
+		close CSVDATA;
+}
+
+
+
+
