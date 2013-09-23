@@ -22,7 +22,7 @@ use Server::AdbGroup qw(getAllGroupsAdb);
 use Server::Moodle
   qw(doMoodleUserExist doMoodleGroupExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleGroup addMoodleUser deleteMoodleUser changeMoodlePassword);
 use Server::Django qw(addDjangoUser deleteDjangoUser doDjangoUserExist changeDjangoPassword);
-
+use Server::Gapps qw(chageGappsPassword);
 use Server::AdbUser qw(addFullUserAdb);
 
 
@@ -164,6 +164,11 @@ sub changeUserPassword{
 				changeMoodlePassword($username,$password);
 				emit_ok;
 				
+			}
+			when(/gapps/){
+				emit "Change Gapps Password";
+				changeGappsPassword($username,$password);
+				emit_ok;
 			}
 		
 		}	

@@ -1,4 +1,4 @@
-package Server::Django;
+package Server::Gapps;
 
 use strict;
 use warnings;
@@ -13,7 +13,7 @@ use Try::Tiny;
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(addDjangoUser deleteDjangoUser doDjangoUserExist changeDjangoPassword);
+our @EXPORT_OK = qw(changeGappsPassword);
 
 my $gapps_user="$server->{virtualenvs}->{gestione_scuola} /opt/django_utils/user.py";
 my $backendId='gapps';
