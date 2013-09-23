@@ -22,7 +22,7 @@ sub changeGappsPassword{
 	my $username=shift;
 	my $password=shift;
 	my $command="$gapps_user setgpassword $username --password \\\"$password\\\" ";
-	print execute($command,$backendId);
+	execute($command,$backendId);
 }
 
 

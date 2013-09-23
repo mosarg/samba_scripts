@@ -22,7 +22,7 @@ use Server::AdbGroup qw(getAllGroupsAdb);
 use Server::Moodle
   qw(doMoodleUserExist doMoodleGroupExist addMoodleOuElement getMoodleOuId addMoodleOu doMoodleOuExist addMoodleGroup addMoodleUser deleteMoodleUser changeMoodlePassword);
 use Server::Django qw(addDjangoUser deleteDjangoUser doDjangoUserExist changeDjangoPassword);
-use Server::Gapps qw(chageGappsPassword);
+use Server::Gapps qw(changeGappsPassword);
 use Server::AdbUser qw(addFullUserAdb);
 
 
