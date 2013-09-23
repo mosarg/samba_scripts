@@ -156,7 +156,7 @@ recordUser( $users, 'manualUsers' );
 sub changePassword{
 	
 	if ($systemUserName && $newPassword){
-		if (!changeUserPassword($systemUserName,$newPassword)){print "Username does not exist\n"; };
+		changeUserPassword($systemUserName,$newPassword);
 	}else{
 		print "You must supply at least username and password\n";
 	}
