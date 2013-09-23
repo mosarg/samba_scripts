@@ -565,7 +565,7 @@ sub bulkPasswordChange{
 			if ($csvParser->parse($_)){
 				@columns=$csvParser->fields();
 				emit "Change Moodle Password for $columns[2]";
-				changeMoodlePassword($columns[2],$columns[3]);
+					changeMoodlePassword($columns[2],$columns[3]);
 				emit_ok;
 			}
 		}

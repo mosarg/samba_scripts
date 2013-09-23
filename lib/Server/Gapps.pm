@@ -15,12 +15,14 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(addDjangoUser deleteDjangoUser doDjangoUserExist changeDjangoPassword);
 
-my $django_user="$server->{virtualenvs}->{gestione_scuola} /opt/django_utils/user.py";
+my $gapps_user="$server->{virtualenvs}->{gestione_scuola} /opt/django_utils/user.py";
 my $backendId='gapps';
 
 sub changeGappsPassword{
-	
-		
+	my $username=shift;
+	my $password=shift;
+	my $command="$gapps_user setgpassword $username --password \\\"$password\\\" ";
+	print execute($command,$backendId);
 }
 
 
