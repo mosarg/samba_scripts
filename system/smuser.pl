@@ -40,6 +40,7 @@ my $userSurname		= 'Esterno';
 my $systemUserName	= '';
 my $newPassword= '';
 my $usersNumber		=1;
+my $quicksync='';
 my $data        = {};
 my $container= '';
 my $bulkFile='passwords.csv';
@@ -59,7 +60,8 @@ GetOptions(
 	'username=s'	=> \$systemUserName,
 	'password=s'	=> \$newPassword,
 	'container=s'	=> \$container,
-	'bulkfile=s'	=> \$bulkFile 
+	'bulkfile=s'	=> \$bulkFile,
+	'quicksync'		=> \$quicksync 
 );
 
 
@@ -210,13 +212,16 @@ sub syncUsers {
 		setCurrentYearAdb($yearAis);
 	}
 
+	if(!$quicksync){
+
 	#sync classes
-	emit "Sync classes $yearAis";
-	syncClassAdb(getCurrentClassAis())?emit_ok:emit_done "PRESENT";
+		emit "Sync classes $yearAis";
+		syncClassAdb(getCurrentClassAis())?emit_ok:emit_done "PRESENT";
 
 	#sync subcjects
-	emit "Sync subjects $yearAis";
-	syncSubjectAdb(getCurrentSubjectAis())?emit_ok:emit_done "PRESENT";
+		emit "Sync subjects $yearAis";
+		syncSubjectAdb(getCurrentSubjectAis())?emit_ok:emit_done "PRESENT";
+	}
 
 
 	#get active schools
@@ -260,8 +265,10 @@ sub syncUsers {
 
 	my @backends = $schema->resultset('BackendBackend')->all;
 
-	#sync backend ou
 
+	
+	#sync backend ou
+if(!$quicksync){
 	foreach my $currentBackend (@backends) {
 		emit "Sync ou " . colored( $currentBackend->kind, 'green' );
 		listOu( $currentBackend->kind, \&createOu );
@@ -275,9 +282,9 @@ sub syncUsers {
 		emit_ok;
 	}
 
+}
 	#remove stale users from all defined backends
 	emit "Update backend accounts";
-
 	emit "Remove old users";
 	foreach my $removeUser ( @{ $updates->{removedusers} } ) {
 		removeUser($removeUser);
@@ -329,6 +336,7 @@ sub syncUsers {
 	recordUser( $newUsersData, $role."_".$file );
 	emit_ok;
 
+
 	#inverse direction sync
 	if ($all) {
 		my $regenBackendAccounts = [];
@@ -353,9 +361,7 @@ sub syncUsers {
 		}
 
 		recordUser( $regenBackendAccounts, $role.'_regeneratedAccounts' );
-
 		emit_ok;
-
 	}
 
 	emit_done;

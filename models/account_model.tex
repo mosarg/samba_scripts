@@ -1,0 +1,29 @@
+\documentclass[a4paper,10pt,oneside]{article}
+\usepackage[polutonikogreek,italian]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[a4paper]{anysize}
+\usepackage{datatool}
+\marginsize{1cm}{3cm}{1cm}{1cm}
+
+\providecommand{\csvfile}{li.csv}
+
+\begin{document}
+\DTLloaddb{moodle}{\csvfile}
+ 
+\DTLforeach{moodle}{\firstname=name,\lastname=surname,\username=username, \password=password,\group=ou}{%
+\noindent\begin{minipage}[h]{0.4\textwidth}
+\textbf{Allocazione}: \group\\
+\textbf{Nome}: \firstname \\
+\textbf{Cognome:} \lastname\\
+\textbf{Username}: \username\\
+\textbf{Password}: \password\\
+\textbf{Moodle}: \emph{http://moodle.linussio.it}\\
+\textbf{Webmail}: \emph{http://mail.linussio.it}\\
+\textbf{Cambio Password}: \emph{http://sistema.linussio.it}\\
+Note: il cambio password è unicamente possibile dall'interno della scuola, prima di utilizzare la webmail è \textbf{necessario} aggiornare la password utilizzando la console web. 
+\vspace{0.5cm}
+
+\end{minipage}
+}
+  
+\end{document}

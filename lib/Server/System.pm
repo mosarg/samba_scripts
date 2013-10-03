@@ -11,7 +11,7 @@ use Term::Emit ":all", { -color => 1 };
 use Data::Structure::Util qw( unbless );
 use Server::AdbCommon qw(getCurrentYearAdb);
 use Server::Configuration qw($schema $server $adb $ldap);
-use Server::Commands qw(hashNav);
+use Server::Commands qw(hashNav execute);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn);
 use Server::Samba4
   qw(addS4Group deleteS4Group doS4GroupExist addS4Ou addS4User deleteS4User moveS4User changeSamba4Password);
@@ -398,21 +398,26 @@ sub createMoodleUser {
 sub recordUser {
 	my $users    = shift;
 	my $filename = shift;
-	$filename=$filename."_".localtime(time).".csv";
-	$filename=~s/\s|\:/_/g;
-		
-	open FHANDLE, ">$filename" or die("Cannot open $filename");
-	print FHANDLE " name,surname,username,password,ou\n";
+	my $rawfilename=$filename."_".localtime(time);
+	$rawfilename=~s/\s|\:/_/g;
+	$filename=$rawfilename.".csv";
+	my $fileFullPath="$server->{auth_files_raw}/$filename";	
 	
-	
-	foreach my $fullUser ( @{$users} ) {
-	
-		my $userData=$fullUser->[0];
-		my $user=$userData->{simpleUser};
-		print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{ou}\n";
+	if (scalar(@{$users})>0){
+		open FHANDLE, ">$fileFullPath" or die("Cannot open $filename");
+		print FHANDLE "name,surname,username,password,ou\n";
+		foreach my $fullUser ( @{$users} ) {
+			my $userData=$fullUser->[0];
+			my $user=$userData->{simpleUser};
+			print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{ou}\n";
 
+		}
+		close FHANDLE;
+		#create pdf mail marge through latex
+		execute("pdflatex --output-directory=$server->{auth_files_pdf} --jobname=$rawfilename \\\"\\\\newcommand{\\\\csvfile}{$fileFullPath}\\\\input{$server->{models}/account_model.tex}\\\" ");
 	}
-	close FHANDLE;
+	
+	
 	return 1;
 }
 
