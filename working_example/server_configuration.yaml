@@ -1,0 +1,78 @@
+--- 
+ldap:
+ server: '172.19.1.1'
+ server_fqdn: 'poincare.linussio.net'
+ port: 389
+ group_base: 'ou=Groups'
+ user_base: 'ou=Users'
+ dir_base: 'dc=linussio,dc=net'
+ bind_root: 'cn=Administrator,ou=Users'
+ bind_root_password: 'Samback@999'
+ uid_map: 'sAMAccountName'
+ home_map: 'unixHomeDirectory'
+ script: 'scriptPath'
+ memberuid_map: 'member'
+ city: 'Codroipo'
+ domain: 'LINUSSIO'
+ default_mail: 'linussio.it'
+ domain_admin: 'Administrator'
+ default_policy:
+  student: 'baseStudenti'
+  ata:     'baseAta'
+  teacher: 'baseTeacher'
+dirs:
+ groups: /opt/scripts/samba
+ dustbin: 'Desktop/CESTINO' 
+ public_folders:
+  public_alumns: '/home/alunni_comuni'
+  public_profs: '/home/prof_comuni'
+server:
+ windows_name: 'poincare'
+ logon_prefs_file: '/opt/samba_scripts/logon_prefs.yaml'
+ logon_script_dir: '/tmp'
+ fqdn: 'poincare.linussio.net'
+ ip: '172.19.1.1'
+ root: 'root'
+ samba_profiles_path: 'profiles'
+ auth_files_raw: '/var/tmp'
+ auth_files_pdf: '/home/system/packages/auth'
+ models: '/opt/models/latex'
+ samba_home_prefix: 'home'
+ home_base: '/home/users'
+ dry_run: 0
+ profiles_dir: '/home/profiles'
+ mount_points:
+             - '/'
+             - '/home'
+             - '/var'
+ mount_point_size_thr: 2000
+ virtualenvs:
+  gestione_scuola: '/home/apps/.virtualenvs/gestione_scuola/bin/python'
+mail:
+  server_notification_rec:
+                         - 'mosarg@gmail.com'
+  mail_sender_address: 'test@linussio.it'
+  global_mail_folder: '/home/mosa/Sources/projects/samba_scripts'
+  global_mail_state: '/opt/samba_scripts/global_mail.yaml'
+  archiveopteryx:
+    aoximport: '/usr/local/archiveopteryx/bin/aoximport'
+    aox: '/usr/local/archiveopteryx/bin/aox'
+ldap_users:
+  ou:
+    - liceo
+programs:
+ bstring: '/tmp/bstring'
+adb:
+  description: 'User account informations'
+  fqdn: 'aretusa.linussio.net'
+  user: 'mosa'
+  password: 'sambackett'
+  database: 'gestione_scuola'
+ais:
+ description: 'axios administrative information system'
+ fqdn: 'galileo.linussio.net'
+ user: 'SYSDBA'
+ password: 'umana'
+ database:  '/home/interbase/axiosdatabase.fdb'
+ year: 2013
+         

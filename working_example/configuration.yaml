@@ -1,0 +1,60 @@
+---
+remote_executer: '/usr/bin/winexe'
+domain: LINUSSIO
+remote_user: administrator	
+remote_password: Samback@999
+remote_share:
+ wpkg: '\\poincare\packages'
+ test: '\\poincare\packages'
+ domain: '\\poincare\packages'
+network_user:
+ domain: LINUSSIO
+ username: administrator
+ password: Samback@999
+database:
+ infodb:
+  name: 'unattended'
+ ocsng:
+  name: 'ocsweb'
+  password: 'ocs'
+  username: 'ocs'
+  host: 'localhost'
+ unattended:
+  name: 'uranos'
+  password: 'sambackett'
+  username: 'mosa'
+  host: 'aretusa.linussio.net' 
+ wpkg:
+  name: 'wpkg'
+  password: 'sambackett'
+  username: 'wpkg'
+  host: 'localhost'
+wsus_log: '%systemdrive%\wsuslog.txt'
+paths:
+ wpkg_client: '\\poincare\packages\wpkg\client'
+ wpkg_software: '\\poincare\packages\wpkg\data'
+ hp2015_driver: '\\poincare\packages\drivers\stampanti\hp2015'
+ font_scripts: '\\poincare\packages\scripts\fonts'
+ software: '\\poincare\packages\software'
+ script:   '\\poincare\packages\script'
+ packages: '\\poincare\packages'
+ reports: '\\poincare\packages\reports'
+ wpkg_server_dir: '/home/samba/packages/wpkg'
+ scripts: '\\hilberto\packages\scripts'
+client:
+ wpkg_xml_log_prefix: 'wpkg_'
+ wpkg_xml_log_dir: '/home/samba/packages/reports/wpkg'
+ shutdown_message: 'Il computer è in fase di spegnimento. Sei pregato di salvare eventuale file aperti.'
+ shutdown_time: 10
+remote_conf:
+ wpkg_hosts: 'http://ltsp/wpkg/hosts.xml'
+ wpkg_packages: 'http://ltsp/wpkg/packages.xml'
+ wpkg_profiles: 'http://ltsp/wpkg/profiles.xml'
+reports:
+ wpkg: '/var/www/reports/wpkg/wpkg.html'
+log_info: 
+ email_sender: 'Hilberto Logger <mosarg@gmail.com>'
+ email_recipient: 'Matteo Mosangini <mosarg@gmail.com>'
+ axios:
+  email_recipient:
+   - 'mosarg@gmail.com' 
