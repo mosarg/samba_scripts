@@ -25,8 +25,41 @@ sub addAccountAdb{
  	my $user=shift;
  	my $backend=shift;
  	my $result={pristine=>1};
+ 	my $username='';
+ 	
+ 	
  	try{
- 		my $username=sanitizeUsername($user->name.$user->surname);
+ 				
+ 		for($server->{username_rules}){
+ 		when(/codroipo/){
+ 			$username=sanitizeUsername($user->name.$user->surname);
+ 		}
+ 		when(/cervignano/){
+ 			
+ 			#get user role
+ 			my $mainAllocation= $user->allocation_allocations->first;
+ 			my $userRole=$mainAllocation->role_id->role;
+ 			
+ 			for($userRole){
+ 				when(/student/){
+ 					$username=substr($user->sidi_id,-5,5);
+ 				}
+ 				default{
+ 					 $username=sanitizeUsername($user->surname);
+ 					 $username=$username."_".substr(sanitizeUsername($user->name),0,1);
+ 				}
+ 				
+ 			}
+ 			
+ 		}
+ 		default{
+ 			my $username=sanitizeUsername($user->name.$user->surname);
+ 		}
+ 		
+ 		}
+ 		
+ 				
+ 		
  		#check for username uniqueness
  		my $usernameCount=$schema->resultset('AccountAccount')->search({username=>{like=>"$username%"},backendId_id=>$backend->backend_id },{columns=>[qw/username/],distinct=>1})->count;
  		$username=$usernameCount?$username.$usernameCount:$username;

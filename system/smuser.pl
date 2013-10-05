@@ -382,8 +382,7 @@ sub initUsers {
 
 
 	#Posixify Domain Users group (in case no one did it before)
-	
-	updateS4Group('Domain Users');
+	updateS4Group('Domain\\\\ Users');
 
 	#get current school year in school Ais DB
 	my $yearAis = getCurrentYearAis();

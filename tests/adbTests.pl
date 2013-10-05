@@ -62,14 +62,11 @@ my $aisUser={userIdNumber=>10056,origin=>'auto',name=>'Giorgiona',surname=>'Aspa
 my $currentMaxId=$schema->resultset('SysuserSysuser')->search({syncModel=>'manual'})->get_column('sidiId')->max();
 	$currentMaxId=$currentMaxId?$currentMaxId+1:666666;
 
-
 my $s4Account=$user->account_accounts({kind=>'samba4'},{prefetch=>'backend_id'})->next;
 
-my $extGroup=getAccountGroupsAdb( $s4Account, $s4Account->backend_id );
-my $baseExtraGroups=[ map { ($_)->name } @{$extGroup} ];
+ my $allocation= $user->allocation_allocations->first;
+ 
 
+print substr('00005154',-5,5)."\n";
 
-
-print syncClassAdb(getCurrentClassAis());
-	
 	
