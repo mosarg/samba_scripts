@@ -2,7 +2,7 @@
 remote_executer: '/usr/bin/winexe'
 domain: LINUSSIO
 remote_user: administrator	
-remote_password: Samback@999
+remote_password: ******
 remote_share:
  wpkg: '\\poincare\packages'
  test: '\\poincare\packages'
@@ -10,7 +10,7 @@ remote_share:
 network_user:
  domain: LINUSSIO
  username: administrator
- password: Samback@999
+ password: *****
 database:
  infodb:
   name: 'unattended'
@@ -21,12 +21,12 @@ database:
   host: 'localhost'
  unattended:
   name: 'uranos'
-  password: 'sambackett'
+  password: '*****'
   username: 'mosa'
   host: 'aretusa.linussio.net' 
  wpkg:
   name: 'wpkg'
-  password: 'sambackett'
+  password: '*****'
   username: 'wpkg'
   host: 'localhost'
 wsus_log: '%systemdrive%\wsuslog.txt'

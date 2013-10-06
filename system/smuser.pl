@@ -375,14 +375,24 @@ if(!$quicksync){
 
 sub initUsers {
 
+
+	#get all defined backends;
+	my @backends = $schema->resultset('BackendBackend')->all;
+
+	my @planeBackends =
+	  map {$_->kind } @backends;
+
+
 	if ( doUsersExistAdb() > 0 ) {
 		print "System already initialized!\n";
 		return 0;
 	}
 
-
+	
+	if('samba4'~~@planeBackends){
 	#Posixify Domain Users group (in case no one did it before)
-	updateS4Group('Domain\\\\ Users');
+		updateS4Group('Domain\\\\ Users');
+	}
 
 	#get current school year in school Ais DB
 	my $yearAis = getCurrentYearAis();
@@ -435,8 +445,7 @@ sub initUsers {
 	  ? emit_ok
 	  : emit_error;
 
-	#get all defined backends;
-	my @backends = $schema->resultset('BackendBackend')->all;
+	
 
 	#Init backend ou
 
@@ -506,7 +515,7 @@ sub syncCourses {
 		}
 				
 		
-		my $courseName=sanitizeString($allocation->subject_id->short_description);
+		my $courseName=sanitizeString($allocation->subject_id->short_description)." $cohort";
 		
 		if ( ($courseName ne 'Condotta')||($courseName ne 'Nessuna Materia') ){
 			emit "Create Course  ".colored($cohort,'green')." ".sanitizeString($allocation->subject_id->description);

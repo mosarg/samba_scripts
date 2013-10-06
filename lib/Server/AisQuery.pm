@@ -14,15 +14,9 @@ require Exporter;
 
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis getStudyPlanSubject getCurrentStudentsAis);
-
-
-
+our @EXPORT_OK = qw(getCurrentTeachersAis  getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis getStudyPlanSubject getCurrentStudentsAis);
 
 #open ais database connection
-
-
-
   
 #
 # idctid: 1 Docente, 2 Ata, 3 Ds
@@ -83,7 +77,7 @@ sub getStudentsAis 	{
         	LEFT JOIN TCLSPST clspst ON ( clspst.ICLSPSTID = sit.ICLSPSTID) 
         	LEFT JOIN VCLS_CLASSI cls ON ( cls.ICLSID = clspst.ICLSID) 
         	LEFT JOIN VSED_SEDI sed ON (sed.IDWGSEDID = cls.IDWGSEDID) 
-        	WHERE (ana.DDELETE IS NULL) AND (CAG.iCagId = 1 ) AND ((SIT.isitordine = 1) AND (SIT.dstart='".$year."-09-01') AND (CLS.idwgid=102)) AND sed.SSEDMECCOD IN (".join(',',@{$parameters}).") and TSIT_SITUAZIONI.ISITPOSREG<>0";
+        	WHERE (ana.DDELETE IS NULL) AND (CAG.iCagId = 1 ) AND ((SIT.isitordine = 1) AND (SIT.dstart='".$year."-09-01')) AND sed.SSEDMECCOD IN (".join(',',@{$parameters}).") and TSIT_SITUAZIONI.ISITPOSREG<>0";
 
 	return executeAisQuery($query);
 }
@@ -171,7 +165,7 @@ sub getCurrentClassAis{
 
 sub getCurrentAtaAis{
 	my $query="SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
-                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'UDSSC817F0\' As \"meccanographic\"
+                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'$ais->{main_mec}\' As \"meccanographic\"
                 FROM  tana_anagrafiche t 
      			INNER JOIN tanacag ta on(t.ianaid=ta.ianaid)
      			INNER JOIN tanaper_personale p on (ta.ianacagid=p.ianacagid)

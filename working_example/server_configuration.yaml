@@ -7,7 +7,7 @@ ldap:
  user_base: 'ou=Users'
  dir_base: 'dc=linussio,dc=net'
  bind_root: 'cn=Administrator,ou=Users'
- bind_root_password: 'Samback@999'
+ bind_root_password: '****'
  uid_map: 'sAMAccountName'
  home_map: 'unixHomeDirectory'
  script: 'scriptPath'
@@ -27,6 +27,7 @@ dirs:
   public_alumns: '/home/alunni_comuni'
   public_profs: '/home/prof_comuni'
 server:
+ username_rules: 'cervignano'
  windows_name: 'poincare'
  logon_prefs_file: '/opt/samba_scripts/logon_prefs.yaml'
  logon_script_dir: '/tmp'
@@ -66,13 +67,13 @@ adb:
   description: 'User account informations'
   fqdn: 'aretusa.linussio.net'
   user: 'mosa'
-  password: 'sambackett'
+  password: '****'
   database: 'gestione_scuola'
 ais:
  description: 'axios administrative information system'
  fqdn: 'galileo.linussio.net'
  user: 'SYSDBA'
- password: 'umana'
+ password: '*****'
  database:  '/home/interbase/axiosdatabase.fdb'
  year: 2013
          
