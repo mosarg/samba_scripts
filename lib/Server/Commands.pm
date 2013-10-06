@@ -3,7 +3,7 @@ package Server::Commands;
 use strict;
 use warnings;
 use Cwd;
-use Server::Configuration qw($server $schema);
+use Server::Configuration qw($server $schema $ssh);
 use DateTime;
 
 
@@ -47,13 +47,19 @@ sub execute{
 	my $command=shift;
 	my $backend=shift;
 	my $fqdn=$server->{'fqdn'};
+	my $sshPort='22';
+	
 	
 	if ($backend){
 		my $adbBackend=$schema->resultset('BackendBackend')->find({kind=>$backend});
-		$fqdn=$adbBackend->server_fqdn();			
+		$fqdn=$adbBackend->server_fqdn();
+		if (defined $ssh->{$backend}){
+			$sshPort=$ssh->{$backend}->{port};
+		}
+						
 	}
 	
-	my $toExecute= "ssh ".$server->{'root'}."@".$fqdn." $command";
+	my $toExecute= "ssh -p $sshPort ".$server->{'root'}."@".$fqdn." $command";
 	if($server->{dry_run}){
 		return $toExecute;
 	}else{
