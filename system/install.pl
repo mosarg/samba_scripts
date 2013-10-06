@@ -4,7 +4,7 @@ use Data::Dumper;
 use warnings;
 use Cwd qw(abs_path);
 
-my $pragmaModules=['Cwd','strict','Encode','warnings','Getopt::Long','File::Copy','Term::ANSIColor','threads','File::Path','Data::Dumper','Net::Ping'];
+my $pragmaModules=['Cwd','strict','Encode','warnings','Getopt::Long','File::Copy','Term::ANSIColor','threads','File::Path','Data::Dumper','Net::Ping','Mail::Box','Filesys::DiskSpace'];
 
 
 
