@@ -19,8 +19,8 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK =
   qw(getGroup isPosix getFreeDiskSpace getUserFromUname getUsersDiskProfiles getUserFromHumanName getUsers getUsersHome getUserHome getClassHomes getGroupMembers getUserFromUid unbindLdap doOuExist getAllOu getUserBaseDn);
 
-my $ldapConnection = Net::LDAP->new( $ldap->{'server'} )
-  || print "can't connect to !: $@";
+my $connectionStatus='ok';
+my $ldapConnection = Net::LDAP->new( $ldap->{'server'} );
 
 #bind to AD ldap server as Administrator
 if($ldapConnection){
