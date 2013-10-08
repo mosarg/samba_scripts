@@ -537,8 +537,8 @@ sub syncCourses {
 				emit_ok;
 				}
 				emit "Enrol $cohort to $courseName";
-					defaultEnrol(\@teacherAccounts,$cohort,$result);
-				emit_ok;
+					my $enrolStatus=defaultEnrol(\@teacherAccounts,$cohort,$result);
+				if($enrolStatus->{error}){emit_error}else{emit_ok;}	
 			}
 		
 

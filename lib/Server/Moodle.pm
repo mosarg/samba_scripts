@@ -305,25 +305,26 @@ sub defaultEnrol{
 	my $teachers=shift;
 	my $cohort=shift;
 	my $course=shift;
-	
+	my $status={};
 	#enrol teacher to course
-	
 	
 	
 	foreach my $teacher (@{$teachers}){	
 		my $teacherResult=execute("$moosh course-enrol  -r editingteacher $course->{id}  $teacher ",$backendId);
 	
 		for ($teacherResult){
-			when(/Error code: invaliduser/){return {error=>1,message=>'Invalid user'};}
+			when(/Error code: invaliduser/){
+				return {error=>1,message=>'Invalid user'};
+			}
 		}
 		
 	}
 	
 	#enrol cohort to course
-
 	my $cohortError=execute("$moosh cohort-enrol -c $course->{id} $cohort",$backendId);
 	
-	
+	print $cohortError."\n";
+	return $status;
 	
 	
 }
