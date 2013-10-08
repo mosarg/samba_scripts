@@ -23,10 +23,12 @@ my $ldapConnection = Net::LDAP->new( $ldap->{'server'} )
   || print "can't connect to !: $@";
 
 #bind to AD ldap server as Administrator
-$ldapConnection->bind(
-	$ldap->{'bind_root'} . ',' . $ldap->{'dir_base'},
-	password => $ldap->{'bind_root_password'}
-);
+if($ldapConnection){
+	$ldapConnection->bind(
+		$ldap->{'bind_root'} . ',' . $ldap->{'dir_base'},
+		password => $ldap->{'bind_root_password'}
+		);
+}
 
 
 sub getUsers {
