@@ -517,7 +517,7 @@ sub syncCourses {
 		
 		my $courseName=sanitizeString($allocation->subject_id->short_description)." $cohort";
 		
-		if ( ($courseName ne 'Condotta')||($courseName ne 'Nessuna Materia') ){
+		if ( !($courseName~=m/Condotta|Nessuna Materia/) ){
 			emit "Create Course  ".colored($cohort,'green')." ".sanitizeString($allocation->subject_id->description);
 			my $result=addMoodleCourse({category=>$cohort, description=>sanitizeString($allocation->subject_id->description),
 					     fullname=>$courseName,id=>$cohort."@".$allocation->subject_id->code,
