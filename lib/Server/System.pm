@@ -3,6 +3,7 @@ package Server::System;
 use DBI;
 use strict;
 use warnings;
+use open qw/:std :utf8/;
 use Switch;
 use Term::ANSIColor;
 use String::MkPasswd qw(mkpasswd);
@@ -414,7 +415,7 @@ sub recordUser {
 		}
 		close FHANDLE;
 		#create pdf mail marge through latex
-		#execute("pdflatex --output-directory=$server->{auth_files_pdf} --jobname=$rawfilename \\\"\\\\newcommand{\\\\csvfile}{$fileFullPath}\\\\input{$server->{models}/account_model.tex}\\\" ");
+		execute("pdflatex --output-directory=$server->{auth_files_pdf} --jobname=$rawfilename \\\"\\\\newcommand{\\\\csvfile}{$fileFullPath}\\\\input{$server->{models}/account_model.tex}\\\" ");
 	}
 	
 	

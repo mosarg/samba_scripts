@@ -76,4 +76,6 @@ ais:
  password: '*****'
  database:  '/home/interbase/axiosdatabase.fdb'
  year: 2013
-         
+ssh:
+ moodle:
+    port: 1863          

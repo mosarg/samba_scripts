@@ -310,7 +310,7 @@ sub defaultEnrol{
 	
 	
 	foreach my $teacher (@{$teachers}){	
-		print "$moosh course-enrol  -r editingteacher $course->{id}  $teacher \n";
+		print "$moosh course-enrol  -r editingteacher $course->{id}  $teacher \n"; 
 		my $teacherResult=execute("$moosh course-enrol  -r editingteacher $course->{id}  $teacher ",$backendId);
 	
 		for ($teacherResult){
