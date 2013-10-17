@@ -54,7 +54,7 @@ sub doAxiosUpdate{
 sub do_client_update {
 	my $client     = shift;
 	my $max_cycles = shift;
-	my $ping       = Net::Ping->new();
+	my $ping       = Net::Ping->new("icmp");
 	$ping->port_number('139');
 	my $current_cycle = 0;
 	my $wakeup_cycle=0;

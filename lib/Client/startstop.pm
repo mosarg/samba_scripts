@@ -24,7 +24,7 @@ my $ping_wait_time = 1;
 
 sub wakeup_client{
 	my $current_client=shift;
-	my $ping = Net::Ping->new();
+	my $ping = Net::Ping->new("icmp");
 	my $wait_cycles=0;
 	my $tmp_broadcast='';
 	my @current_client = @{get_client_info($current_client)};
@@ -47,7 +47,7 @@ sub wakeup_client{
 sub wakeup_clients {
 	my $group=shift||'';
 	my $tmp_broadcast='';
-	my $ping = Net::Ping->new();
+	my $ping = Net::Ping->new("icmp");
 	foreach  my $computer (@{get_clients_info($group)}) {
 		print "Controllo computer $computer->[0]\n";
 		$tmp_broadcast=$computer->[1];
@@ -65,7 +65,7 @@ sub wakeup_clients {
 }
 sub checkclients_up {
 	my $group=shift||'';
-	my $ping          = Net::Ping->new();
+	my $ping          = Net::Ping->new("icmp");
 	my $off_computers = 1;
 	my $tmp_broadcast='';
 	$ping->port_number('139');
@@ -90,7 +90,7 @@ sub checkclients_up {
 	undef($ping);
 }
 sub turnoff_client{
-	my $ping          = Net::Ping->new();
+	my $ping          = Net::Ping->new("icmp");
 	my $current_client=shift;
 	my $wait_cycles=0;
 
@@ -104,7 +104,7 @@ sub turnoff_client{
 	print "$current_client: state down\n";
 }
 sub restart_client{
-	my $ping          = Net::Ping->new();
+	my $ping          = Net::Ping->new("icmp");
 	my $current_client=shift;
 	my $wait_cycles=0;
 	print "$current_client: restarting\n";
