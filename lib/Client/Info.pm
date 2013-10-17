@@ -91,9 +91,9 @@ sub setWpkgPkgRev {
 }
 
 sub isClientUp {
-	my $ping          = Net::Ping->new();
+	my $ping          = Net::Ping->new("icmp");
 	my $currentClient = shift;
-	if ( $ping->ping( $currentClient, '4' ) ) {
+	if ( $ping->ping( $currentClient, '3' ) ) {
 		print "$currentClient state: up\n";
 	}
 	else {
