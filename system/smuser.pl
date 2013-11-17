@@ -31,6 +31,7 @@ my $commands = "init,sync,list,syncCourses,add,password,update activate,bulkpass
 
 my $backend     = 'samba4';
 my $all         = 0;
+my $resync		= 0;
 my $description = 'generic description';
 my $role        = 'student';
 my $file        = 'new_users';
@@ -61,7 +62,8 @@ GetOptions(
 	'password=s'	=> \$newPassword,
 	'container=s'	=> \$container,
 	'bulkfile=s'	=> \$bulkFile,
-	'quicksync'		=> \$quicksync 
+	'quicksync'		=> \$quicksync,
+	'resync'		=> \$resync 
 );
 
 
@@ -483,9 +485,7 @@ sub syncCourses {
 	my $teacherRole=$schema->resultset("AllocationRole")->search({role=>'teacher'});
 	my $role=$schema->resultset('AllocationRole')->search({role=>'teacher'})->first;
 	my $backend=$schema->resultset("BackendBackend")->search({kind=>'moodle'})->first;
-
 	#get all courses
-
 	my @classes = $schema->resultset('SchoolClass')->all;
 	foreach my $class (@classes) {
 
@@ -531,16 +531,20 @@ sub syncCourses {
 			
 			}
 		
-			if($result->{creation}==2){
-				emit "Unenrol all users";
-					unenrolAll($result);
-				emit_ok;
-				}
-				emit "Enrol $cohort to $courseName";
-					my $enrolStatus=defaultEnrol(\@teacherAccounts,$cohort,$result);
-				if($enrolStatus->{error}){emit_error}else{emit_ok;}	
-			}
 		
+			if( ($result->{creation}==1) || ($resync) ){	
+				
+				if(  ($result->{creation}==2) && ($resync) ){
+					emit "Unenrol all users";
+						unenrolAll($result);
+					emit_ok;
+				}
+		
+				emit "Enrol $cohort to $courseName";
+				my $enrolStatus=defaultEnrol(\@teacherAccounts,$cohort,$result);
+					if($enrolStatus->{error}){emit_error}else{emit_ok;}	
+				}
+			}
 
 		}
 	}
