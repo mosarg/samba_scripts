@@ -531,15 +531,15 @@ sub syncCourses {
 			
 			}
 		
-		
-			if( ($result->{creation}==1) || ($resync) ){	
-				
-				if(  ($result->{creation}==2) && ($resync) ){
+			if(  ($result->{creation}==2) && ($resync) ){
 					emit "Unenrol all users";
 						unenrolAll($result);
 					emit_ok;
 				}
 		
+		
+			if( ($result->{creation}==1) || ($result->{creation}==1) ){	
+				
 				emit "Enrol $cohort to $courseName";
 				my $enrolStatus=defaultEnrol(\@teacherAccounts,$cohort,$result);
 					if($enrolStatus->{error}){emit_error}else{emit_ok;}	
