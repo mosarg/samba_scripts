@@ -538,7 +538,7 @@ sub syncCourses {
 				}
 		
 		
-			if( ($result->{creation}==1) || ($result->{creation}==1) ){	
+			if( ($result->{creation}==1) || ($result->{creation}==2) ){	
 				
 				emit "Enrol $cohort to $courseName";
 				my $enrolStatus=defaultEnrol(\@teacherAccounts,$cohort,$result);

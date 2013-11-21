@@ -37,7 +37,7 @@ my @activeSchools =map { '\'' . $_->meccanographic . '\'' } @{ getActiveSchools(
 
 print Dumper @activeSchools;
 
-print Dumper getAisUsers('ata');
+#print Dumper getAisUsers('ata');
+print Dumper getCurrentTeacherClassAis(2013);
 #print Dumper  getCurrentStudentsAis(\@schools);
-
 #print Dumper getCurrentTeachersAis();
