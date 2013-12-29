@@ -73,7 +73,7 @@ unixHomeDirectory: $unixHome
 add: loginShell
 loginShell: /bin/bash";
 
-ldbLoadLdif( $ldif, $uid );
+return ldbLoadLdif( $ldif, $uid );
 }
 
 
@@ -89,7 +89,7 @@ sub ldbLoadLdif {
 	my $command =
 	  "scp $fileName " . $server->{'root'} . "@" . $server->{'fqdn'} . ":/tmp";
 	my $output = `$command`;
-
+	
 	return execute(
 "ldbmodify --url=ldap://$ldap->{'server_fqdn'} --user=$ldap->{'domain'}/$ldap->{'domain_admin'}%$ldap->{'bind_root_password'} $fileName",$backendId
 	);
@@ -252,7 +252,8 @@ sub addS4Group {
 	my $groupName = shift;
 	my $command =
 	  "samba-tool group add --mail-address $groupName@".$ldap->{default_mail}." --groupou " . $ldap->{'group_base'} . " $groupName";
-		if ( doS4GroupExist($groupName) ) {
+	print $command;
+	if ( doS4GroupExist($groupName) ) {
 		return 2;
 	}
 	my $result = execute($command,$backendId);
@@ -432,7 +433,7 @@ sub addS4User {
 	$command .=
 " --department=$user->{account}->{ou} --description=$user->{userIdNumber}";
 	$command.=" --mail-address=$user->{account}->{username}@".$ldap->{default_mail};
-	
+
 	#create user
 	$user->{creationStatus} = execute($command,$backendId);
 
@@ -452,7 +453,7 @@ sub addS4User {
 
 	#add posix attributes
 
-	posixifyUser(
+	print posixifyUser(
 		"cn="
 		  . $user->{account}->{username} . ","
 		  . $user->{account}->{ou} . ","

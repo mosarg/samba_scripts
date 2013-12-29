@@ -310,7 +310,7 @@ sub defaultEnrol{
 	
 	
 	foreach my $teacher (@{$teachers}){	
-		print "$moosh course-enrol  -r editingteacher $course->{id}  $teacher \n"; 
+		
 		my $teacherResult=execute("$moosh course-enrol  -r editingteacher $course->{id}  $teacher ",$backendId);
 	
 		for ($teacherResult){
@@ -322,7 +322,6 @@ sub defaultEnrol{
 	}
 	
 	#enrol cohort to course
-	print "$moosh cohort-enrol -c $course->{id} $cohort\n";
 	my $cohortError=execute("$moosh cohort-enrol -c $course->{id} $cohort",$backendId);
 
 	return $status;

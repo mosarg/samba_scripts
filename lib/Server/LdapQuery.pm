@@ -245,7 +245,7 @@ sub getGroup{
 	my $filter="&(objectclass=group) (cn=$name)";
 	my $attributes=['distinguishedName','gidNumber','cn','name'];
 	my $result={};	
-			
+		
 	my $data = $ldapConnection->search(
 		base   => $base,
 		scope  => 'sub',
@@ -253,7 +253,7 @@ sub getGroup{
 		filter => $filter
 	);
 	my @answer=$data->entries();
-	
+
 	if(@answer){
 		$result->{distinguisedName}=lc($answer[0]->get_value('distinguishedName'));
 		$result->{gidNumber}=$answer[0]->get_value('gidNumber');

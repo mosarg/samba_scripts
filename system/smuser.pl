@@ -19,7 +19,7 @@ use Server::AdbAccount qw(getAccountAdb);
 use Server::AisQuery
   qw(getCurrentTeacherClassAis getAisUsers getCurrentClassAis getCurrentYearAis getCurrentSubjectAis getCurrentStudentsClassSubjectAis);
 use Server::System
-  qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword activateAccount);
+  qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword activateAccount createLocalUser);
 use Server::AdbClass qw(syncClassAdb);
 use Server::AdbCommon
   qw(getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools);
@@ -45,6 +45,10 @@ my $quicksync='';
 my $data        = {};
 my $container= '';
 my $bulkFile='passwords.csv';
+my $local = 0;
+my $maingroup= '';
+my $extragroups='';
+my $ou='system';
 
 ( scalar(@ARGV) > 0 ) || die("Possibile commands are: $commands\n");
 
@@ -63,7 +67,11 @@ GetOptions(
 	'container=s'	=> \$container,
 	'bulkfile=s'	=> \$bulkFile,
 	'quicksync'		=> \$quicksync,
-	'resync'		=> \$resync 
+	'resync'		=> \$resync,
+	'local'			=> \$local,
+	'maingroup=s'			=> \$maingroup,
+	'extragroups=s'		=> \$extragroups,
+	'ou=s'				=> \$ou
 );
 
 
@@ -117,7 +125,6 @@ sub activateUserAccount{
 
 
 sub updateUser{
-	
 	my $username=$ARGV[1];
 	
 	if(!$username){
@@ -130,6 +137,9 @@ sub updateUser{
 
 
 
+
+
+
 ###############################
 #
 # Add User
@@ -137,17 +147,24 @@ sub updateUser{
 ###############################
 
 sub addUser{
-my $users=[];	
-	
-	if($usersNumber>1){
+ my $users=[];
+
+ if ($local){
+ 	
+ 	my $user={account=>{username=>$systemUserName,password=>$newPassword,ou=>"ou=$ou"},name=>'utente',surname=>'sistema',userIdNumber=>666};
+	my @egroups=split(',',$extragroups); 			
+ 	createLocalUser($user,$maingroup,\@egroups);
+ 	return;
+ }	
+ if($usersNumber>1){
 		for(my $index=1;$index<=$usersNumber;$index++){	
 			push(@{$users},createFullUser($userRole,$userName,$userSurname.$index));
 		}
 	}else{
 		push(@{$users}, createFullUser($userRole,$userName,$userSurname));
 	}
-recordUser( $users, 'manualUsers' );
 
+ recordUser( $users, 'manualUsers' );
 }
 
 

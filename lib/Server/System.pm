@@ -33,7 +33,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK =
-  qw(checkOu createOu listOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword deleteDjangoUser activateAccount);
+  qw(checkOu createOu listOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword deleteDjangoUser activateAccount createLocalUser);
 
 sub checkOu {
 	my $backend=shift;
@@ -313,12 +313,21 @@ sub moveUser {
 }
 
 
+
+sub createLocalUser{
+	my $user=shift;
+	my $mainGroup=shift;
+	my $groups=shift;
+	return addS4User($user,$mainGroup,$groups);
+	
+}
+
+
+
 sub createS4User {
 	my $user = shift;
-
 	#get adb groups
 	my $extraGroups =getAccountGroupsAdb( $user->{adbaccount}, $user->{adbbackend} );
-
 	#get adb main group
 	my $mainGroup =
 	  getAccountMainGroupAdb( $user->{adbaccount}, $user->{adbbackend} )->name;

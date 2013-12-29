@@ -17,6 +17,7 @@ use feature "switch";
 my $commands = "init add,remove,sync,list,update";
 
 my $backend     = 'samba4';
+
 my $all         = 0;
 my $description = 'generic description';
 my $data        = {};
@@ -168,6 +169,7 @@ sub removeGroup {
 
 #list backend groups
 sub listGroup {
+	
 	my $groups = getAllGroupsAdb($backend);
 	for ($backend) {
 		when (/samba4/) {
