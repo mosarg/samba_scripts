@@ -59,6 +59,23 @@ sub getUsers {
 	return \%current_users;
 }
 
+
+sub getUserGid{
+	my $user = shift;
+
+	if ( !$user ) { return ''; }
+	my $dn         = $ldap->{'user_base'} . ',' . $ldap->{'dir_base'};
+	my $userObject = $ldapConnection->search(
+		base   => "$dn",
+		scope  => 'sub',
+		filter => "&(objectclass=posixAccount) ("
+		  . $ldap->{'uid_map'}
+		  . "=$user)",
+	);
+	return ( $userObject->entries() )[0]->get_value( $ldap->{'home_map'} );
+}
+
+
 sub getUserHome {
 	my $user = shift;
 
@@ -230,12 +247,6 @@ sub doOuExist{
 
 
 
-sub getUserGid{
-	
-	my $username=shift;
-		
-	my $base=$ldap->{user_base}. ','.$ldap->{dir_base};
-}
 
 
 sub getGroup{

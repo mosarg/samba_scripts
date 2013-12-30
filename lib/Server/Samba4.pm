@@ -275,26 +275,30 @@ sub setS4PrimaryGroup {
 	if ( !( doS4GroupExist($group) ) ) { return 0; }
 	my $gid = getGid($group);
 	my $rid = getRid($group);
-	execute(
-		"samba-tool group addmembers $group " . $user->{account}->{username} ,$backendId);
+	execute("samba-tool group addmembers $group " . $user->{account}->{username} ,$backendId);
 
 #Uncomment to set windows primary  group=linux primary group
-#	my $ldif =
-#"dn: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}
-#changetype: modify
-#replace: primaryGroupID
-#primaryGroupID: $rid
-#-
-#changetype: modify
-#replace: gidNumber
-#gidNumber: $gid";
-
-#We are settings only unix primary group because of AD primary group backlinking problems
 my $ldif =
 "dn: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}
 changetype: modify
+replace: primaryGroupID
+primaryGroupID: $rid
+-
+changetype: modify
 replace: gidNumber
-gidNumber: $gid";
+gidNumber: $gid
+-
+dn: cn=Domain users,$ldap->{group_base},$ldap->{dir_base}
+changetype: modify
+delete: member
+member: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}";
+
+#We are settings only unix primary group because of AD primary group backlinking problems
+#my $ldif =
+#"dn: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}
+#changetype: modify
+#replace: gidNumber
+#gidNumber: $gid";
 
 
 	ldbLoadLdif( $ldif, $gid );
@@ -342,6 +346,7 @@ sub updateS4Group{
 	
 	if($groupData){
 		#posixify group
+		print $group;
 		if(!$groupData->{gidNumber}){
 			my $gid    = getNewGid($group);
 			posixifyGroup($group,$gid);
@@ -467,7 +472,8 @@ sub addS4User {
 		
 	### CHECK https://lists.samba.org/archive/samba-technical/2012-May/083285.html
 	#set user primary group
-	setS4PrimaryGroup( $user, "Domain\\ Users" );
+	#setS4PrimaryGroup( $user, "Domain\\ Users" );
+	setS4PrimaryGroup( $user, $group );
 	
 	
 	

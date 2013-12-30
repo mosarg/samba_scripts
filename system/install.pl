@@ -7,6 +7,8 @@ use Cwd qw(abs_path);
 my $pragmaModules=['Cwd','strict','Encode','warnings','Getopt::Long','File::Copy','Term::ANSIColor','threads','File::Path','Data::Dumper','Net::Ping','Mail::Box','Filesys::DiskSpace'];
 
 
+# libfilesys-diskspace-perl libmail-box-perl libdata-structure-util-perl libdbix-class-perl libdbix-class-schema-loader-perl libdatetime-perl libdatetime-format-mysql-perl
+
 
 installPackages();
 #print Dumper listUsedPackages();
