@@ -286,23 +286,20 @@ primaryGroupID: $rid
 -
 changetype: modify
 replace: gidNumber
-gidNumber: $gid
--
-dn: cn=Domain users,$ldap->{group_base},$ldap->{dir_base}
-changetype: modify
-delete: member
-member: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}";
-
+gidNumber: $gid";
 #We are settings only unix primary group because of AD primary group backlinking problems
 #my $ldif =
 #"dn: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}
 #changetype: modify
 #replace: gidNumber
 #gidNumber: $gid";
-
-
-	ldbLoadLdif( $ldif, $gid );
-	execute("samba-tool group addmembers Domain\\\\ users " . $user->{account}->{username} ,$backendId);
+ldbLoadLdif( $ldif, $gid );
+$lidf="dn: cn=Domain users,$ldap->{group_base},$ldap->{dir_base}
+changetype: modify
+delete: member
+member: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}";
+ldbLoadLdif( $ldif, $gid );
+execute("samba-tool group addmembers Domain\\\\ users " . $user->{account}->{username} ,$backendId);
 }
 
 sub setS4UnixHomeDir {
