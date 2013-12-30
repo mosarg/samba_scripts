@@ -294,7 +294,7 @@ gidNumber: $gid";
 #replace: gidNumber
 #gidNumber: $gid";
 ldbLoadLdif( $ldif, $gid );
-$lidf="dn: cn=Domain users,$ldap->{group_base},$ldap->{dir_base}
+$ldif="dn: cn=Domain users,$ldap->{group_base},$ldap->{dir_base}
 changetype: modify
 delete: member
 member: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base},$ldap->{dir_base}";
