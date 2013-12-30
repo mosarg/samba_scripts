@@ -302,6 +302,7 @@ member: cn=$user->{account}->{username},$user->{account}->{ou},$ldap->{user_base
 
 
 	ldbLoadLdif( $ldif, $gid );
+	execute("samba-tool group addmembers Domain\\\\ users " . $user->{account}->{username} ,$backendId);
 }
 
 sub setS4UnixHomeDir {
