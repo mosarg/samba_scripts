@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Text::CSV;
+use encoding 'utf8', Filter => 1;
 use Data::Dumper;
 use Getopt::Long;
 use Term::ANSIColor;

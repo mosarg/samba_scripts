@@ -2,6 +2,7 @@ package Server::System;
 
 use DBI;
 use strict;
+use encoding 'utf8', Filter => 1;
 use warnings;
 use open qw/:std :utf8/;
 use Switch;

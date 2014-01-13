@@ -2,6 +2,7 @@ package Server::Samba4;
 
 use strict;
 use warnings;
+use encoding 'utf8', Filter => 1;
 use Data::Dumper;
 use feature "switch";
 use Try::Tiny;

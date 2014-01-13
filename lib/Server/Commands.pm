@@ -1,5 +1,6 @@
 package Server::Commands;
 
+use utf8;
 use strict;
 use warnings;
 use Cwd;
