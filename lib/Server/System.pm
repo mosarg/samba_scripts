@@ -4,6 +4,7 @@ use DBI;
 use strict;
 use encoding 'utf8', Filter => 1;
 use warnings;
+use experimental 'switch';
 use open qw/:std :utf8/;
 use Switch;
 use Term::ANSIColor;

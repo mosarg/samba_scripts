@@ -1,9 +1,10 @@
 package Server::Gapps;
 
 use strict;
-use warnings;
-use Data::Dumper;
 
+use Data::Dumper;
+use warnings;
+use experimental 'switch';
 use Cwd;
 use Server::Configuration qw($server $ldap);
 use Server::LdapQuery qw(isPosix getGroup);

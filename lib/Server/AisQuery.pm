@@ -1,13 +1,11 @@
 package Server::AisQuery;
-
 use DBI;
+use experimental 'switch';
 use strict;
-use warnings;
 use Cwd;
 use Getopt::Long;
 use Data::Dumper;
 use Data::Structure::Util qw( unbless );
-
 use Server::Configuration qw($server $ais);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);
 require Exporter;
@@ -51,15 +49,31 @@ sub executeAisPlaneQuery{
 
 
 sub getCurrentTeachersAis {
-	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
-                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'UDSSC817F0\' As meccanographic
-                FROM  tana_anagrafiche t 
-     			INNER JOIN tanacag ta on(t.ianaid=ta.ianaid)
-     			INNER JOIN tanaper_personale p on (ta.ianacagid=p.ianacagid)
-     			LEFT  JOIN ttno_tiponomina tt on(p.itnoid=tt.itnoid)
-     			LEFT  JOIN tquap_qualpers tq on (p.iquapid=tq.iquapid)
-     			LEFT  JOIN tnop_nominaperso  tn on(p.inopid=tn.inopid)
-   				WHERE p.idctid=1 AND p.istabperid=1  AND tq.iquapusercode IN (12,14,17,25)";
+	my $year=shift;	
+	my $query="SELECT  DISTINCT t.ianaid AS \"userIdNumber\",t.sananome AS \"name\",
+               t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'".$ais->{main_mec}."\' As meccanographic FROM
+			   tana_anagrafiche t
+               INNER JOIN tanacag tan ON(t.ianaid=tan.ianaid)
+               INNER JOIN tanaper_personale p ON (tan.ianacagid=p.ianacagid)
+               INNER JOIN tdct_docenteata td ON (td.idctid=p.idctid) 
+               INNER JOIN tclsmatana ma ON (t.ianaid=ma.ianaid)
+               INNER JOIN tmat_materie m ON (ma.imatid=m.imatid) 
+               INNER JOIN tcls_classi tc ON (ma.iclsid=tc.iclsid)
+               INNER JOIN tacs_annicorso ta ON (tc.iacsid=ta.iacsid)
+               INNER JOIN tind_indirizzo ti ON (tc.iindid=ti.iindid)
+               INNER JOIN tsez_sezioni ts ON (tc.isezid=ts.isezid)
+               WHERE td.sdctldesc='Docente' AND p.istabperid=1  AND tc.dstart>='01.09.$year' AND tc.dend <= '01.09.".++$year."\'";
+	
+	
+#	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
+#                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'UDSSC817F0\' As meccanographic
+#                FROM  tana_anagrafiche t 
+#     			INNER JOIN tanacag ta on(t.ianaid=ta.ianaid)
+#     			INNER JOIN tanaper_personale p on (ta.ianacagid=p.ianacagid)
+#     			LEFT  JOIN ttno_tiponomina tt on(p.itnoid=tt.itnoid)
+#     			LEFT  JOIN tquap_qualpers tq on (p.iquapid=tq.iquapid)
+#     			LEFT  JOIN tnop_nominaperso  tn on(p.inopid=tn.inopid)
+#   				WHERE p.idctid=1 AND p.istabperid=1  AND tq.iquapusercode IN (12,14,17,25)";
 	return executeAisQuery($query);
 }
 
@@ -172,7 +186,7 @@ sub getCurrentAtaAis{
      			LEFT  JOIN ttno_tiponomina tt on(p.itnoid=tt.itnoid)
      			LEFT  JOIN tquap_qualpers tq on (p.iquapid=tq.iquapid)
      			LEFT  JOIN tnop_nominaperso  tn on(p.inopid=tn.inopid)
-   				WHERE p.idctid=2 AND p.istabperid=1  AND tq.iquapusercode IN (7,24,31,1)";
+   				WHERE p.idctid=2 AND p.istabperid=1  AND tq.iquapusercode IN (".$ais->{ata_roles}.")";
    			return executeAisQuery($query);
 	
 }
@@ -239,7 +253,7 @@ if ($role eq 'ata'){
 }
 
 if ($role eq 'teacher'){
-	return getCurrentTeachersAis();
+	return getCurrentTeachersAis($parameters);
 }
 
 

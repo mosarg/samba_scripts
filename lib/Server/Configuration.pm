@@ -2,6 +2,7 @@ package Server::Configuration;
 
 use strict;
 use warnings;
+use experimental 'switch';
 use YAML::XS qw(LoadFile);
 use Db::Django;
 require Exporter;

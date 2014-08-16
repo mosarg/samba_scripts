@@ -1,12 +1,13 @@
 package Server::Logon;
 
 use strict;
-use warnings;
+
 use YAML::XS qw(LoadFile);
 use Server::Configuration qw($dirs $server);
 use Switch;
 require Exporter;
-
+use warnings;
+use experimental 'switch';
 our @ISA       = qw(Exporter);
 our @EXPORT_OK =
   qw(inGroup setupClient selectComputer getLogonPrefs fileHeader insertWait removeAllPrinters);

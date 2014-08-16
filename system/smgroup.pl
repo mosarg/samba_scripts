@@ -1,9 +1,10 @@
 #!/usr/bin/perl
 use strict;
-use warnings;
+
 use Data::Dumper;
 use Getopt::Long;
 use Term::ANSIColor;
+use experimental 'switch';
 use Switch;
 use Term::Emit ":all", { -color => 1 };
 use Server::AdbGroup qw(getAllGroupsAdb addGroupAdb);

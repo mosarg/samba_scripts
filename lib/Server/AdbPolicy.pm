@@ -3,6 +3,8 @@ package Server::AdbPolicy;
 use DBI;
 use strict;
 use warnings;
+use experimental 'switch';
+
 use Cwd;
 use Getopt::Long;
 use Data::Dumper;

@@ -2,6 +2,7 @@ package Server::Actions;
 
 use strict;
 use warnings;
+use experimental 'switch';
 use Cwd;
 use Client::Log qw(transportMail);
 use File::Copy;

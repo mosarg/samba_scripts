@@ -3,6 +3,7 @@ package Server::LdapQuery;
 use DBI;
 use strict;
 use warnings;
+use experimental 'switch';
 use Cwd;
 use Getopt::Long;
 use Net::LDAP;

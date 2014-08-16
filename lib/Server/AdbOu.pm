@@ -4,6 +4,7 @@ use DBI;
 use strict;
 use Data::Dumper;
 use warnings;
+use experimental 'switch';
 use Server::AdbCommon qw(getCurrentYearAdb);
 use Server::Configuration qw($schema $server $adb $ldap);
 use Server::Commands qw(execute sanitizeString sanitizeUsername);

@@ -1,17 +1,17 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use experimental 'switch';
 use Text::CSV;
 use encoding 'utf8', Filter => 1;
 use Data::Dumper;
 use Getopt::Long;
 use Term::ANSIColor;
-use Switch;
+#use Switch;
 use Term::Emit ":all", { -color => 1 };
 use Server::Configuration qw($ldap $schema);
 use Server::Commands qw(hashNav sanitizeSubjectname sanitizeString);
 use Server::LdapQuery qw(doOuExist getAllOu getUserBaseDn getUserFromUname);
-
 use Server::Samba4 qw(addS4Group deleteS4Group doS4GroupExist addS4Ou updateS4Group updateS4User);
 use Server::AdbOu qw(getAllOuAdb);
 use Server::AdbUser
@@ -27,6 +27,9 @@ use Server::AdbCommon
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll changeMoodlePassword);
 use feature "switch";
+
+
+
 
 my $commands = "init,sync,list,syncCourses,add,password,update activate,bulkpassword";
 
@@ -249,8 +252,8 @@ sub syncUsers {
 	  map { '\'' . $_->meccanographic . '\'' } @{ getActiveSchools() };
 
 	#create adb users
-	switch ($role) {
-		case 'student' {
+	for ($role) {
+		when(/student/) {
 			emit "Sync students";
 			$updates = syncUsersAdb(
 				1,
@@ -261,14 +264,14 @@ sub syncUsers {
 			);
 			$updates->{status} ? emit_ok : emit_error;
 		}
-		case 'teacher' {
+		when (/teacher/) {
 			emit "Sync teachers";
 			$updates =
-			  syncUsersAdb( 1, getAisUsers('teacher'), 'teacher',
+			  syncUsersAdb( 1, getAisUsers('teacher',$yearAdb->year), 'teacher',
 				$yearAdb->year, getCurrentTeacherClassAis($yearAis) );
 			$updates->{status} ? emit_ok : emit_error;
 		}
-		case 'ata' {
+		when (/ata/) {
 			emit "Sync ata";
 			$updates =
 			  syncUsersAdb( 1, getAisUsers('ata'), 'ata', $yearAdb->year );

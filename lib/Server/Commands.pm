@@ -3,6 +3,7 @@ package Server::Commands;
 use utf8;
 use strict;
 use warnings;
+use experimental 'switch';
 use Cwd;
 use Server::Configuration qw($server $schema $ssh);
 use DateTime;

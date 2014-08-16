@@ -1,7 +1,7 @@
 package Client::Log;
 
 use strict;
-use warnings;
+
 use Cwd;
 use Getopt::Long;
 use Client::configuration qw($log_info);

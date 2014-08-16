@@ -2,6 +2,7 @@ package Server::Moodle;
 
 use strict;
 use warnings;
+use experimental 'switch';
 use Data::Dumper;
 use String::MkPasswd qw(mkpasswd);
 use Cwd;

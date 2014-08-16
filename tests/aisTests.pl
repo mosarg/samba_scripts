@@ -1,15 +1,16 @@
 #!/usr/bin/perl
-
 use strict;
-use warnings;
+use experimental 'switch';
 use Server::Configuration qw($schema $ldap $server);
 use Server::Commands qw(sanitizeString);
 use Net::LDAP;
 use Data::Dumper;
-use HTML::Tabulate qw(render);
+#use HTML::Tabulate qw(render);
 use Server::AdbCommon qw(getCurrentYearAdb addYearAdb getActiveSchools);
 
 use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentTeacherClassAis getCurrentYearAis getCurrentStudentsClassSubjectAis getStudyPlanSubject getCurrentStudentsAis getCurrentTeachersAis );
+no if $] >= 5.018, warnings => "experimental::smartmatch";
+no if $] >= 5.018, warnings => "experimental::lexical_subs";
 
 
 
@@ -38,6 +39,6 @@ my @activeSchools =map { '\'' . $_->meccanographic . '\'' } @{ getActiveSchools(
 print Dumper @activeSchools;
 
 #print Dumper getAisUsers('ata');
-print Dumper getCurrentTeacherClassAis(2013);
+#print Dumper getCurrentTeacherClassAis(2013);
 #print Dumper  getCurrentStudentsAis(\@schools);
-#print Dumper getCurrentTeachersAis();
+print Dumper getCurrentTeachersAis(2013);

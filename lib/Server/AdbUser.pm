@@ -3,6 +3,7 @@ package Server::AdbUser;
 use DBI;
 use strict;
 use warnings;
+use experimental 'switch';
 use Data::Dumper;
 use List::UtilsBy qw(extract_by);
 use Server::AdbCommon
