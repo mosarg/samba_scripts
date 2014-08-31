@@ -36,7 +36,15 @@ sub wakeup_client{
 	$tmp_broadcast=$current_client[1];
 	$tmp_broadcast=~s/\d+$/255/;
 	print "$current_client[0]: waking up\n";
-	system("wakeonlan -i $tmp_broadcast $current_client[2]");
+	
+	if ($client->{'wol'} eq 'cisco'){
+		system("wakeonlan  $current_client[2]");
+	}else{
+		system("wakeonlan -i $tmp_broadcast $current_client[2]");
+	}
+	
+	
+	
 	while ((!$ping->ping( $current_client, $ping_wait_time ) )&&($wait_cycles<20)){
 		print "$current_client: waking up\n";
 		sleep 10;
@@ -58,7 +66,14 @@ sub wakeup_clients {
 		}
 		else {
 			print "Computer $computer->[0] $computer->[2] wake up phase\n";
-			system("wakeonlan -i $tmp_broadcast $computer->[2]");
+			
+			if ($client->{'wol'} eq 'cisco'){
+				system("wakeonlan  $current_client[2]");
+			}else{
+				system("wakeonlan -i $tmp_broadcast $computer->[2]");
+			}
+			
+			
 		}
 	}
 	undef($ping);
