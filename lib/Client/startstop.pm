@@ -68,7 +68,7 @@ sub wakeup_clients {
 			print "Computer $computer->[0] $computer->[2] wake up phase\n";
 			
 			if ($client->{'wol'} eq 'cisco'){
-				system("wakeonlan  $current_client[2]");
+				system("wakeonlan  $computer->[2]");
 			}else{
 				system("wakeonlan -i $tmp_broadcast $computer->[2]");
 			}
