@@ -124,7 +124,12 @@ sub get_clients_info {
 "SELECT name,ipaddress,macaddr FROM  networks LEFT JOIN hardware ON networks.hardware_id=hardware.id WHERE networks.ipaddress LIKE '%".$database->{$infodb_name}->{subnet}."%' ORDER BY hardware.name";}
 		case "unattended"{
 			my $lab=shift || die 'You must specify a  computer prefix';
-			$computers_query ="SELECT computername,ip,mac FROM systems WHERE computername LIKE \'%$lab%\' ORDER BY computername";
+			if ($client->{'tag'} eq 'service'){
+				$computers_query ="SELECT computername,ip,mac FROM systems WHERE servicetag LIKE \'%$lab%\' ORDER BY computername";
+			}else{
+				$computers_query ="SELECT computername,ip,mac FROM systems WHERE computername LIKE \'%$lab%\' ORDER BY computername";
+			}
+			
 		}
 	}
 	
