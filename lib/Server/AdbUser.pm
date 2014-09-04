@@ -326,8 +326,10 @@ sub syncUsersAdb {
 
 	$users = normalizeUsersAdb( $users, $role, $allocationList );
 
-	my $removedUsers = getAllUsersByRoleAdb( $roleAdb, $yearAdb );
+	
 
+	my $removedUsers = getAllUsersByRoleAdb( $roleAdb, $yearAdb );
+	
 	my $insertOrder = getUserOrderAdb();
 
 	foreach my $user ( @{$users} ) {
@@ -342,8 +344,9 @@ sub syncUsersAdb {
 		
 		$result=addUserAccountsAdb($result);
 
+		
 		extract_by { $_->sidi_id == $user->{userIdNumber} } @{$removedUsers};
-
+	
 		if ( ($user->{modified})&& !($user->{pristine})  ) { push( @modifiedUsers, $result->{data} ); }
 		if ( $user->{pristine} ) { push( @newUsers,      $result->{data} ); }
 	}

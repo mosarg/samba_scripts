@@ -19,7 +19,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw(getCurrentYearAdb setCurrentYearAdb addYearAdb creationTimeStampsAdb getActiveSchools);
+our @EXPORT_OK = qw(getCurrentYearAdb setCurrentYearAdb addYearAdb creationTimeStampsAdb getActiveSchools getYearAdb);
 
 #open user account database connections
 
@@ -72,5 +72,12 @@ sub getCurrentYearAdb{
 	my $currentYear=$schema->resultset('AllocationSchoolyear')->search({active=>1})->next;
     return $currentYear;
 } 
+
+sub getYearAdb{
+	my $year=shift;
+	my $adbyear=$schema->resultset('AllocationSchoolyear')->search({year=>$year})->next;
+    return $adbyear;
+} 
+
 
 return 1;

@@ -23,7 +23,7 @@ use Server::System
   qw(listOu createOu checkOu  initGroups createUser removeUser moveUser recordUser createFullUser changeUserPassword activateAccount createLocalUser);
 use Server::AdbClass qw(syncClassAdb);
 use Server::AdbCommon
-  qw(getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools);
+  qw(getCurrentYearAdb addYearAdb setCurrentYearAdb getActiveSchools getYearAdb);
 use Server::AdbSubject qw(syncSubjectAdb);
 use Server::Moodle qw(addMoodleCourse defaultEnrol unenrolAll changeMoodlePassword);
 use feature "switch";
@@ -52,6 +52,7 @@ my $bulkFile='passwords.csv';
 my $local = 0;
 my $maingroup= '';
 my $extragroups='';
+my $refYear=0;
 my $ou='system';
 
 ( scalar(@ARGV) > 0 ) || die("Possibile commands are: $commands\n");
@@ -75,7 +76,8 @@ GetOptions(
 	'local'			=> \$local,
 	'maingroup=s'			=> \$maingroup,
 	'extragroups=s'		=> \$extragroups,
-	'ou=s'				=> \$ou
+	'ou=s'				=> \$ou,
+	'refyear=i'			=> \$refYear
 );
 
 
@@ -198,7 +200,23 @@ sub changePassword{
 sub syncUsers {
 
 	#get db current and ais current year
-	my $yearAdb = getCurrentYearAdb();
+	my $yearAdb='';
+	
+	
+	
+	if ($refYear > 0){
+		$yearAdb = getYearAdb($refYear);
+		
+	}else{
+		 $yearAdb = getCurrentYearAdb();
+	}
+	
+
+	if ($yearAdb eq ''){
+		print "Wrong year!\n";
+		return 0;
+	}
+	
 	my $newYearAdb;
 	my $yearAis = getCurrentYearAis();
 	my $updates = {};
@@ -306,6 +324,8 @@ if(!$quicksync){
 	}
 
 }
+
+
 	#remove stale users from all defined backends
 	emit "Update backend accounts";
 	emit "Remove old users";
