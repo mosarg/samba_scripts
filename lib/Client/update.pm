@@ -30,7 +30,7 @@ sub doAxiosUpdate{
 			sleep 60;
 			$running_cycle++;
 		}
-		if ($running_cycle>=$max_cycles ){
+	if ($running_cycle>=$max_cycles ){
 			return "$client: an Update process is stuck\n";
 		} 
 	
@@ -67,16 +67,16 @@ sub do_client_update {
 		$wakeup_cycle=0;
 		$running_cycle=0;
 					
-		while ( (otherUpdatesRunning($client))&&($running_cycle<$max_cycles)){
-			print "$client: other update processes running. I'll be waiting for 60 seconds\n";
-			sleep 60;
-			$running_cycle++;
-		}
-		if ($running_cycle>=$max_cycles ){
-			print "$client: an Update process is stuck\n";
-			$current_cycle=100;
-			last;
-		} 	
+#		while ( (otherUpdatesRunning($client))&&($running_cycle<$max_cycles)){
+#			print "$client: other update processes running. I'll be waiting for 60 seconds\n";
+#			sleep 60;
+#			$running_cycle++;
+#		}
+#		if ($running_cycle>=$max_cycles ){
+#			print "$client: an Update process is stuck\n";
+#			$current_cycle=100;
+#			last;
+#		} 	
 		
 		print "$client: start Windows update\n";		
 		execute_command($client,'update_client');
