@@ -149,8 +149,12 @@ sub changeUserPassword{
 	if(!$user) {return 0;}
 	#get user accounts
 	my @accounts=$user->account_accounts->all;
+	
+	
 	foreach my $account (@accounts){
+		
 		my $kind=$account->backend_id->kind;
+
 			for($kind){
 			when (/samba4/){
 				emit "Change Samba4 Password";
@@ -164,7 +168,7 @@ sub changeUserPassword{
 			}
 			when(/django/){
 				emit "Change Django Password";
-				changeMoodlePassword($username,$password);
+				changeDjangoPassword($username,$password);
 				emit_ok;
 				
 			}

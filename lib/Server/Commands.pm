@@ -50,8 +50,6 @@ sub execute{
 	my $backend=shift;
 	my $fqdn=$server->{'fqdn'};
 	my $sshPort='22';
-	
-	
 	if ($backend){
 		my $adbBackend=$schema->resultset('BackendBackend')->find({kind=>$backend});
 		$fqdn=$adbBackend->server_fqdn();
