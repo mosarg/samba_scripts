@@ -110,7 +110,9 @@ sub turnoff_client{
 	my $wait_cycles=0;
 
 	print "$current_client: shutting down\n";
-	execute_client_cmd($current_client,"shutdown -s -f  -t $client->{shutdown_time}");
+
+	my $out=execute_client_cmd($current_client,"shutdown -s -f  -t $client->{shutdown_time}");
+
 	while (( $ping->ping( $current_client, $ping_wait_time ) )&&($wait_cycles<20)){
 		print "$current_client: shutdown fase\n";
 		sleep 10;
@@ -136,8 +138,9 @@ sub turnoff_clients {
 	
 	my @threads_array = ();
 	foreach my $computer (@{get_clients_info($group)} ) {
+		
 		push( @threads_array,
-		threads->create( \&turnoff_client, $computer->[1]) );
+		threads->create( \&turnoff_client, $computer->[0]) );
 	
 	}
 	foreach ( threads->list() ) {
