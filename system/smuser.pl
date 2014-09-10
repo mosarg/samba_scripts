@@ -285,7 +285,7 @@ sub syncUsers {
 		when (/teacher/) {
 			emit "Sync teachers";
 			$updates =
-			  syncUsersAdb( 1, getAisUsers('teacher',$yearAdb->year), 'teacher',
+			  syncUsersAdb( 1, getAisUsers('teacher',$yearAis), 'teacher',
 				$yearAdb->year, getCurrentTeacherClassAis($yearAis) );
 			$updates->{status} ? emit_ok : emit_error;
 		}

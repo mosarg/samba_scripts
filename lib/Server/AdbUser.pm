@@ -70,9 +70,11 @@ sub getAllUsersByRoleAdb {
 				{
 					roleId_id => $role->role_id,
 					yearId_id => $year->school_year_id,
-					syncModel=> 'sync'
+					syncModel=> 'sync',
+					active => 1
 				},
-				{ join => 'allocation_allocations' }
+				{ join =>[ 'allocation_allocations','account_accounts'],
+					distinct=>1 }
 			)->all;
 		}
 	}
@@ -273,6 +275,9 @@ sub addUserAccountsAdb {
 				$adbUser->{$profile->backend_id->kind}->{regenerateAccount} = 1;
 				$user->{modified}             = 1;
 			}
+		}else{
+			$adbAccount->update( { active => 1 } );
+			$user->{modified}             = 1;
 		}
 		
 		$adbAccount = $adbAccount->next;
@@ -333,7 +338,7 @@ sub syncUsersAdb {
 	my $insertOrder = getUserOrderAdb();
 
 	foreach my $user ( @{$users} ) {
-
+		
 		#set sync status
 		$user->{sync}   = $sync;
 		$user->{origin} = 'automatic';

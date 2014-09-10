@@ -254,7 +254,7 @@ sub addS4Group {
 	my $groupName = shift;
 	my $command =
 	  "samba-tool group add --mail-address $groupName@".$ldap->{default_mail}." --groupou " . $ldap->{'group_base'} . " $groupName";
-	print $command;
+	
 	if ( doS4GroupExist($groupName) ) {
 		return 2;
 	}
@@ -346,7 +346,7 @@ sub updateS4Group{
 	
 	if($groupData){
 		#posixify group
-		print $group;
+		
 		if(!$groupData->{gidNumber}){
 			my $gid    = getNewGid($group);
 			posixifyGroup($group,$gid);
@@ -370,7 +370,7 @@ sub updateS4User{
 	my $uid=getNewUid( $username);
 	
 	
-	print "uid $uid\n";
+
 	
 	if($container){
 		$dn="cn=".$username.","
@@ -458,7 +458,7 @@ sub addS4User {
 
 	#add posix attributes
 
-	print posixifyUser(
+	posixifyUser(
 		"cn="
 		  . $user->{account}->{username} . ","
 		  . $user->{account}->{ou} . ","

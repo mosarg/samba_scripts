@@ -63,7 +63,7 @@ sub getCurrentTeachersAis {
                INNER JOIN tind_indirizzo ti ON (tc.iindid=ti.iindid)
                INNER JOIN tsez_sezioni ts ON (tc.isezid=ts.isezid)
                WHERE td.sdctldesc='Docente' AND p.istabperid=1  AND tc.dstart>='01.09.$year' AND tc.dend <= '01.09.".++$year."\'";
-	print $query;
+	
 	
 #	my $query = "SELECT DISTINCT t.ianaid As \"userIdNumber\",t.sananome AS \"name\",
 #                t.sanacognome AS \"surname\" ,t.dananascita AS \"birthDate\",\'UDSSC817F0\' As meccanographic

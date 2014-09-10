@@ -38,13 +38,13 @@ $Data::Dumper::Freezer = '_dumper_hook';
 
 my $role=$schema->resultset('AllocationRole')->search({role=>'teacher'})->first;
 
-my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>1005262})->first;
+#my $user=$schema->resultset('SysuserSysuser')->search({sidiId=>1005262})->first;
 
-my $class=$schema->resultset('SchoolClass')->search({name=>'4al'})->first;
+#my $class=$schema->resultset('SchoolClass')->search({name=>'4al'})->first;
 
-my $year=getCurrentYearAdb();
+#my $year=getCurrentYearAdb();
 
-my @activeSchools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
+#my @activeSchools= map {'\''.$_->meccanographic.'\''} @{getActiveSchools()};
 
 my $yearAdb=getCurrentYearAdb();
 
@@ -59,14 +59,21 @@ my $aisUser={userIdNumber=>10056,origin=>'auto',name=>'Giorgiona',surname=>'Aspa
 
 #my @allocations=$class->allocation_didacticalallocations({'allocation_id.yearId_id'=>$year->school_year_id},{join=>'allocation_id',select=>['allocation_id.yearId_id','subjectId_id'],distinct=>1})->all;
 
-my $currentMaxId=$schema->resultset('SysuserSysuser')->search({syncModel=>'manual'})->get_column('sidiId')->max();
-	$currentMaxId=$currentMaxId?$currentMaxId+1:666666;
+#my $currentMaxId=$schema->resultset('SysuserSysuser')->search({syncModel=>'manual'})->get_column('sidiId')->max();
+#	$currentMaxId=$currentMaxId?$currentMaxId+1:666666;
 
-my $s4Account=$user->account_accounts({kind=>'samba4'},{prefetch=>'backend_id'})->next;
+#my $s4Account=$user->account_accounts({kind=>'samba4'},{prefetch=>'backend_id'})->next;
 
- my $allocation= $user->allocation_allocations->first;
- 
+# my $allocation= $user->allocation_allocations->first;
 
-print substr('00005154',-5,5)."\n";
+
+#print substr('00005154',-5,5)."\n";
+
+my $data1= getAllUsersByRoleAdb($role,$yearAdb);
+
+
+foreach my $tr (@{$data1}){
+	print $tr->name."\n";
+}
 
 	
