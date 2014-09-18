@@ -414,19 +414,29 @@ sub createMoodleUser {
 sub recordUser {
 	my $users    = shift;
 	my $filename = shift;
+	my $compact='';
+	
+	if ( scalar(@_) ) {
+		$compact = 1;
+	}
+	
 	my $rawfilename=$filename."_".localtime(time);
 	$rawfilename=~s/\s|\:/_/g;
 	$filename=$rawfilename.".csv";
-	my $fileFullPath="$server->{auth_files_raw}/$filename";	
 	
+	my $fileFullPath="$server->{auth_files_raw}/$filename";	
+
 	if (scalar(@{$users})>0){
 		open FHANDLE, ">$fileFullPath" or die("Cannot open $filename");
 		print FHANDLE "name,surname,username,password,ou\n";
 		foreach my $fullUser ( @{$users} ) {
-			my $userData=$fullUser->[0];
-			my $user=$userData->{simpleUser};
+			if ($compact){
+				print FHANDLE "\"".$fullUser->name."\",\"".$fullUser->surname."\"";
+			}else{
+				my $userData=$fullUser->[0];
+				my $user=$userData->{simpleUser};
 			print FHANDLE "\"$user->{name}\",\"$user->{surname}\",$user->{account}->{username},$user->{account}->{password},$user->{account}->{ou}\n";
-
+			}
 		}
 		close FHANDLE;
 		#create pdf mail marge through latex

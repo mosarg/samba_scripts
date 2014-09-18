@@ -334,6 +334,11 @@ if(!$quicksync){
 	}
 	emit_ok;
 
+	#record new users
+	emit "Log deleted users data";
+	recordUser( $updates->{removedusers} , $role.'_deleted_accounts',1);
+	emit_ok;
+	
 
 	#add new users into backend
 	emit "Create new users";
