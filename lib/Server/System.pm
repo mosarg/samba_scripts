@@ -431,7 +431,7 @@ sub recordUser {
 		print FHANDLE "name,surname,username,password,ou\n";
 		foreach my $fullUser ( @{$users} ) {
 			if ($compact){
-				print FHANDLE "\"".$fullUser->name."\",\"".$fullUser->surname."\"";
+				print FHANDLE "\"".$fullUser->name."\",\"".$fullUser->surname."\",removed,removed";
 			}else{
 				my $userData=$fullUser->[0];
 				my $user=$userData->{simpleUser};
