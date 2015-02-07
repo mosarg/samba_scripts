@@ -114,6 +114,7 @@ sub getStudyPlanSubject{
         LEFT JOIN TCompAsse TAsse       ON (TMatRmaPst.iCompAsseId = TAsse.iCompAsseId)
         LEFT OUTER JOIN TOan_OreAn TOan ON (TOan.iOanId = TMatRmaPst.iOanId AND TOan.dDelete IS NULL)   
         WHERE (TMatRmaPst.dDelete IS NULL) and TMATRMAPST.IPSTID=$studyPlan";
+    
 	return executeAisPlaneQuery($query);
 }
 
@@ -187,6 +188,7 @@ sub getCurrentAtaAis{
      			LEFT  JOIN tquap_qualpers tq on (p.iquapid=tq.iquapid)
      			LEFT  JOIN tnop_nominaperso  tn on(p.inopid=tn.inopid)
    				WHERE p.idctid=2 AND p.istabperid=1  AND tq.iquapusercode IN (".$ais->{ata_roles}.")";
+   				print $query;
    			return executeAisQuery($query);
 	
 }
@@ -215,7 +217,7 @@ INNER JOIN tacs_annicorso ta ON (tc.iacsid=ta.iacsid)
 INNER JOIN tind_indirizzo ti ON (tc.iindid=ti.iindid)
 INNER JOIN tsez_sezioni ts ON (tc.isezid=ts.isezid)
 WHERE td.sdctldesc='Docente' AND p.istabperid=1  AND tc.dstart>='01.09.$year' AND tc.dend <= '01.09.".++$year."\'";
-
+print $query;
 my $teacherMap= executeAisQuery($query);
 
 foreach my $mapElement (@{$teacherMap}){
