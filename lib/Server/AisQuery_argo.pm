@@ -69,7 +69,7 @@ sub executeAisPlaneQuery{
 
 sub getCurrentTeachersAis {
 	my $year=shift;	
-	my $query="SELECT  DISTINCT userIdNumber, name,surname ,birthDate,\'".$ais->{main_mec}."\' As meccanographic FROM
+	my $query="SELECT userIdNumber, name,surname ,birthDate,\'".$ais->{main_mec}."\' As meccanographic FROM
 			   docenti_ata";
 	return executeAisQuery($query);
 }
