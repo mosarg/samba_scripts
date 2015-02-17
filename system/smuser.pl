@@ -284,9 +284,12 @@ sub syncUsers {
 		}
 		when (/teacher/) {
 			emit "Sync teachers";
+			
+			
 			$updates =
 			  syncUsersAdb( 1, getAisUsers('teacher',$yearAis), 'teacher',
 				$yearAdb->year, getCurrentTeacherClassAis($yearAis) );
+			
 			$updates->{status} ? emit_ok : emit_error;
 		}
 		when (/ata/) {
@@ -393,6 +396,8 @@ if(!$quicksync){
 		  ->first;
 		emit "Check backend account presence";
 		my $allCurrentUsers = getAllUsersByRoleAdb( $roleAdb, $newYearAdb );
+		
+		print Dumper $allCurrentUsers;
 		foreach my $currentUser ( @{$allCurrentUsers} ) {
 			$currentUser = createUser($currentUser);
 

@@ -12,7 +12,7 @@ use Text::Autoformat;
 use Data::Dumper;
 use HTML::Tabulate qw(render);
 use Server::AdbUser qw(syncUsersAdb addUserAdb deactivateUserAdb getAllUsersAdb addUserAccountsAdb getAllUsersByRoleAdb addFullUserAdb);
-use Server::AisQuery qw(getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentStudentsClassSubjectAis);
+use Server::AisQuery qw(a2n getAisUsers getCurrentClassAis getCurrentSubjectAis getCurrentTeacherClassAis getCurrentStudentsClassSubjectAis);
 use Server::AdbClass qw(syncClassAdb);
 #use Server::AdbAccount qw(getAccountGroupsAdb getUserAccountTypesAdb);
 use Server::AdbCommon qw(getCurrentYearAdb addYearAdb getActiveSchools);
@@ -67,13 +67,25 @@ my $aisUser={userIdNumber=>10056,origin=>'auto',name=>'Giorgiona',surname=>'Aspa
 # my $allocation= $user->allocation_allocations->first;
 
 
-#print substr('00005154',-5,5)."\n";
+ #print substr('00005154',-5,5)."\n";
 
-my $data1= getAllUsersByRoleAdb($role,$yearAdb);
+#my $data1= getAllUsersByRoleAdb($role,$yearAdb);
 
 
-foreach my $tr (@{$data1}){
-	print $tr->name."\n";
-}
+#foreach my $tr (@{$data1}){
+#	print $tr->name."\n";
+#}
+
+my @activeSchools =
+	  map { '\'' . $_->meccanographic . '\'' } @{ getActiveSchools() };
+	  
+	  
+my $test=getAisUsers('student',\@activeSchools);
+
+
+print Dumper getCurrentClassAis();
+
+#print Dumper @activeSchools;
+
 
 	

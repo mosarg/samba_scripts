@@ -342,9 +342,9 @@ sub syncUsersAdb {
 		#set sync status
 		$user->{sync}   = $sync;
 		$user->{origin} = 'automatic';
-
 		#set insertion order
 		$user->{insertOrder} = $insertOrder;
+		
 		my $result = addUserAdb( $user, $roleAdb);
 		
 		$result=addUserAccountsAdb($result);
